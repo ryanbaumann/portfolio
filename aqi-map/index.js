@@ -7,11 +7,35 @@ const turfTruncate = require("@turf/truncate").default;
 const turfCleanCoords = require('@turf/clean-coords').default;
 const d3 = require("d3-tricontour");
 
-mapboxgl.accessToken = 'pk.eyJ1IjoicnNiYXVtYW5uIiwiYSI6ImNqdzg5aWxkYzF1azI0OW5uaWVmazhleXUifQ.XAm1dRGmXuRAMSQm0TJKXg';
+const appConfig = globalThis.AQI_MAP_CONFIG || {};
+const errorMessageElement = document.getElementById("error_msg");
+
+function showError(message) {
+  if (errorMessageElement) {
+    errorMessageElement.innerHTML = message;
+  }
+}
+
+const requiredConfig = [
+  ["mapboxAccessToken", "Mapbox access token"],
+  ["mapboxStyleUrl", "Mapbox style URL"],
+  ["purpleAirApiKey", "PurpleAir API key"]
+];
+
+const missingConfig = requiredConfig
+  .filter(([key]) => !appConfig[key])
+  .map(([, label]) => label);
+
+if (missingConfig.length > 0) {
+  showError(`Missing configuration: ${missingConfig.join(", ")}.`);
+  throw new Error(`AQI map missing configuration: ${missingConfig.join(", ")}`);
+}
+
+mapboxgl.accessToken = appConfig.mapboxAccessToken;
 
 var map = new mapboxgl.Map({
   container: 'map',
-  style: 'mapbox://styles/rsbaumann/cks3iz3ka5dag18mljlnfp0xx?optimize=true',
+  style: appConfig.mapboxStyleUrl,
   center: [-103.59179687498357, 40.66995747013945],
   zoom: 3,
   hash: true,
@@ -39,9 +63,14 @@ const isLongitude = num => isFinite(num) && Math.abs(num) <= 180 && num != 0;
 
 map.on('style.load', function () {
   map.setFog({});
-  var all_range = 'https://map.purpleair.com/v1/sensors?token=QOPWTr%2FGog3iSDOz3T7CnxkvTbJ3xl0vO6EHEndu94OCT5%2F14jGY40jms06N710oqguuIgDgLVMYZf1VQc%2FNjwwxkVtlyYPm1d5A%2B5QrjgV5px%2FO5r3ske%2BMSUu1DvZCO1T02KVaeqM2aJAwZGI%2Fiw%3D%3D&fields=name,latitude,longitude,confidence,pm2.5_10minute,humidity&max_age=604800'
-  document.getElementById("error_msg").innerHTML = "Data Loading..."
-  fetch(all_range)
+  var sensorUrl = new URL('https://map.purpleair.com/v1/sensors');
+  sensorUrl.search = new URLSearchParams({
+    token: appConfig.purpleAirApiKey,
+    fields: 'name,latitude,longitude,confidence,pm2.5_10minute,humidity',
+    max_age: String(appConfig.maxSensorAgeSeconds || 604800)
+  }).toString();
+  showError("Data Loading...")
+  fetch(sensorUrl.toString())
     .then(response => {
       if (!response.ok) {
         // get error message from body or default to response status
@@ -54,7 +83,7 @@ map.on('style.load', function () {
     })
     .catch(error => {
       console.error('Refresh too fast; try reloading your page in ~30 seconds!', error);
-      document.getElementById("error_msg").innerHTML = "API Rate Limited: Reload page in ~30 seconds"
+      showError("API Rate Limited: Reload page in ~30 seconds")
     })
     .then(mydata => {
       mydata.data.forEach(function (row) {
