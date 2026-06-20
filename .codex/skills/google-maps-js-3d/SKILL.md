@@ -36,7 +36,7 @@ Read `references/3d-maps-js-api.md` when the task involves:
 - Prefer `MapMode.HYBRID`/`MapMode.SATELLITE` constants when available instead of stringly typed modes.
 - Treat 3D positions as latitude/longitude/altitude values when altitude matters; document whether altitude is clamped, absolute, or relative.
 - Prefer `Marker3DInteractiveElement` for clickable 3D markers and `Marker3DElement` for large passive marker sets.
-- For `Marker3DInteractiveElement` custom content, append an `HTMLTemplateElement` or a `PinElement`. Do not append raw `div`, `img`, or fragment nodes; Maps 3D will emit slot validation warnings and may ignore the content.
+- For `Marker3DInteractiveElement` custom content, append a `PinElement` or an `HTMLTemplateElement` whose direct content is an `HTMLImageElement` or `SVGElement`. Do not place a `div`, `span`, text node, HTML/CSS card, or other wrapper inside the template; Maps 3D validates the template content type and emits `<gmp-marker-3d-interactive>: The content inside the <template> element is not of type HTMLImageElement or SVGElement` when the direct child is not an image or SVG.
 - For terrain-friendly visual callouts, prefer `AltitudeMode.RELATIVE_TO_GROUND` with a fixed visual offset. Do not add Elevation API terrain altitude to a relative-to-ground marker position.
 - Use `gmp-click` for 3D interactive elements that expose Maps event semantics.
 - Use `PopoverElement` for map-anchored details; include concise accessible content and a meaningful header when practical.
@@ -46,6 +46,10 @@ Read `references/3d-maps-js-api.md` when the task involves:
 - Avoid per-frame network calls and unbounded marker/polyline/popover creation.
 - Never log API keys, Strava tokens, precise private routes, or raw OAuth payloads.
 
+
+### Custom marker slot validation
+
+Official Maps JavaScript API 3D docs currently limit custom 3D marker drawing to `PinElement`, `HTMLImageElement`, and `SVGElement` content. If using a template, the template must wrap the image or SVG itself, not an HTML card that contains an image. For remote activity-photo markers, prefer a direct `HTMLImageElement` template child; embedding the remote bitmap as an SVG `<image>` can render as a generic placeholder in the 3D marker renderer even though the outer `SVGElement` passes type validation. Plain HTML and CSS marker cards are not supported in the 3D marker renderer yet.
 
 ## Strava route fly-through guidance
 

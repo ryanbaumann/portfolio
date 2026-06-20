@@ -313,48 +313,31 @@ export function removePreviousPolyline() {
 
 function createPhotoBillboardTemplate(imageUrl, caption) {
     const template = document.createElement('template');
-    const billboard = document.createElement('div');
-    billboard.className = 'photo-billboard';
-    billboard.style.cssText = `
-        width: 92px;
-        border-radius: 14px;
-        padding: 4px;
-        background: linear-gradient(180deg, rgba(255,255,255,.98), rgba(238,242,255,.96));
-        border: 2px solid rgba(255,255,255,.95);
-        box-shadow: 0 14px 28px rgba(15,23,42,.38), 0 0 0 1px rgba(79,70,229,.32);
-        transform: translateY(-8px);
-        cursor: pointer;
-    `;
-
     const image = document.createElement('img');
+
+    // Maps 3D custom marker slots accept an HTMLImageElement directly inside
+    // the template. Use the Strava photo as that direct child so the marker is
+    // the actual photo, not a renderer-dependent SVG wrapper around the photo.
     image.src = imageUrl;
     image.alt = caption ? `Activity photo: ${caption}` : 'Activity photo marker';
-    image.loading = 'lazy';
+    image.loading = 'eager';
     image.decoding = 'async';
+    image.referrerPolicy = 'no-referrer';
+    image.width = 96;
+    image.height = 96;
     image.style.cssText = `
-        display: block;
-        width: 84px;
-        height: 64px;
+        width: 96px;
+        height: 96px;
         object-fit: cover;
-        border-radius: 10px;
+        border-radius: 16px;
+        border: 4px solid #ffffff;
         background: #e5e7eb;
+        box-shadow: 0 14px 28px rgba(15,23,42,.38), 0 0 0 1px rgba(79,70,229,.32);
+        cursor: pointer;
     `;
     image.onerror = () => { image.alt = 'Activity photo preview unavailable'; };
 
-    const label = document.createElement('div');
-    label.textContent = 'Photo';
-    label.style.cssText = `
-        margin-top: 3px;
-        color: #111827;
-        font: 700 10px/1.1 Inter, ui-sans-serif, system-ui, sans-serif;
-        letter-spacing: .04em;
-        text-align: center;
-        text-transform: uppercase;
-        text-shadow: 0 1px 0 rgba(255,255,255,.8);
-    `;
-
-    billboard.append(image, label);
-    template.content.append(billboard);
+    template.content.append(image);
     return template;
 }
 
