@@ -7,6 +7,7 @@ let elevator = null;
 let previousPolyline = null;
 let routeMarkers = [];
 let photoMarkers = new Map(); // Stores { marker, popover } pairs, key = photo.unique_id
+let photoBillboardTemplateId = 0;
 let trackingMarker = null;
 
 // Follow Camera state moved to followCamera.js
@@ -313,48 +314,108 @@ export function removePreviousPolyline() {
 
 function createPhotoBillboardTemplate(imageUrl, caption) {
     const template = document.createElement('template');
-    const billboard = document.createElement('div');
-    billboard.className = 'photo-billboard';
-    billboard.style.cssText = `
-        width: 92px;
-        border-radius: 14px;
-        padding: 4px;
-        background: linear-gradient(180deg, rgba(255,255,255,.98), rgba(238,242,255,.96));
-        border: 2px solid rgba(255,255,255,.95);
-        box-shadow: 0 14px 28px rgba(15,23,42,.38), 0 0 0 1px rgba(79,70,229,.32);
-        transform: translateY(-8px);
-        cursor: pointer;
-    `;
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    const safeCaption = caption ? `Activity photo: ${caption}` : 'Activity photo marker';
+    const templateId = photoBillboardTemplateId++;
+    const shadowId = `photo-marker-shadow-${templateId}`;
+    const clipId = `photo-marker-clip-${templateId}`;
 
-    const image = document.createElement('img');
-    image.src = imageUrl;
-    image.alt = caption ? `Activity photo: ${caption}` : 'Activity photo marker';
-    image.loading = 'lazy';
-    image.decoding = 'async';
-    image.style.cssText = `
-        display: block;
-        width: 84px;
-        height: 64px;
-        object-fit: cover;
-        border-radius: 10px;
-        background: #e5e7eb;
-    `;
-    image.onerror = () => { image.alt = 'Activity photo preview unavailable'; };
+    // Maps 3D custom marker slots currently draw only PinElement, HTMLImageElement,
+    // or SVGElement content. Keep the SVG as the direct template child; wrapping it
+    // in a div or relying on HTML/CSS inside the template triggers slot warnings and
+    // is ignored by the 3D renderer.
+    svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+    svg.setAttribute('width', '92');
+    svg.setAttribute('height', '98');
+    svg.setAttribute('viewBox', '0 0 92 98');
+    svg.setAttribute('role', 'img');
+    svg.setAttribute('aria-label', safeCaption);
 
-    const label = document.createElement('div');
-    label.textContent = 'Photo';
-    label.style.cssText = `
-        margin-top: 3px;
-        color: #111827;
-        font: 700 10px/1.1 Inter, ui-sans-serif, system-ui, sans-serif;
-        letter-spacing: .04em;
-        text-align: center;
-        text-transform: uppercase;
-        text-shadow: 0 1px 0 rgba(255,255,255,.8);
-    `;
+    const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+    const shadow = document.createElementNS('http://www.w3.org/2000/svg', 'filter');
+    shadow.setAttribute('id', shadowId);
+    shadow.setAttribute('x', '-25%');
+    shadow.setAttribute('y', '-25%');
+    shadow.setAttribute('width', '150%');
+    shadow.setAttribute('height', '150%');
 
-    billboard.append(image, label);
-    template.content.append(billboard);
+    const dropShadow = document.createElementNS('http://www.w3.org/2000/svg', 'feDropShadow');
+    dropShadow.setAttribute('dx', '0');
+    dropShadow.setAttribute('dy', '8');
+    dropShadow.setAttribute('stdDeviation', '6');
+    dropShadow.setAttribute('flood-color', '#0f172a');
+    dropShadow.setAttribute('flood-opacity', '.38');
+    shadow.append(dropShadow);
+
+    const clip = document.createElementNS('http://www.w3.org/2000/svg', 'clipPath');
+    clip.setAttribute('id', clipId);
+    const clipRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    clipRect.setAttribute('x', '8');
+    clipRect.setAttribute('y', '8');
+    clipRect.setAttribute('width', '76');
+    clipRect.setAttribute('height', '58');
+    clipRect.setAttribute('rx', '10');
+    clip.append(clipRect);
+
+    defs.append(shadow, clip);
+    svg.append(defs);
+
+    const card = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    card.setAttribute('x', '2');
+    card.setAttribute('y', '0');
+    card.setAttribute('width', '88');
+    card.setAttribute('height', '84');
+    card.setAttribute('rx', '14');
+    card.setAttribute('fill', '#f8fafc');
+    card.setAttribute('stroke', '#ffffff');
+    card.setAttribute('stroke-width', '4');
+    card.setAttribute('filter', `url(#${shadowId})`);
+    svg.append(card);
+
+    const border = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    border.setAttribute('x', '7');
+    border.setAttribute('y', '7');
+    border.setAttribute('width', '78');
+    border.setAttribute('height', '60');
+    border.setAttribute('rx', '11');
+    border.setAttribute('fill', '#e5e7eb');
+    border.setAttribute('stroke', '#c7d2fe');
+    border.setAttribute('stroke-width', '1.5');
+    svg.append(border);
+
+    if (imageUrl) {
+        const image = document.createElementNS('http://www.w3.org/2000/svg', 'image');
+        image.setAttribute('href', imageUrl);
+        image.setAttribute('x', '8');
+        image.setAttribute('y', '8');
+        image.setAttribute('width', '76');
+        image.setAttribute('height', '58');
+        image.setAttribute('preserveAspectRatio', 'xMidYMid slice');
+        image.setAttribute('clip-path', `url(#${clipId})`);
+        svg.append(image);
+    }
+
+    const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    label.textContent = 'PHOTO';
+    label.setAttribute('x', '46');
+    label.setAttribute('y', '78');
+    label.setAttribute('text-anchor', 'middle');
+    label.setAttribute('fill', '#111827');
+    label.setAttribute('font-family', 'Inter, Arial, sans-serif');
+    label.setAttribute('font-size', '10');
+    label.setAttribute('font-weight', '700');
+    label.setAttribute('letter-spacing', '1');
+    svg.append(label);
+
+    const pointer = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    pointer.setAttribute('d', 'M38 84 L46 96 L54 84 Z');
+    pointer.setAttribute('fill', '#f8fafc');
+    pointer.setAttribute('stroke', '#ffffff');
+    pointer.setAttribute('stroke-width', '3');
+    pointer.setAttribute('stroke-linejoin', 'round');
+    svg.append(pointer);
+
+    template.content.append(svg);
     return template;
 }
 
