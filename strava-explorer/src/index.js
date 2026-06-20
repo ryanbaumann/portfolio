@@ -905,6 +905,14 @@ function initTourPlayer() {
         });
     }
 
+    if (followCameraSpeedSlider) {
+        followCameraSpeedSlider.addEventListener('input', (e) => {
+            const val = parseFloat(e.target.value);
+            if (followCameraSpeedValue) followCameraSpeedValue.textContent = `${val.toFixed(1)}x`;
+            setFollowCameraSpeed(val);
+        });
+    }
+
     if (tourHeightSlider) {
         tourHeightSlider.addEventListener('input', (e) => {
             const val = parseInt(e.target.value);
