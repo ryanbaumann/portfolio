@@ -241,7 +241,6 @@ async function runCameraAction(status, action) {
     }
     updateCameraStatus(status);
     stopFollowCamera();
-    if (followCameraToggle) followCameraToggle.checked = false;
     await action();
     updateCameraStatus('Camera synced to the selected activity.');
 }
