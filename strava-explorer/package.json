@@ -28,7 +28,8 @@
     "preview": "vite preview",
     "clean": "rm -rf dist",
     "test": "npm run build",
-    "deploy:static": "npm run build && printf \"Deploy the dist/ directory with your static hosting provider.\\n\""
+    "deploy:static": "npm run build && printf \"Deploy the dist/ directory with your static hosting provider.\\n\"",
+    "deploy:gcs": "./scripts/deploy-gcs.sh"
   },
   "devDependencies": {
     "@types/google.maps": "^3.58.1",

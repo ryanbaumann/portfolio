@@ -11,6 +11,7 @@ const AUTH_STORAGE_KEY = 'trailsNinja.stravaAuth.v1';
 const STRAVA_CLIENT_ID = import.meta.env.VITE_STRAVA_CLIENT_ID;
 const STRAVA_CLIENT_SECRET = import.meta.env.VITE_STRAVA_CLIENT_SECRET;
 const STRAVA_REDIRECT_URI = import.meta.env.VITE_STRAVA_REDIRECT_URI;
+const STRAVA_API_BASE_URL = (import.meta.env.VITE_STRAVA_API_BASE_URL || 'https://www.strava.com/api/v3').replace(/\/$/, '');
 
 // --- Helper Functions (Dependencies - will be passed or imported if moved to utils) ---
 let showLoading = (isLoading, text) => console.log(`Loading: ${isLoading}, Text: ${text}`);
@@ -75,7 +76,7 @@ export async function fetchActivityStreams(activityId, token, streamTypes) {
     showLoading(true, "Fetching activity streams...");
     try {
         const keys = streamTypes.join(',');
-        const response = await fetch(`https://www.strava.com/api/v3/activities/${activityId}/streams?keys=${keys}&key_by_type=true`, {
+        const response = await fetch(`${STRAVA_API_BASE_URL}/activities/${activityId}/streams?keys=${keys}&key_by_type=true`, {
             headers: {
                 'Authorization': `Bearer ${token}`
             }
@@ -206,7 +207,7 @@ export async function fetchActivities(accessToken, beforeTimestamp = null, after
     console.log(`Fetching activities with token: ${accessToken ? '******' : 'null'}, Before: ${beforeTimestamp}, After: ${afterTimestamp}, Count: ${perPage}`);
     if (!accessToken) throw new Error("Strava access token is required.");
 
-    const activitiesUrl = 'https://www.strava.com/api/v3/athlete/activities';
+    const activitiesUrl = `${STRAVA_API_BASE_URL}/athlete/activities`;
     const params = new URLSearchParams();
 
     if (beforeTimestamp) params.set('before', beforeTimestamp);
@@ -248,7 +249,7 @@ export async function fetchDetailedActivityData(activityId, accessToken) {
     }
 
     console.log(`Fetching detailed data for activity ID: ${activityId}`);
-    const detailedActivityUrl = `https://www.strava.com/api/v3/activities/${activityId}`;
+    const detailedActivityUrl = `${STRAVA_API_BASE_URL}/activities/${activityId}`;
 
     showLoading(true, "Fetching activity details...");
     try {
@@ -282,7 +283,7 @@ export async function fetchPhotoData(activityId, accessToken) {
     if (!accessToken) throw new Error("Strava access token is required.");
     if (!activityId) throw new Error("Activity ID is required.");
 
-    const photoURL = `https://www.strava.com/api/v3/activities/${activityId}/photos?photo_sources=true&size=1000`;
+    const photoURL = `${STRAVA_API_BASE_URL}/activities/${activityId}/photos?photo_sources=true&size=1000`;
     showLoading(true, "Fetching activity photos...");
     try {
         const response = await fetch(photoURL, {
