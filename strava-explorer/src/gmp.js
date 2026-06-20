@@ -387,7 +387,6 @@ export async function displayPhotoMarkers(photosData) { // photosData = array fr
                 drawsWhenOccluded: true,
             });
             marker.append(createPhotoBillboardTemplate(photoThumbUrl, photo.caption));
-            marker.append(createPhotoBillboardTemplate(photoThumbUrl, photo.caption));
 
             // Create Popover
             const popover = new PopoverElement({
