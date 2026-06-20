@@ -70,7 +70,8 @@ Run commands from the app directory unless noted.
 
 Use these repo-local skills when the task matches their scope:
 
-- `.codex/skills/google-maps-platform/SKILL.md` for Google Maps Platform, Maps JavaScript API, 3D Maps, markers, elevation, places, routes, and key-security work.
+- `.codex/skills/google-maps-platform/SKILL.md` for broad Google Maps Platform, key-security, quota, Places, Routes, and general Maps JavaScript API work.
+- `.codex/skills/google-maps-js-3d/SKILL.md` for focused Maps JavaScript API 3D Maps work: `Map3DElement`, `maps3d`, 3D markers, popovers, altitude, drawing, and camera behavior.
 - `.codex/skills/frontend-responsive-design/SKILL.md` for responsive layout, accessibility, CSS architecture, Tailwind utility usage, and visual QA work.
 
 ## Pull Request Expectations
