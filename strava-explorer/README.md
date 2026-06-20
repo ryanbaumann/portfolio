@@ -28,6 +28,7 @@ A focused static web app for connecting Strava, selecting recent activities, and
 - Activity routes use `Polyline3DElement` with `AltitudeMode.CLAMP_TO_GROUND` so the route follows the photorealistic terrain mesh.
 - Start/finish and tour-position markers use 3D marker elements with relative-to-ground altitude offsets for readability over the mesh.
 - Activity photos render as `Marker3DInteractiveElement` billboards with map-anchored `PopoverElement` details. Custom 3D marker content must be supplied as an `HTMLTemplateElement` or `PinElement`; appending a raw `div`, `img`, or other DOM node causes Maps 3D slot validation warnings.
+- Strava photo marker images are loaded through the Cloud Run broker's CORS-enabled `/api/photo-proxy` when `VITE_STRAVA_AUTH_BASE_URL` is configured. This is required for deployed Google Maps 3D marker images because Strava's CloudFront photo URLs do not send browser-readable CORS headers.
 - Photo billboard altitude is visual and relative to the ground. Do not add Elevation API altitude to a relative-to-ground marker or the marker will float far above terrain.
 - Keep photo marker sets bounded to the selected activity and clear markers/popovers when the route changes.
 

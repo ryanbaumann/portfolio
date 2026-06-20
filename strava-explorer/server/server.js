@@ -8,11 +8,72 @@ const allowedOrigin = process.env.ALLOWED_ORIGIN || '*';
 const stravaTokenUrl = process.env.STRAVA_TOKEN_URL || 'https://www.strava.com/oauth/token';
 const stravaDeauthorizeUrl = process.env.STRAVA_DEAUTHORIZE_URL || 'https://www.strava.com/oauth/deauthorize';
 
+const allowedPhotoHosts = new Set([
+  'dgtzuqphqg23d.cloudfront.net',
+]);
+const maxPhotoBytes = Number(process.env.MAX_PHOTO_PROXY_BYTES || 8 * 1024 * 1024);
+
+function isAllowedPhotoUrl(rawUrl) {
+  try {
+    const url = new URL(rawUrl);
+    return url.protocol === 'https:' && allowedPhotoHosts.has(url.hostname);
+  } catch {
+    return false;
+  }
+}
+
+async function proxyPhoto(request, response, origin) {
+  const requestUrl = new URL(request.url, `http://${request.headers.host || 'localhost'}`);
+  const photoUrl = requestUrl.searchParams.get('url');
+  if (!photoUrl || !isAllowedPhotoUrl(photoUrl)) {
+    sendJson(response, 400, { error: 'Invalid or unsupported photo URL.' }, origin);
+    return;
+  }
+
+  const upstream = await fetch(photoUrl, {
+    headers: {
+      'User-Agent': 'trails.ninja-photo-proxy/1.0',
+      'Accept': 'image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8',
+    },
+  });
+
+  if (!upstream.ok) {
+    sendJson(response, upstream.status, { error: `Photo request failed: ${upstream.status} ${upstream.statusText}` }, origin);
+    return;
+  }
+
+  const contentType = upstream.headers.get('content-type') || 'image/jpeg';
+  if (!contentType.toLowerCase().startsWith('image/')) {
+    sendJson(response, 415, { error: 'Photo URL did not return an image.' }, origin);
+    return;
+  }
+
+  const contentLength = Number(upstream.headers.get('content-length') || 0);
+  if (contentLength > maxPhotoBytes) {
+    sendJson(response, 413, { error: 'Photo is too large to proxy.' }, origin);
+    return;
+  }
+
+  const photoBuffer = Buffer.from(await upstream.arrayBuffer());
+  if (photoBuffer.byteLength > maxPhotoBytes) {
+    sendJson(response, 413, { error: 'Photo is too large to proxy.' }, origin);
+    return;
+  }
+
+  response.writeHead(200, {
+    'Content-Type': contentType,
+    'Content-Length': photoBuffer.byteLength,
+    'Cache-Control': 'public, max-age=86400, stale-while-revalidate=604800',
+    ...corsHeaders(origin),
+  });
+  response.end(photoBuffer);
+}
+
 function corsHeaders(origin) {
   const allowOrigin = allowedOrigin === '*' ? (origin || '*') : allowedOrigin;
   return {
     'Access-Control-Allow-Origin': allowOrigin,
-    'Access-Control-Allow-Methods': 'POST,OPTIONS',
+    'Access-Control-Allow-Methods': 'GET,POST,OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type,Authorization',
     'Vary': 'Origin',
   };
@@ -94,9 +155,19 @@ const server = http.createServer(async (request, response) => {
     return;
   }
 
-  if (request.method === 'GET' && request.url === '/healthz') {
-    sendJson(response, 200, { ok: true }, origin);
-    return;
+  if (request.method === 'GET') {
+    if (request.url === '/healthz') {
+      sendJson(response, 200, { ok: true }, origin);
+      return;
+    }
+    if (request.url.startsWith('/api/photo-proxy?')) {
+      try {
+        await proxyPhoto(request, response, origin);
+      } catch (error) {
+        sendJson(response, error.statusCode || 502, { error: error.message }, origin);
+      }
+      return;
+    }
   }
 
   if (request.method !== 'POST') {

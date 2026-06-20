@@ -49,7 +49,7 @@ Read `references/3d-maps-js-api.md` when the task involves:
 
 ### Custom marker slot validation
 
-Official Maps JavaScript API 3D docs currently limit custom 3D marker drawing to `PinElement`, `HTMLImageElement`, and `SVGElement` content. If using a template, the template must wrap the image or SVG itself, not an HTML card that contains an image. For remote activity-photo markers, prefer a direct `HTMLImageElement` template child; embedding the remote bitmap as an SVG `<image>` can render as a generic placeholder in the 3D marker renderer even though the outer `SVGElement` passes type validation. Plain HTML and CSS marker cards are not supported in the 3D marker renderer yet.
+Official Maps JavaScript API 3D docs currently limit custom 3D marker drawing to `PinElement`, `HTMLImageElement`, and `SVGElement` content. If using a template, the template must wrap the image or SVG itself, not an HTML card that contains an image. For remote activity-photo markers, prefer a direct `HTMLImageElement` template child. The Maps 3D/WebGL renderer still needs the image to be CORS-readable; Strava CloudFront photo URLs do not send `Access-Control-Allow-Origin`, so deployed marker images should go through the app's same-origin/CORS-enabled photo proxy before being used as marker content. Embedding the remote bitmap as an SVG `<image>` can render as a generic placeholder in the 3D marker renderer even though the outer `SVGElement` passes type validation. Plain HTML and CSS marker cards are not supported in the 3D marker renderer yet.
 
 ## Strava route fly-through guidance
 

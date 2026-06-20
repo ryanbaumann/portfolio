@@ -18,6 +18,7 @@ let LatLng, LatLngBounds, encoding;
 // --- Helper Functions (Dependencies - will be passed or imported if moved to utils) ---
 let showLoading = (isLoading, text) => console.log(`Loading: ${isLoading}, Text: ${text}`);
 let showError = (message) => console.error(`Error: ${message}`);
+const PHOTO_PROXY_BASE_URL = (import.meta.env.VITE_STRAVA_AUTH_BASE_URL || '').replace(/\/$/, '');
 
 // Function to set helper dependencies (called from index.js)
 export function setHelpers(helpers) {
@@ -311,6 +312,19 @@ export function removePreviousPolyline() {
 }
 
 
+function getMarkerPhotoUrl(imageUrl) {
+    if (!imageUrl || !PHOTO_PROXY_BASE_URL) return imageUrl;
+    try {
+        const url = new URL(imageUrl);
+        if (url.protocol === 'https:' && url.hostname === 'dgtzuqphqg23d.cloudfront.net') {
+            return `${PHOTO_PROXY_BASE_URL}/api/photo-proxy?url=${encodeURIComponent(url.href)}`;
+        }
+    } catch (error) {
+        console.warn('Invalid photo marker URL:', imageUrl, error);
+    }
+    return imageUrl;
+}
+
 function createPhotoBillboardTemplate(imageUrl, caption) {
     const template = document.createElement('template');
     const image = document.createElement('img');
@@ -318,7 +332,8 @@ function createPhotoBillboardTemplate(imageUrl, caption) {
     // Maps 3D custom marker slots accept an HTMLImageElement directly inside
     // the template. Use the Strava photo as that direct child so the marker is
     // the actual photo, not a renderer-dependent SVG wrapper around the photo.
-    image.src = imageUrl;
+    image.crossOrigin = 'anonymous';
+    image.src = getMarkerPhotoUrl(imageUrl);
     image.alt = caption ? `Activity photo: ${caption}` : 'Activity photo marker';
     image.loading = 'eager';
     image.decoding = 'async';
