@@ -293,6 +293,52 @@ export function removePreviousPolyline() {
     clearRouteMarkers();
 }
 
+
+function createPhotoBillboard(imageUrl, caption) {
+    const billboard = document.createElement('div');
+    billboard.className = 'photo-billboard';
+    billboard.style.cssText = `
+        width: 92px;
+        border-radius: 14px;
+        padding: 4px;
+        background: linear-gradient(180deg, rgba(255,255,255,.98), rgba(238,242,255,.96));
+        border: 2px solid rgba(255,255,255,.95);
+        box-shadow: 0 14px 28px rgba(15,23,42,.38), 0 0 0 1px rgba(79,70,229,.32);
+        transform: translateY(-8px);
+        cursor: pointer;
+    `;
+
+    const image = document.createElement('img');
+    image.src = imageUrl;
+    image.alt = caption ? `Activity photo: ${caption}` : 'Activity photo marker';
+    image.loading = 'lazy';
+    image.decoding = 'async';
+    image.style.cssText = `
+        display: block;
+        width: 84px;
+        height: 64px;
+        object-fit: cover;
+        border-radius: 10px;
+        background: #e5e7eb;
+    `;
+    image.onerror = () => { image.alt = 'Activity photo preview unavailable'; };
+
+    const label = document.createElement('div');
+    label.textContent = 'Photo';
+    label.style.cssText = `
+        margin-top: 3px;
+        color: #111827;
+        font: 700 10px/1.1 Inter, ui-sans-serif, system-ui, sans-serif;
+        letter-spacing: .04em;
+        text-align: center;
+        text-transform: uppercase;
+        text-shadow: 0 1px 0 rgba(255,255,255,.8);
+    `;
+
+    billboard.append(image, label);
+    return billboard;
+}
+
 // --- Photo Marker Handling ---
 export async function displayPhotoMarkers(photosData) { // photosData = array from Strava API
     if (!map3d || !Marker3DInteractiveElement || !PopoverElement || !AltitudeMode) {
@@ -310,39 +356,35 @@ export async function displayPhotoMarkers(photosData) { // photosData = array fr
 
     showLoading(true, `Processing ${photosData.length} photos...`);
     try {
-        const photoLocations = photosData
-            .map(p => ({ lat: p.location?.[0], lng: p.location?.[1], id: p.unique_id }))
-            .filter(loc => loc.lat != null && loc.lng != null);
+        const locatedPhotos = photosData.filter((photo) => photo.location?.length === 2 && photo.unique_id);
 
-        if (photoLocations.length === 0) {
+        if (locatedPhotos.length === 0) {
             console.log("No valid locations found in photo data.");
             showLoading(false);
             return;
         }
 
-        const elevations = await getElevationsForPoints(photoLocations); // Fetch elevations for valid locations
-
-        let elevationIndex = 0;
-        photosData.forEach((photo) => {
+        locatedPhotos.forEach((photo) => {
             if (!photo.location || photo.location.length !== 2 || !photo.unique_id) return; // Skip if no location or ID
 
             const lat = photo.location[0];
             const lng = photo.location[1];
-            // Find the corresponding elevation (assuming order is preserved)
-            const locationIndex = photoLocations.findIndex(loc => loc.id === photo.unique_id);
-            const baseAltitude = locationIndex !== -1 ? elevations[locationIndex] : 10; // Default if somehow not found
 
             if (!Number.isFinite(lat) || !Number.isFinite(lng) || lat < -90 || lat > 90 || lng < -180 || lng > 180) return;
-            const position = { lat, lng, altitude: baseAltitude + 18 }; // Position 1m above ground
+            const position = { lat, lng, altitude: 42 };
+            const photoThumbUrl = photo.urls?.["600"] || photo.urls?.["1000"] || photo.urls?.["100"];
 
-            // Create Interactive Marker with Default Pin
+            // Create an interactive 3D billboard marker. The altitude is relative to
+            // terrain so photo cards float consistently above the photorealistic mesh
+            // instead of inheriting sea-level elevation twice.
             const marker = new Marker3DInteractiveElement({
                 position: position,
                 altitudeMode: AltitudeMode.RELATIVE_TO_GROUND,
-                title: photo.caption || `Photo ${photo.unique_id}`,
+                title: photo.caption || `Activity photo ${photo.unique_id}`,
                 extruded: true,
                 drawsWhenOccluded: true,
             });
+            marker.append(createPhotoBillboard(photoThumbUrl, photo.caption));
 
             // Create Popover
             const popover = new PopoverElement({
@@ -384,7 +426,7 @@ export async function displayPhotoMarkers(photosData) { // photosData = array fr
                 // Toggle this popover
                 popover.open = !popover.open;
                 // Fly closer
-                flyToLocation(marker.position, 2000, 60, map3d.heading); // Fly closer (e.g., 500m)
+                flyToLocation({ lat, lng, altitude: 72 }, 850, 66, map3d.heading, 900);
             });
 
             // Add Marker and Popover to Map
