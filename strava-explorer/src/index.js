@@ -9,6 +9,7 @@ let currentActivityId = null; // Keep track of the currently displayed activity 
 let currentRouteCoords = null; // Store the LatLng array for the current route
 
 // --- DOM Element References ---
+let cameraStatusEl, fitRouteButton, flyStartButton, flyFinishButton, orbitRouteButton;
 let mapHost, loadingIndicator, loadingText, errorMessageDiv, statsContainer, activityNameEl, activityDistEl, activityTimeEl, activityElevEl, activityAvgSpeedEl, activityMaxSpeedEl, activityTotalLossEl, elevationProfileWidget, selectList, activityFilterDiv, startDateInput, endDateInput, activityCountInput, fetchFilteredButton, footerAthleteInfo, footerProfileImg, footerProfileName, logoutButton, stravaConnectButton, stravaAuthDiv, followCameraToggle, followCameraSpeedSlider, followCameraSpeedValue;
 
 // --- Utility Functions (Passed to Modules) ---
@@ -53,12 +54,17 @@ async function initApp() {
     footerProfileImg = document.getElementById('footer-strava_profile');
     footerProfileName = document.getElementById('footer-strava-username');
     logoutButton = document.getElementById('logout-button');
+    cameraStatusEl = document.getElementById('camera-status');
+    fitRouteButton = document.getElementById('fit-route-button');
+    flyStartButton = document.getElementById('fly-start-button');
+    flyFinishButton = document.getElementById('fly-finish-button');
+    orbitRouteButton = document.getElementById('orbit-route-button');
     followCameraToggle = document.getElementById('follow-camera-toggle');
     followCameraSpeedSlider = document.getElementById('follow-camera-speed-slider');
     followCameraSpeedValue = document.getElementById('follow-camera-speed-value');
 
 
-    if (!mapHost || !activityFilterDiv || !fetchFilteredButton || !footerAthleteInfo || !logoutButton || !stravaConnectButton || !stravaAuthDiv || !followCameraToggle || !followCameraSpeedSlider || !followCameraSpeedValue || !activityTotalLossEl) { // Added activityTotalLossEl
+    if (!mapHost || !activityFilterDiv || !fetchFilteredButton || !footerAthleteInfo || !logoutButton || !stravaConnectButton || !stravaAuthDiv || !followCameraToggle || !followCameraSpeedSlider || !followCameraSpeedValue || !activityTotalLossEl || !fitRouteButton || !flyStartButton || !flyFinishButton || !orbitRouteButton || !cameraStatusEl) { // Added activityTotalLossEl
         showError("Essential HTML elements are missing. Cannot initialize.");
         return;
     }
@@ -105,6 +111,12 @@ async function initApp() {
         showLoading(false);
     }
 
+
+    fitRouteButton.addEventListener('click', () => runCameraAction('Framing route...', () => gmp.frameRoute(currentRouteCoords)));
+    flyStartButton.addEventListener('click', () => runCameraAction('Flying to route start...', () => gmp.flyToRoutePoint(currentRouteCoords, 'start')));
+    flyFinishButton.addEventListener('click', () => runCameraAction('Flying to route finish...', () => gmp.flyToRoutePoint(currentRouteCoords, 'finish')));
+    orbitRouteButton.addEventListener('click', () => runCameraAction('Orbiting current 3D view...', () => gmp.orbitCurrentView(getReducedMotionPreference() ? 2500 : 9000)));
+
     // Add listener for the follow camera toggle
     followCameraToggle.addEventListener('change', (event) => {
         const isChecked = event.target.checked;
@@ -115,7 +127,8 @@ async function initApp() {
             return;
         }
         // Start immediately when toggled manually, no delay
-        setFollowCameraState(isChecked, currentRouteCoords, false); // Use direct import
+        setFollowCameraState(isChecked, currentRouteCoords, false);
+        updateCameraStatus(isChecked ? 'Follow camera is touring the loaded route.' : 'Follow camera paused. Use shortcuts to inspect the route.'); // Use direct import
     });
 
     // Add listener for the follow camera speed slider
@@ -161,6 +174,32 @@ function handleSuccessfulAuth(authData) {
 
     // Trigger initial fetch with default filters
     handleFetchFilteredActivities();
+}
+
+function setCameraControlsEnabled(isEnabled) {
+    [fitRouteButton, flyStartButton, flyFinishButton, orbitRouteButton].forEach((button) => {
+        if (button) button.disabled = !isEnabled;
+    });
+}
+
+function updateCameraStatus(message) {
+    if (cameraStatusEl) cameraStatusEl.textContent = message;
+}
+
+function getReducedMotionPreference() {
+    return window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+}
+
+async function runCameraAction(status, action) {
+    if (!currentRouteCoords) {
+        showError('Load an activity route before using camera controls.');
+        return;
+    }
+    updateCameraStatus(status);
+    stopFollowCamera();
+    if (followCameraToggle) followCameraToggle.checked = false;
+    await action();
+    updateCameraStatus('Camera synced to the selected activity.');
 }
 
 function handleLogout() {
@@ -297,6 +336,8 @@ function clearActivityDisplay() {
     gmp.removePreviousPolyline();
     gmp.clearPhotoMarkers();
     currentRouteCoords = null; // Clear stored coordinates
+    setCameraControlsEnabled(false);
+    updateCameraStatus('Load an activity to sync the 3D camera, route, markers, and elevation.');
 
     // Clear UI stats
     if (statsContainer) statsContainer.classList.add('hidden');
@@ -384,30 +425,11 @@ async function displayDetailedActivity(activityData, altitudeStream) { // Added 
     if (decodedPathLatLng.length > 0) {
         gmp.displayPolyline(decodedPathLatLng); // Display on map
 
-        // Calculate bounds and fly camera
-        const LatLngBounds = gmp.getLatLngBoundsClass();
-        const LatLng = gmp.getLatLngClass(); // Get LatLng class if needed for distance calc
-        const bounds = new LatLngBounds();
-        decodedPathLatLng.forEach(p => bounds.extend(p));
-
-        if (!bounds.isEmpty() && google?.maps?.geometry?.spherical) { // Check if geometry library loaded
-            const center = bounds.getCenter().toJSON();
-            const ne = bounds.getNorthEast().toJSON();
-            const sw = bounds.getSouthWest().toJSON();
-            // Use GMP geometry library for distance calculation
-            const diagonalDistance = google.maps.geometry.spherical.computeDistanceBetween(
-                new LatLng(ne.lat, ne.lng),
-                new LatLng(sw.lat, sw.lng)
-            );
-            const range = Math.max(1000, diagonalDistance * 1.5);
-            console.log(`[displayDetailedActivity] Flying to bounds center. Range: ${range}`);
-            await gmp.flyToLocation(center, range, 60, 0); // Await camera movement
-        } else if (!bounds.isEmpty()) {
-            // Fallback if geometry library not available (fly to center with default range)
-            const center = bounds.getCenter().toJSON();
-            console.warn("[displayDetailedActivity] Geometry library not available for range calculation. Using default range.");
-            await gmp.flyToLocation(center, 5000, 60, 0); // Use a larger default range
-        }
+        await gmp.frameRoute(decodedPathLatLng, {
+            rangeMultiplier: 1.45,
+            tilt: 62,
+            duration: getReducedMotionPreference() ? 0 : 1400,
+        });
     } else {
         showError("Failed to decode or process activity route.");
         showLoading(false);
@@ -417,6 +439,8 @@ async function displayDetailedActivity(activityData, altitudeStream) { // Added 
 
     // Store coordinates for toggle use
     currentRouteCoords = decodedPathLatLng;
+    setCameraControlsEnabled(true);
+    updateCameraStatus('Route loaded. Camera shortcuts, 3D endpoints, photo markers, and follow tour are ready.');
     // // Ensure toggle is ON by default for new route - REMOVED: Keep follow camera off by default
     // if (followCameraToggle) followCameraToggle.checked = true;
     // // Start with 5-second delay (Use direct import) - REMOVED: Keep follow camera off by default

@@ -202,10 +202,12 @@ export async function fetchPhotoData(activityId, accessToken) {
     if (!accessToken) throw new Error("Strava access token is required.");
     if (!activityId) throw new Error("Activity ID is required.");
 
-    let photoURL = `https://www.strava.com/api/v3/activities/${activityId}/photos?photo_sources=true&access_token=${accessToken}&size=1000`;
+    const photoURL = `https://www.strava.com/api/v3/activities/${activityId}/photos?photo_sources=true&size=1000`;
     showLoading(true, "Fetching activity photos...");
     try {
-        const response = await fetch(photoURL);
+        const response = await fetch(photoURL, {
+            headers: { 'Authorization': `Bearer ${accessToken}` }
+        });
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
         const photos = await response.json();
         console.log(`[fetchPhotoData] Received ${photos.length} photos from Strava:`, photos);

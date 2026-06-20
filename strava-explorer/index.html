@@ -4,14 +4,19 @@
 <head>
     <meta charset='utf-8' />
     <title>Trails Ninja - 3D Strava Explorer</title>
-    <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+    <meta name='viewport' content='width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no' />
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-      html, body { height: 100%; margin: 0; padding: 0; overflow: hidden; font-family: sans-serif; }
+      html, body { height: 100%; margin: 0; padding: 0; overflow: hidden; font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
       /* Container for the 3D map web component */
       #map3d-host { height: 100%; width: 100%; background-color: #333; }
       /* Target the 3D map element itself */
       gmp-map-3d { display: block; height: 100%; width: 100%; }
+      .glass-panel { background: rgba(255,255,255,.94); backdrop-filter: blur(18px); }
+      .map-hud { pointer-events: none; }
+      .map-hud > * { pointer-events: auto; }
+      .focus-ring:focus-visible { outline: 3px solid rgba(79,70,229,.45); outline-offset: 2px; }
+      @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; } }
       /* Basic scrollbar styling */
       .sidebar-content::-webkit-scrollbar { width: 6px; }
       .sidebar-content::-webkit-scrollbar-thumb { background-color: rgba(0,0,0,0.2); border-radius: 3px; }
@@ -30,10 +35,12 @@
         <!-- <canvas id='snapshot' class='absolute top-0 left-0 w-full h-full pointer-events-none' style="visibility:hidden"></canvas> -->
 
         <!-- Sidebar Container - Added top-16, responsive classes -->
-        <aside class="absolute top-[20px] left-3 z-10 w-[450px] max-w-[calc(100%-1.5rem)] flex flex-col bg-white rounded-lg shadow-xl overflow-hidden md:bottom-auto md:max-h-[calc(100vh-5rem)] max-md:bottom-0 max-md:left-0 max-md:right-0 max-md:top-auto max-md:w-full max-md:max-w-full max-md:max-h-[45vh] max-md:rounded-none max-md:rounded-t-lg max-md:border-t">
+        <aside class="absolute top-[clamp(0.75rem,2vw,1.25rem)] left-3 z-10 w-[min(28rem,calc(100%-1.5rem))] flex flex-col glass-panel rounded-2xl shadow-2xl ring-1 ring-black/10 overflow-hidden md:bottom-auto md:max-h-[calc(100vh-2.5rem)] max-md:bottom-0 max-md:left-0 max-md:right-0 max-md:top-auto max-md:w-full max-md:max-w-full max-md:max-h-[58vh] max-md:rounded-none max-md:rounded-t-2xl max-md:border-t" aria-label="Strava activity controls">
             <!-- Sidebar Header -->
             <div class='p-4 border-b border-gray-200 flex-shrink-0'>
-                 <h3 class='text-lg font-semibold text-gray-800'>Strava 3D Activity Explorer</h3> <!-- Updated Title -->
+                 <p class='text-xs font-semibold uppercase tracking-[0.22em] text-indigo-600'>Trails Ninja</p>
+                 <h1 class='text-xl font-bold text-gray-900'>3D Strava Explorer</h1>
+                 <p id='camera-status' class='mt-1 text-xs text-gray-500' aria-live='polite'>Load an activity to sync the 3D camera, route, markers, and elevation.</p> <!-- Updated Title -->
             </div>
             <!-- Sidebar Scrollable Content -->
             <div class='p-4 flex-grow overflow-y-auto sidebar-content space-y-4'> <!-- Added space-y-4 for vertical spacing -->
@@ -115,13 +122,20 @@
                     </div>
                     <!-- Elevation Profile Widget -->
 <!-- Follow Camera Controls -->
-                    <div class="border-t pt-3 space-y-2"> <!-- Added space-y-2 -->
+                    <div class="border-t pt-3 space-y-3"> <!-- Added space-y-2 -->
                         <div class="flex items-center justify-between">
                             <label for="follow-camera-toggle" class="text-sm font-medium text-gray-700">Follow Camera:</label>
                             <label class="relative inline-flex items-center cursor-pointer">
                                 <input type="checkbox" id="follow-camera-toggle" class="sr-only peer"> <!-- Default unchecked -->
                                 <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
                             </label>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-2" role="group" aria-label="3D camera shortcuts">
+                            <button id="fit-route-button" class="focus-ring rounded-lg bg-gray-900 px-3 py-2 text-xs font-semibold text-white shadow hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-50" disabled>Fit route</button>
+                            <button id="fly-start-button" class="focus-ring rounded-lg bg-white px-3 py-2 text-xs font-semibold text-gray-800 ring-1 ring-gray-300 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50" disabled>Fly start</button>
+                            <button id="fly-finish-button" class="focus-ring rounded-lg bg-white px-3 py-2 text-xs font-semibold text-gray-800 ring-1 ring-gray-300 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50" disabled>Fly finish</button>
+                            <button id="orbit-route-button" class="focus-ring rounded-lg bg-indigo-600 px-3 py-2 text-xs font-semibold text-white shadow hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50" disabled>Orbit 3D</button>
                         </div>
                         <!-- Animation Speed Slider -->
                         <div class="flex items-center justify-between">
@@ -162,6 +176,9 @@
                     Logout
                  </button>
         </aside>
+        <div class="map-hud absolute right-3 top-3 z-10 flex max-w-[calc(100%-1.5rem)] flex-col items-end gap-2 max-md:hidden">
+            <div class="glass-panel rounded-full px-4 py-2 text-xs font-semibold text-gray-700 shadow-lg ring-1 ring-black/10">Photorealistic 3D · Google Maps alpha channel</div>
+        </div>
     </div>
 
     <!-- Load main JS file -->

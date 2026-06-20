@@ -6,11 +6,12 @@ import { initializeFollowCamera } from './followCamera.js'; // Import initialize
 let map3d = null;
 let elevator = null;
 let previousPolyline = null;
+let routeMarkers = [];
 let photoMarkers = new Map(); // Stores { marker, popover } pairs, key = photo.unique_id
 
 // Follow Camera state moved to followCamera.js
 // GMP Class variables (populated in initMap)
-let Map3DElement, Marker3DInteractiveElement, Polyline3DElement, AltitudeMode, MapMode, PinElement, PopoverElement;
+let Map3DElement, Marker3DElement, Marker3DInteractiveElement, Polyline3DElement, AltitudeMode, MapMode, PinElement, PopoverElement;
 let ElevationService, ElevationElement; // Removed Place
 let LatLng, LatLngBounds, encoding;
 
@@ -41,7 +42,7 @@ export async function initMap(mapHostElement, apiKey) {
         console.log("Google Maps API loaded.");
 
         // Import necessary classes *after* API is loaded
-        ({ Map3DElement, Marker3DInteractiveElement, Polyline3DElement, AltitudeMode, MapMode, PopoverElement } = await google.maps.importLibrary("maps3d"));
+        ({ Map3DElement, Marker3DElement, Marker3DInteractiveElement, Polyline3DElement, AltitudeMode, MapMode, PopoverElement } = await google.maps.importLibrary("maps3d"));
         ({ PinElement } = await google.maps.importLibrary("marker")); // Keep PinElement if default marker appearance is customized later
         ({ ElevationService, ElevationElement } = await google.maps.importLibrary("elevation"));
         // ({ Place } = await google.maps.importLibrary("places")); // Removed Place import
@@ -58,7 +59,7 @@ export async function initMap(mapHostElement, apiKey) {
             tilt: 0, // Start looking straight down
             heading: 0,
             mode: MapMode.HYBRID, // Or SATELLITE
-            defaultUIDisabled: true, // Disable default controls initially
+            defaultUIDisabled: true, // Disable default controls; app provides custom accessible controls
         });
         mapHostElement.appendChild(map3d);
         console.log("3D Map initialized.");
@@ -146,6 +147,50 @@ export async function flyToLocation(targetCoords, range = 1000, tilt = 60, headi
     }
 }
 
+
+export async function frameRoute(decodedPathLatLng, options = {}) {
+    if (!decodedPathLatLng || decodedPathLatLng.length === 0) return;
+    const LatLngBoundsClass = LatLngBounds;
+    const bounds = new LatLngBoundsClass();
+    decodedPathLatLng.forEach((point) => bounds.extend(point));
+    if (bounds.isEmpty()) return;
+
+    const center = bounds.getCenter().toJSON();
+    const ne = bounds.getNorthEast().toJSON();
+    const sw = bounds.getSouthWest().toJSON();
+    let diagonalDistance = 5000;
+    if (google?.maps?.geometry?.spherical && LatLng) {
+        diagonalDistance = google.maps.geometry.spherical.computeDistanceBetween(
+            new LatLng(ne.lat, ne.lng),
+            new LatLng(sw.lat, sw.lng)
+        );
+    }
+    const range = Math.max(900, diagonalDistance * (options.rangeMultiplier ?? 1.45));
+    await flyToLocation(center, range, options.tilt ?? 62, options.heading ?? 0, options.duration ?? 1400);
+}
+
+export async function flyToRoutePoint(decodedPathLatLng, routePoint = 'start') {
+    if (!decodedPathLatLng || decodedPathLatLng.length === 0) return;
+    const point = routePoint === 'finish' ? decodedPathLatLng[decodedPathLatLng.length - 1] : decodedPathLatLng[0];
+    const heading = routePoint === 'finish' ? (map3d?.heading ?? 0) + 180 : map3d?.heading ?? 0;
+    await flyToLocation(point.toJSON(), 650, 72, heading, 1200);
+}
+
+export async function orbitCurrentView(duration = 9000) {
+    if (!map3d?.flyCameraAround) return;
+    try {
+        showLoading(true, 'Orbiting route...');
+        await map3d.flyCameraAround({ camera: { center: map3d.center, range: map3d.range, tilt: Math.max(map3d.tilt ?? 65, 65), heading: map3d.heading ?? 0 }, durationMillis: duration, rounds: 1 });
+    } catch (error) {
+        if (!(error.name === 'AbortError' || error.message?.includes('interrupted'))) {
+            console.error('flyCameraAround error:', error);
+            showError(`Camera orbit error: ${error.message}`);
+        }
+    } finally {
+        showLoading(false);
+    }
+}
+
 // --- Polyline Handling ---
 export function decodePolyline(polylineString) {
     if (!encoding) {
@@ -184,22 +229,51 @@ export function displayPolyline(decodedPathLatLng) { // Expects array of LatLng 
 
     // Remove previous polyline
     removePreviousPolyline();
+    clearRouteMarkers();
 
     // Create new 3D Polyline clamped to ground
     const routePolyline = new Polyline3DElement({
         coordinates: decodedPathLatLng, // Pass the array of LatLng objects directly
-        strokeColor: 'red',
-        strokeWidth: 20,
-        outerColor: 'white',
-        outerWidth: 0.5,
+        strokeColor: '#ff4d2e',
+        strokeWidth: 14,
+        outerColor: '#ffffff',
+        outerWidth: 0.65,
         altitudeMode: AltitudeMode.CLAMP_TO_GROUND,
     });
 
     // Add polyline to map
     map3d.appendChild(routePolyline);
     previousPolyline = routePolyline; // Store reference
+    addRouteEndpointMarkers(decodedPathLatLng);
     console.log(`[displayPolyline] Appended routePolyline to map.`);
     return routePolyline; // Return the created element
+}
+
+function addRouteEndpointMarkers(path) {
+    if (!map3d || !Marker3DElement || !AltitudeMode || path.length < 2) return;
+    const endpoints = [
+        { label: 'Start', point: path[0], color: '#22c55e' },
+        { label: 'Finish', point: path[path.length - 1], color: '#ef4444' },
+    ];
+    endpoints.forEach(({ label, point, color }) => {
+        const marker = new Marker3DElement({
+            position: { lat: point.lat(), lng: point.lng(), altitude: 24 },
+            altitudeMode: AltitudeMode.RELATIVE_TO_GROUND,
+            title: `${label} of activity route`,
+            extruded: true,
+            label,
+        });
+        marker.style.setProperty('--gmp-marker-color', color);
+        map3d.append(marker);
+        routeMarkers.push(marker);
+    });
+}
+
+export function clearRouteMarkers() {
+    routeMarkers.forEach((marker) => {
+        try { map3d?.removeChild(marker); } catch (e) { console.warn('Error removing route marker', e); }
+    });
+    routeMarkers = [];
 }
 
 export function removePreviousPolyline() {
@@ -214,6 +288,7 @@ export function removePreviousPolyline() {
              previousPolyline = null;
         }
     }
+    clearRouteMarkers();
 }
 
 // --- Photo Marker Handling ---
@@ -255,7 +330,8 @@ export async function displayPhotoMarkers(photosData) { // photosData = array fr
             const locationIndex = photoLocations.findIndex(loc => loc.id === photo.unique_id);
             const baseAltitude = locationIndex !== -1 ? elevations[locationIndex] : 10; // Default if somehow not found
 
-            const position = { lat, lng, altitude: baseAltitude + 1 }; // Position 1m above ground
+            if (!Number.isFinite(lat) || !Number.isFinite(lng) || lat < -90 || lat > 90 || lng < -180 || lng > 180) return;
+            const position = { lat, lng, altitude: baseAltitude + 18 }; // Position 1m above ground
 
             // Create Interactive Marker with Default Pin
             const marker = new Marker3DInteractiveElement({
@@ -287,6 +363,10 @@ export async function displayPhotoMarkers(photosData) { // photosData = array fr
             popoverCaption.style.fontSize = '12px';
             popoverCaption.style.color = '#555';
 
+            const popoverHeading = document.createElement('h3');
+            popoverHeading.slot = 'header';
+            popoverHeading.textContent = photo.caption || 'Activity photo';
+            popover.append(popoverHeading);
             popover.append(popoverImage);
             popover.append(popoverCaption);
 

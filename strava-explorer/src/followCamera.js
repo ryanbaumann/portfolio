@@ -11,6 +11,7 @@ let followCameraActive = false; // Is the feature currently active?
 let followCameraTimeoutId = null; // Timeout ID for the initial 5-second delay
 let followCameraAnimationId = null; // requestAnimationFrame ID
 let followCameraCoords = []; // Coordinates of the current route for animation
+let followCameraSamples = []; // Precomputed camera samples to avoid per-frame network calls
 let followCameraStartTime = null; // Timestamp when animation started (raw time)
 let followCameraBaseDuration = 60000; // Base duration (ms) before speed adjustment
 let followCameraPathDistance = 0; // Total distance of the path
@@ -176,7 +177,7 @@ function samplePointAlongLine(coords, distance) {
  * The animation frame function for the follow camera.
  * @param {DOMHighResTimeStamp} time The current time.
  */
-async function frame(time) {
+function frame(time) {
     if (!followCameraActive || !map3d) {
         followCameraAnimationId = null;
         return; // Stop if not active or map not ready
@@ -200,7 +201,7 @@ async function frame(time) {
     }
 
     const distanceAlongPath = followCameraPathDistance * animationPhase;
-    const alongCoords = samplePointAlongLine(followCameraCoords, distanceAlongPath);
+    const alongCoords = samplePointAlongLine(followCameraSamples, distanceAlongPath);
 
     if (!alongCoords || !alongCoords.point) {
         console.warn("Could not sample point along line for follow camera at distance:", distanceAlongPath);
@@ -212,17 +213,7 @@ async function frame(time) {
         return;
     }
 
-    // Fetch ground elevation for the sampled point to adjust camera altitude
-    let groundElevation = 10; // Default
-    try {
-        // Use the non-interpolated target point for elevation query
-        groundElevation = await getClientElevation(alongCoords.point);
-    } catch (e) {
-        console.error("Error fetching elevation during animation:", e);
-        // Use default elevation
-    }
-
-    const targetCameraAltitude = groundElevation + 50; // Target: 50m above the sampled point's ground elevation
+    const targetCameraAltitude = (alongCoords.point.altitude ?? 10) + 50; // Target: 50m above the sampled point's route/elevation sample
 
     const targetCameraPosition = {
         center: { lat: alongCoords.point.lat(), lng: alongCoords.point.lng(), altitude: targetCameraAltitude },
@@ -287,12 +278,37 @@ async function frame(time) {
     }
 }
 
+
+async function buildFollowCameraSamples(routeCoords) {
+    const maxSamples = 160;
+    const keepEvery = Math.max(1, Math.ceil(routeCoords.length / maxSamples));
+    const samples = [];
+
+    for (let i = 0; i < routeCoords.length; i += keepEvery) {
+        samples.push(routeCoords[i]);
+    }
+    const last = routeCoords[routeCoords.length - 1];
+    if (samples[samples.length - 1] !== last) samples.push(last);
+
+    const enriched = [];
+    for (const point of samples) {
+        const lat = point.lat();
+        const lng = point.lng();
+        let altitude = point.altitude;
+        if (altitude == null) {
+            altitude = await getClientElevation({ lat, lng });
+        }
+        enriched.push(new LatLng(lat, lng, altitude));
+    }
+    return enriched;
+}
+
 /**
  * Starts the follow camera animation.
  * @param {google.maps.LatLng[]} routeCoords Coordinates of the route.
  * @param {number} [durationMs=60000] Optional base duration for the animation.
  */
-function startFollowCamera(routeCoords, durationMs) {
+async function startFollowCamera(routeCoords, durationMs) {
     if (!map3d) {
         showError("Cannot start follow camera: Map not initialized.");
         return;
@@ -308,14 +324,15 @@ function startFollowCamera(routeCoords, durationMs) {
 
     console.log("Starting follow camera animation.");
     followCameraCoords = routeCoords;
+    followCameraSamples = await buildFollowCameraSamples(routeCoords);
     followCameraBaseDuration = durationMs || 60000; // Store the base duration
     followCameraStartTime = null; // Reset start time (will be set on first frame)
     followCameraActive = true;
 
     // Calculate total path distance
     followCameraPathDistance = 0;
-    for (let i = 0; i < followCameraCoords.length - 1; i++) {
-        followCameraPathDistance += haversineDistance(followCameraCoords[i], followCameraCoords[i + 1]);
+    for (let i = 0; i < followCameraSamples.length - 1; i++) {
+        followCameraPathDistance += haversineDistance(followCameraSamples[i], followCameraSamples[i + 1]);
     }
      if (isNaN(followCameraPathDistance) || followCameraPathDistance <= 0) {
         showError(`Cannot start follow camera: Invalid calculated path distance (${followCameraPathDistance}). Check coordinates.`);
