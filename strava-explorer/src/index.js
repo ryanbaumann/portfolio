@@ -932,8 +932,8 @@ function initTourPlayer() {
     }
 
     if (tourHeightSlider) {
-        tourHeightSlider.value = '80';
-        if (tourHeightValue) tourHeightValue.textContent = '80m';
+        tourHeightSlider.value = '120';
+        if (tourHeightValue) tourHeightValue.textContent = '120m';
         tourHeightSlider.addEventListener('input', (e) => {
             const val = parseInt(e.target.value);
             if (tourHeightValue) tourHeightValue.textContent = `${val}m`;
@@ -942,8 +942,8 @@ function initTourPlayer() {
     }
 
     if (tourRangeSlider) {
-        tourRangeSlider.value = '650';
-        if (tourRangeValue) tourRangeValue.textContent = '650m';
+        tourRangeSlider.value = '760';
+        if (tourRangeValue) tourRangeValue.textContent = '760m';
         tourRangeSlider.addEventListener('input', (e) => {
             const val = parseInt(e.target.value);
             if (tourRangeValue) tourRangeValue.textContent = `${val}m`;
@@ -952,8 +952,8 @@ function initTourPlayer() {
     }
 
     if (tourTiltSlider) {
-        tourTiltSlider.value = '68';
-        if (tourTiltValue) tourTiltValue.textContent = '68°';
+        tourTiltSlider.value = '64';
+        if (tourTiltValue) tourTiltValue.textContent = '64°';
         tourTiltSlider.addEventListener('input', (e) => {
             const val = parseInt(e.target.value);
             if (tourTiltValue) tourTiltValue.textContent = `${val}°`;
@@ -962,8 +962,8 @@ function initTourPlayer() {
     }
 
     if (tourSmoothnessSlider) {
-        tourSmoothnessSlider.value = '0.12';
-        if (tourSmoothnessValue) tourSmoothnessValue.textContent = '0.12';
+        tourSmoothnessSlider.value = '0.18';
+        if (tourSmoothnessValue) tourSmoothnessValue.textContent = '0.18';
         tourSmoothnessSlider.addEventListener('input', (e) => {
             const val = parseFloat(e.target.value);
             if (tourSmoothnessValue) tourSmoothnessValue.textContent = val.toFixed(2);
