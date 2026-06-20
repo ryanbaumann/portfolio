@@ -389,7 +389,7 @@ export async function displayPhotoMarkers(photosData) { // photosData = array fr
 
             if (!Number.isFinite(lat) || !Number.isFinite(lng) || lat < -90 || lat > 90 || lng < -180 || lng > 180) return;
             const position = { lat, lng, altitude: 42 };
-            const photoThumbUrl = photo.urls?.["600"] || photo.urls?.["1000"] || photo.urls?.["100"];
+            const photoThumbUrl = photo.urls?.["100"] || photo.urls?.["600"] || photo.urls?.["1000"];
 
             // Create an interactive 3D billboard marker. The altitude is relative to
             // terrain so photo cards float consistently above the photorealistic mesh
