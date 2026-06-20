@@ -9,7 +9,7 @@ A focused static web app for connecting Strava, selecting recent activities, and
 - Strava OAuth2 connection for recent activities.
 - Activity filtering and first-activity auto-selection.
 - Terrain-clamped Google Maps JavaScript 3D route polylines.
-- 3D start/finish markers plus interactive photo markers with map-anchored popovers.
+- 3D start/finish markers plus interactive photo billboard markers with map-anchored popovers.
 - Camera shortcuts for fit route, fly to start, fly to finish, orbit, and follow-camera tours.
 - Reduced-motion-aware map and UI animation behavior.
 - Activity stats and an imperial elevation profile.
@@ -20,6 +20,27 @@ A focused static web app for connecting Strava, selecting recent activities, and
 - Vite for local development and production bundling.
 - Google Maps Platform Maps JavaScript API `weekly` channel with `maps3d`, `marker`, `elevation`, `geometry`, and `core` libraries.
 - Strava V3 API.
+
+
+## 3D map implementation notes
+
+- Maps loading is centralized in `src/gmp.js` with `@googlemaps/js-api-loader`, followed by `google.maps.importLibrary()` calls. Do not add a second script tag or parallel loader.
+- Activity routes use `Polyline3DElement` with `AltitudeMode.CLAMP_TO_GROUND` so the route follows the photorealistic terrain mesh.
+- Start/finish and tour-position markers use 3D marker elements with relative-to-ground altitude offsets for readability over the mesh.
+- Activity photos render as `Marker3DInteractiveElement` billboards with map-anchored `PopoverElement` details. Custom 3D marker content must be supplied as an `HTMLTemplateElement` or `PinElement`; appending a raw `div`, `img`, or other DOM node causes Maps 3D slot validation warnings.
+- Photo billboard altitude is visual and relative to the ground. Do not add Elevation API altitude to a relative-to-ground marker or the marker will float far above terrain.
+- Keep photo marker sets bounded to the selected activity and clear markers/popovers when the route changes.
+
+## Follow-camera tuning notes
+
+The follow-camera tour is tuned for a stable route review rather than strict GPS playback:
+
+- Route samples and terrain/elevation values are precomputed before playback; never call Elevation per animation frame.
+- Camera duration scales with route distance so short routes stay brisk and long routes avoid frantic ground speed.
+- The camera samples nearby and future terrain before setting altitude so it maintains mesh clearance on climbs, ridgelines, and turns.
+- Heading is based on multiple look-ahead bearings plus a filtered, frame-rate-aware yaw limit. This prevents abrupt turn snaps while avoiding the rubber-band lag caused by overly low LERP values.
+- Current default controls are mesh clearance `120m`, camera distance `760m`, view angle `64°`, and smoothness `0.18`. Keep `index.html`, `src/index.js`, and `src/followCamera.js` synchronized if those defaults change.
+- Scrubbing should snap directly to the selected progress; playback should smooth continuously. Reset heading-filter state whenever loading or clearing a route.
 
 ## Prerequisites
 
@@ -193,9 +214,10 @@ Choose **App Engine** only if you prefer its operational model. It is simple, bu
 3. Activity filters fetch activities and the first activity auto-loads.
 4. Route polyline, start/finish markers, elevation profile, and stats appear.
 5. `Fit route`, `Fly start`, `Fly finish`, `Orbit 3D`, and `Follow Camera` all move the same selected route.
-6. Photo markers open one popover at a time and do not expose access tokens in committed source.
+6. Photo billboard markers render without Maps 3D slot warnings, open one popover at a time, and do not expose access tokens in committed source.
 7. Mobile layout avoids horizontal scrolling and keeps the map usable behind the bottom sheet.
-8. With `prefers-reduced-motion: reduce`, camera shortcuts avoid long cinematic movement.
+8. Follow-camera playback turns smoothly through switchbacks without hard heading snaps or rubber-banding, and keeps the camera clear of the terrain mesh.
+9. With `prefers-reduced-motion: reduce`, camera shortcuts avoid long cinematic movement.
 
 ## Contributing
 

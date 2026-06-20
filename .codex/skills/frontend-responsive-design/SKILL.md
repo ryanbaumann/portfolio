@@ -30,7 +30,7 @@ Prefer current platform documentation for behavior questions:
    - Semantic buttons/links instead of clickable divs.
    - Visible focus states and keyboard operability.
    - Announced loading/error states when practical.
-6. Account for map UX: avoid panels that trap gestures, cover important map controls, or make touch targets smaller than comfortable mobile sizes.
+6. Account for map UX: avoid panels that trap gestures, cover important map controls, or make touch targets smaller than comfortable mobile sizes. For custom map markers, keep text high-contrast and thumbnails legible over satellite/photorealistic backgrounds.
 7. If animation or camera behavior changes, respect `prefers-reduced-motion` where practical.
 8. Validate with the relevant build command and, for perceptible UI changes, use a browser/screenshot check when available.
 
@@ -39,6 +39,6 @@ Prefer current platform documentation for behavior questions:
 - No horizontal scrolling at common mobile widths unless intentionally part of a map canvas.
 - Form controls are reachable by keyboard and have accessible names.
 - Interactive targets are large enough for touch use.
-- Text remains legible over map backgrounds and in side panels.
+- Text remains legible over map backgrounds, custom markers, popovers, and side panels.
 - Layout works with long activity names, empty states, loading states, and error messages.
 - External CSS frameworks do not override map internals unexpectedly.

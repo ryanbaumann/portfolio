@@ -54,6 +54,7 @@ Run commands from the app directory unless noted.
 - Prefer official SDK/library APIs over hand-rolled loaders.
 - In Google Maps Platform work, prefer `google.maps.importLibrary()` after the API loader has resolved.
 - Prefer Advanced Markers or the app's current 3D marker elements over legacy `google.maps.Marker` in new Google Maps code.
+- For 3D custom markers, append an `HTMLTemplateElement` or `PinElement` to `Marker3DInteractiveElement`; raw DOM children are rejected by Maps 3D slot validation.
 - Keep map container CSS isolated so global styles and utility frameworks do not accidentally override map internals.
 - Validate latitude/longitude ranges before rendering or sending geospatial data to APIs.
 - Batch API calls with documented limits and graceful fallback behavior.
@@ -80,10 +81,10 @@ Use these repo-local skills when the task matches their scope:
 ### Lessons from Strava Explorer UX/3D Iteration
 
 - Persist browser OAuth state deliberately: cache Strava access/refresh token payloads in `localStorage`, refresh near expiry, clear storage on logout, and never log raw token payloads.
-- For 3D fly-throughs, prefer precomputed route/elevation samples plus look-ahead bearing smoothing; avoid very low LERP defaults that make the camera lag and rubber-band through corners.
+- For 3D fly-throughs, prefer precomputed route/elevation samples, multi-point look-ahead bearing blending, and frame-rate-aware yaw limiting; avoid very low LERP defaults that make the camera lag and rubber-band through corners.
 - Keep sidebar controls grouped by task (connect/filter, selected activity, tour player, camera shortcuts, elevation) with compact touch-friendly controls and visible `aria-live` status; prefer short numbered flows over dense control panels.
-- Tune 3D fly-through defaults by route length and terrain context rather than one fixed camera duration or altitude offset.
-- Validate visible Strava Explorer changes with `npm run build`; document manual OAuth/Google Maps browser QA when real credentials are required.
+- Tune 3D fly-through defaults by route length and terrain context rather than one fixed camera duration or altitude offset; sample nearby future terrain to preserve mesh clearance on hills and turns.
+- Validate visible Strava Explorer changes with `npm run build`; when changing 3D marker slots, camera motion, or map rendering, browser-check the console for Maps 3D warnings when credentials are available and document any credential limitation.
 
 ## Pull Request Expectations
 

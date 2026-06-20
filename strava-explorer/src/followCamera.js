@@ -17,10 +17,12 @@ let followCameraPathDistance = 0; // Total distance of the path in km
 let followCameraSpeedMultiplier = 1.0; // Current speed multiplier
 
 // Tour Configurable Settings
-let cameraHeightOffset = 80; // meters of terrain clearance around the path point
-let cameraRangeOffset = 650; // meters range
-let cameraTiltOffset = 68; // degrees tilt
-let cameraSmoothness = 0.12; // LERP factor (0.01 to 0.3); higher defaults reduce lag during fly-throughs
+let cameraHeightOffset = 120; // meters of terrain clearance around the path point
+let cameraRangeOffset = 760; // meters range
+let cameraTiltOffset = 64; // degrees tilt
+let cameraSmoothness = 0.18; // LERP factor; higher defaults reduce lag during fly-throughs
+let filteredHeading = null;
+let lastCameraUpdateTime = null;
 
 // Animation Progress variables
 let currentProgress = 0; // 0.0 to 1.0 (tour progress)
@@ -111,12 +113,13 @@ function calculateTourDuration(pathDistanceKm) {
 }
 
 function calculateTerrainClearanceAltitude(distanceAlongPath, fallbackAltitude) {
-    const sampleWindowKm = Math.min(0.35, Math.max(0.08, followCameraPathDistance * 0.015));
+    const sampleWindowKm = Math.min(0.55, Math.max(0.12, followCameraPathDistance * 0.02));
     const sampleDistances = [
         distanceAlongPath - sampleWindowKm,
         distanceAlongPath,
         distanceAlongPath + sampleWindowKm,
-        distanceAlongPath + sampleWindowKm * 2
+        distanceAlongPath + sampleWindowKm * 2,
+        distanceAlongPath + sampleWindowKm * 3
     ];
 
     let highestTerrainAltitude = fallbackAltitude ?? 10;
@@ -266,6 +269,8 @@ export async function loadTourRoute(routeCoords) {
     console.log(`Follow camera duration set to ${(followCameraBaseDuration / 1000).toFixed(0)}s for ${followCameraPathDistance.toFixed(1)} km.`);
     
     currentProgress = 0;
+    filteredHeading = null;
+    lastCameraUpdateTime = null;
     if (onProgressUpdate) onProgressUpdate(0, 0);
 }
 
@@ -277,6 +282,8 @@ export function clearTourRoute() {
     followCameraSamples = [];
     followCameraPathDistance = 0;
     currentProgress = 0;
+    filteredHeading = null;
+    lastCameraUpdateTime = null;
     if (onProgressUpdate) onProgressUpdate(0, 0);
 }
 
@@ -439,11 +446,29 @@ export function updateCameraForProgress(progress, snapDirectly = false) {
 
     const targetCameraAltitude = calculateTerrainClearanceAltitude(distanceAlongPath, alongCoords.point.altitude ?? 10);
 
-    const lookAheadDistanceKm = Math.min(0.25, Math.max(0.03, followCameraPathDistance * 0.01));
-    const lookAheadCoords = samplePointAlongLine(followCameraSamples, Math.min(followCameraPathDistance, distanceAlongPath + lookAheadDistanceKm));
-    const smoothedBearing = lookAheadCoords?.bearing != null
-        ? lerpAngle(alongCoords.bearing, lookAheadCoords.bearing, 0.55)
-        : alongCoords.bearing;
+    const lookAheadDistanceKm = Math.min(0.45, Math.max(0.06, followCameraPathDistance * 0.018));
+    const lookAheadBearings = [0.35, 0.75, 1.2]
+        .map((multiplier) => samplePointAlongLine(
+            followCameraSamples,
+            Math.min(followCameraPathDistance, distanceAlongPath + lookAheadDistanceKm * multiplier)
+        )?.bearing)
+        .filter((bearing) => Number.isFinite(bearing));
+    let smoothedBearing = lookAheadBearings.reduce(
+        (heading, bearing, index) => lerpAngle(heading, bearing, index === 0 ? 0.45 : 0.32),
+        alongCoords.bearing
+    );
+
+    const now = performance.now();
+    if (snapDirectly || filteredHeading == null || lastCameraUpdateTime == null) {
+        filteredHeading = smoothedBearing;
+    } else {
+        const elapsedSeconds = Math.max(0.001, (now - lastCameraUpdateTime) / 1000);
+        const maxTurnDegrees = clamp(95 * elapsedSeconds, 1.2, 8);
+        const signedDelta = ((((smoothedBearing - filteredHeading) % 360) + 540) % 360) - 180;
+        filteredHeading = (filteredHeading + clamp(signedDelta, -maxTurnDegrees, maxTurnDegrees) + 360) % 360;
+        smoothedBearing = filteredHeading;
+    }
+    lastCameraUpdateTime = now;
 
     const targetCameraPosition = {
         center: { lat: alongCoords.point.lat(), lng: alongCoords.point.lng(), altitude: targetCameraAltitude },
@@ -455,7 +480,7 @@ export function updateCameraForProgress(progress, snapDirectly = false) {
     // If scrubbing or snapping directly, set the camera directly without LERP interpolation.
     // During playback, bias the user-facing smoothness upward so the camera tracks the
     // route without the old over-smoothed lag that made corners feel rubber-banded.
-    const factor = snapDirectly ? 1.0 : Math.max(cameraSmoothness, 0.08);
+    const factor = snapDirectly ? 1.0 : Math.max(cameraSmoothness, 0.14);
 
     const currentCamera = {
         center: map3d.center,

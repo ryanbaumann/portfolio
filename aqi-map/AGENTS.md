@@ -26,6 +26,7 @@ This directory contains the AQI map web app. It is currently a Browserify/Budo a
 - Validate latitude/longitude ranges before rendering or sending data to APIs.
 - Bound external requests by viewport, zoom, cache, or debounce logic.
 - Keep attribution visible for map and environmental data providers.
+- Keep `aqi-map/` separate from Strava Explorer 3D patterns unless the task explicitly calls for a migration; do not import Vite, `maps3d`, or Strava-specific camera code into this app.
 - For Google Maps Platform work, use the repo-local skills:
   - `../.codex/skills/google-maps-platform/SKILL.md` for broad platform/security/quota guidance.
   - `../.codex/skills/google-maps-js-2d/SKILL.md` for Maps JavaScript API 2D maps, Advanced Markers, overlays, and Mapbox-to-Google migration work.

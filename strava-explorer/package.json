@@ -33,19 +33,19 @@
     "deploy:gcp": "./scripts/deploy-gcp.sh"
   },
   "devDependencies": {
-    "@types/google.maps": "^3.58.1",
-    "autoprefixer": "^10.4.21",
-    "postcss": "^8.5.3",
+    "@types/google.maps": "^3.65.1",
+    "autoprefixer": "^10.5.0",
+    "postcss": "^8.5.15",
     "tailwindcss": "^4.1.4",
-    "vite": "^6.3.3"
+    "vite": "^8.0.16"
   },
   "dependencies": {
-    "@googlemaps/js-api-loader": "^1.16.8",
-    "@mapbox/polyline": "^1.1.1",
-    "@turf/bbox": "^6.0.1",
-    "@turf/helpers": "^6.1.4",
-    "analytics-node": "^5.0.0",
-    "geojson-polyline": "^1.0.3"
+    "@googlemaps/js-api-loader": "^2.1.1",
+    "@mapbox/polyline": "^1.2.1",
+    "@turf/bbox": "^7.3.5",
+    "@turf/helpers": "^7.3.5",
+    "analytics-node": "^6.2.0",
+    "geojson-polyline": "^0.4.0"
   },
   "engines": {
     "node": ">=20"

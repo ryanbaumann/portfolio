@@ -9,6 +9,10 @@ Browser-based hyperlocal AQI map that renders PurpleAir sensor data on a Mapbox 
 - `npm run build` copies `index.html` into `build/` and writes `build/bundle.js`.
 - `npm start` runs the Budo dev server.
 
+## Current status and migration notes
+
+This app remains intentionally separate from the Strava Explorer 3D runtime. Recent Strava Explorer work added durable Google Maps JavaScript 3D lessons, but `aqi-map/` should keep its current Mapbox GL/CommonJS architecture unless a task explicitly requests a migration. If migration work starts, prefer a staged plan: preserve PurpleAir behavior first, document Google Maps browser-key restrictions, then choose 2D Maps JavaScript overlays, deck.gl, Environment API heatmap tiles, or Advanced Markers based on data density.
+
 ## Agent-native workflow
 
 Before changing this app, read:
@@ -85,7 +89,7 @@ The production bundle is written to `build/`.
 npm test
 ```
 
-`npm test` currently runs the production build. When map rendering or sensor-fetch behavior changes, also do a browser check with valid Mapbox and PurpleAir credentials.
+`npm test` currently runs the production build. When map rendering or sensor-fetch behavior changes, also do a browser check with valid Mapbox and PurpleAir credentials. If a Google Maps Platform migration is involved, additionally check the browser console for loader, marker, overlay, and quota/auth warnings.
 
 ## Deploy
 

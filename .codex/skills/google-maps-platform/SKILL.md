@@ -24,9 +24,9 @@ Prefer current official docs before changing API usage:
 3. Verify current API behavior against official Google docs if the change depends on a recently updated or experimental API.
 4. Keep API loading centralized. Do not add duplicate script tags or parallel loader mechanisms.
 5. Import Maps JavaScript libraries with `google.maps.importLibrary()` after the loader resolves.
-6. Prefer modern marker APIs: Advanced Markers for 2D maps and the existing 3D marker elements for 3D maps. Do not introduce legacy `google.maps.Marker` in new code.
+6. Prefer modern marker APIs: Advanced Markers for 2D maps and the existing 3D marker elements for 3D maps. Do not introduce legacy `google.maps.Marker` in new code. For 3D custom marker content, use an `HTMLTemplateElement` or `PinElement`, not raw DOM children.
 7. Keep map-specific CSS scoped to map hosts, panels, controls, and custom marker/popover elements to avoid conflicts with Google-rendered DOM.
-8. Batch or debounce external calls such as Elevation, Places, Routes, and geocoding. Handle partial failures gracefully and show user-facing errors only when actionable.
+8. Batch or debounce external calls such as Elevation, Places, Routes, and geocoding. Never add per-frame network calls for camera animation; precompute route/elevation samples and handle partial failures gracefully.
 9. Preserve user privacy: do not log Strava tokens, precise private activity details, or raw API credentials.
 10. Validate with `yarn build` or `npm run build` from the app directory after implementation.
 
@@ -40,6 +40,6 @@ Prefer current official docs before changing API usage:
 ## UX Checklist
 
 - Map controls must have labels and visible focus states.
-- Camera/flyover animations should respect `prefers-reduced-motion` when practical.
+- Camera/flyover animations should respect `prefers-reduced-motion` when practical, smooth heading changes with look-ahead/yaw limits, and avoid terrain/mesh collisions.
 - Loading and error states should not block map interaction longer than needed.
 - Mobile layouts should keep map gestures usable and avoid panels covering critical controls.

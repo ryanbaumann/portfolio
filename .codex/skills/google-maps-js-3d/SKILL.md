@@ -36,6 +36,8 @@ Read `references/3d-maps-js-api.md` when the task involves:
 - Prefer `MapMode.HYBRID`/`MapMode.SATELLITE` constants when available instead of stringly typed modes.
 - Treat 3D positions as latitude/longitude/altitude values when altitude matters; document whether altitude is clamped, absolute, or relative.
 - Prefer `Marker3DInteractiveElement` for clickable 3D markers and `Marker3DElement` for large passive marker sets.
+- For `Marker3DInteractiveElement` custom content, append an `HTMLTemplateElement` or a `PinElement`. Do not append raw `div`, `img`, or fragment nodes; Maps 3D will emit slot validation warnings and may ignore the content.
+- For terrain-friendly visual callouts, prefer `AltitudeMode.RELATIVE_TO_GROUND` with a fixed visual offset. Do not add Elevation API terrain altitude to a relative-to-ground marker position.
 - Use `gmp-click` for 3D interactive elements that expose Maps event semantics.
 - Use `PopoverElement` for map-anchored details; include concise accessible content and a meaningful header when practical.
 - Use `Polyline3DElement` or `Polygon3DElement` for 3D route/area rendering; choose `AltitudeMode.CLAMP_TO_GROUND` for terrain-following activity routes unless product requirements say otherwise.
@@ -48,10 +50,10 @@ Read `references/3d-maps-js-api.md` when the task involves:
 ## Strava route fly-through guidance
 
 - Default follow-camera smoothing should balance steadiness with tracking accuracy; avoid LERP values so low that the camera visibly trails the target route point.
-- Blend current route bearing with a short look-ahead sample before applying camera heading to reduce abrupt yaw changes on switchbacks and dense GPS traces.
+- Blend current route bearing with multiple look-ahead samples, then apply a frame-rate-aware yaw-rate limit to reduce abrupt heading snaps on switchbacks and dense GPS traces.
 - Prefer route stream altitude data when available, then fall back to batched Google Elevation lookups; never perform elevation calls per animation frame.
-- Keep camera settings user-adjustable, but make defaults good enough for immediate playback after activity load.
-- Scale follow-camera duration by route distance and sample nearby terrain elevations around the camera target so default pace and clearance remain comfortable on both short and long routes.
+- Keep camera settings user-adjustable, but make defaults good enough for immediate playback after activity load. Keep default values synchronized across `src/followCamera.js`, `src/index.js`, and `index.html`.
+- Scale follow-camera duration by route distance and sample nearby/future terrain elevations around the camera target so default pace and clearance remain comfortable on both short and long routes. Reset filtered heading state when loading or clearing a route.
 
 ## PR checklist
 

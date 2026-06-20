@@ -41,7 +41,7 @@ Use this repo-local skill when a task changes 2D Google Maps rendering, map load
 
 - Prefer vector maps with a map ID for new Google Maps JS work so cloud styling, tilt/heading, Advanced Markers, and data-driven styling options remain available.
 - Prefer `AdvancedMarkerElement` over legacy `google.maps.Marker` for new markers.
-- Use semantic, accessible marker content for interactive markers. Include an accessible label/title and keyboard-operable details where practical.
+- Use semantic, accessible marker content for interactive markers. Include an accessible label/title and keyboard-operable details where practical. Keep custom marker DOM lightweight and verify console warnings after API changes.
 - Use `InfoWindow` for simple details and a custom overlay, Advanced Marker content, or app-side panel for richer interactive UI.
 - Prefer official Places widgets/services for search/autocomplete instead of hand-rolled geocoder UX.
 - Avoid the Maps JavaScript API Heatmap Layer and Drawing Library for new work: Google deprecated Heatmap Layer in May 2025 and made it unavailable in May 2026; Drawing Library was deprecated in August 2025 and unavailable in May 2026. Prefer deck.gl heatmaps, custom WebGL/canvas overlays, or server-generated tiles for heatmaps; use custom drawing tools or Data layer/editing alternatives for drawing.
