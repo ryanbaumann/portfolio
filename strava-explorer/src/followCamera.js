@@ -14,6 +14,7 @@ let followCameraCoords = []; // Coordinates of the current route
 let followCameraSamples = []; // Precomputed camera samples
 let followCameraBaseDuration = 90000; // Dynamic base duration (ms) for the full tour
 let followCameraPathDistance = 0; // Total distance of the path in km
+let followCameraCumulativeDistances = null; // Float64Array of cumulative distances for exact snapping
 let followCameraSpeedMultiplier = 1.0; // Current speed multiplier
 
 // Tour Configurable Settings
@@ -258,6 +259,50 @@ export function samplePointAlongLine(coords, distance) {
     return null;
 }
 
+function samplePointAlongLineExact(coords, cumDists, distance) {
+    if (!coords || coords.length < 2 || !cumDists || distance < 0 || !LatLng) return null;
+    
+    // Fast Integer Scan (O(1) sequential during playback, or binary search)
+    let idx = 0;
+    while (idx < cumDists.length - 1 && cumDists[idx + 1] < distance) {
+        idx++;
+    }
+    
+    if (idx >= coords.length - 1) {
+        const last = coords[coords.length - 1];
+        const pt = new LatLng(typeof last.lat === 'function' ? last.lat() : last.lat, typeof last.lng === 'function' ? last.lng() : last.lng);
+        pt.altitude = last.altitude ?? 10;
+        return pt;
+    }
+    
+    const p1 = coords[idx];
+    const p2 = coords[idx + 1];
+    const d1 = cumDists[idx];
+    const d2 = cumDists[idx + 1];
+    const segmentD = d2 - d1;
+    if (segmentD <= 0) {
+        const pt = new LatLng(typeof p1.lat === 'function' ? p1.lat() : p1.lat, typeof p1.lng === 'function' ? p1.lng() : p1.lng);
+        pt.altitude = p1.altitude ?? 10;
+        return pt;
+    }
+    
+    const fraction = clamp((distance - d1) / segmentD, 0, 1);
+    const lat1 = typeof p1.lat === 'function' ? p1.lat() : (p1.lat ?? 0);
+    const lng1 = typeof p1.lng === 'function' ? p1.lng() : (p1.lng ?? 0);
+    const lat2 = typeof p2.lat === 'function' ? p2.lat() : (p2.lat ?? 0);
+    const lng2 = typeof p2.lng === 'function' ? p2.lng() : (p2.lng ?? 0);
+    
+    const lat = lat1 + (lat2 - lat1) * fraction;
+    const lng = lng1 + (lng2 - lng1) * fraction;
+    const alt1 = p1.altitude ?? 10;
+    const alt2 = p2.altitude ?? 10;
+    const altitude = alt1 + (alt2 - alt1) * fraction;
+    
+    const pt = new LatLng(lat, lng);
+    pt.altitude = altitude;
+    return pt;
+}
+
 /** Precompute samples along the route */
 async function buildFollowCameraSamples(routeCoords) {
     const maxSamples = 160;
@@ -295,13 +340,17 @@ export async function loadTourRoute(routeCoords) {
     followCameraCoords = routeCoords;
     followCameraSamples = await buildFollowCameraSamples(routeCoords);
     
-    // Calculate total path distance
-    followCameraPathDistance = 0;
-    for (let i = 0; i < followCameraSamples.length - 1; i++) {
-        followCameraPathDistance += haversineDistance(followCameraSamples[i], followCameraSamples[i + 1]);
+    // Calculate high-fidelity cumulative distances for exact polyline snapping
+    followCameraCumulativeDistances = new Float64Array(routeCoords.length);
+    followCameraCumulativeDistances[0] = 0;
+    let totalD = 0;
+    for (let i = 0; i < routeCoords.length - 1; i++) {
+        totalD += haversineDistance(routeCoords[i], routeCoords[i + 1]);
+        followCameraCumulativeDistances[i + 1] = totalD;
     }
+    followCameraPathDistance = totalD;
     followCameraBaseDuration = calculateTourDuration(followCameraPathDistance);
-    console.log(`Follow camera duration set to ${(followCameraBaseDuration / 1000).toFixed(0)}s for ${followCameraPathDistance.toFixed(1)} km.`);
+    console.log(`Follow camera duration set to ${(followCameraBaseDuration / 1000).toFixed(0)}s for ${followCameraPathDistance.toFixed(1)} km (Exact snap array built: ${followCameraCumulativeDistances.length} points).`);
     
     // Smart profile defaults assessment based on terrain and elevation gain
     let globalMinAlt = Infinity;
@@ -343,6 +392,7 @@ export async function loadTourRoute(routeCoords) {
 export function clearTourRoute() {
     followCameraCoords = [];
     followCameraSamples = [];
+    followCameraCumulativeDistances = null;
     followCameraPathDistance = 0;
     currentProgress = 0;
     filteredHeading = null;
@@ -564,12 +614,14 @@ export function updateCameraForProgress(progress, snapDirectly = false) {
     };
 
     if (typeof updateTrackingMarkerCb === 'function') {
-        const alt = Number.isFinite(alongCoords.point.altitude) ? alongCoords.point.altitude : 10;
-        updateTrackingMarkerCb({
-            lat: alongCoords.point.lat(),
-            lng: alongCoords.point.lng(),
-            altitude: alt
-        });
+        const exactPoint = samplePointAlongLineExact(followCameraCoords, followCameraCumulativeDistances, distanceAlongPath);
+        if (exactPoint) {
+            updateTrackingMarkerCb({
+                lat: typeof exactPoint.lat === 'function' ? exactPoint.lat() : exactPoint.lat,
+                lng: typeof exactPoint.lng === 'function' ? exactPoint.lng() : exactPoint.lng,
+                altitude: exactPoint.altitude ?? 10
+            });
+        }
     }
 
     // If scrubbing or snapping directly, set the camera directly without LERP interpolation.
