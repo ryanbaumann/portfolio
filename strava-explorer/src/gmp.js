@@ -385,7 +385,7 @@ export async function displayPhotoMarkers(photosData) { // photosData = array fr
                 borderColor: '#e5e7eb',
                 glyphSrc: getMarkerPhotoUrl(photoThumbUrl)
             });
-            marker.append(pin);
+            marker.append(pin.element);
 
             // Create Popover
             const popover = new PopoverElement({
