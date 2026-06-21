@@ -8,6 +8,7 @@ let previousPolyline = null;
 let routeMarkers = [];
 let photoMarkers = new Map(); // Stores { marker, popover } pairs, key = photo.unique_id
 let trackingMarker = null;
+let photoLoadSessionId = 0;
 
 // Follow Camera state moved to followCamera.js
 // GMP Class variables (populated in initMap)
@@ -338,6 +339,38 @@ function getMarkerPhotoUrl(imageUrl) {
     return imageUrl;
 }
 
+function resizeImageToDataUrl(imageUrl, targetWidth, targetHeight) {
+    return new Promise((resolve) => {
+        const img = new Image();
+        img.crossOrigin = "anonymous";
+        img.onload = () => {
+            const canvas = document.createElement('canvas');
+            canvas.width = targetWidth;
+            canvas.height = targetHeight;
+            const ctx = canvas.getContext('2d');
+            
+            // Draw a white border and background
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, targetWidth, targetHeight);
+            
+            // Draw image inside (inset by 4px for border)
+            const border = 4;
+            ctx.drawImage(img, border, border, targetWidth - border * 2, targetHeight - border * 2);
+            
+            try {
+                resolve(canvas.toDataURL('image/jpeg', 0.8));
+            } catch (e) {
+                console.warn("Canvas resize failed (CORS):", e);
+                resolve(imageUrl); // Fallback
+            }
+        };
+        img.onerror = () => {
+            resolve(imageUrl);
+        };
+        img.src = imageUrl;
+    });
+}
+
 // --- Photo Marker Handling ---
 export async function displayPhotoMarkers(photosData) { // photosData = array from Strava API
     if (!map3d || !Marker3DInteractiveElement || !PopoverElement || !AltitudeMode) {
@@ -353,6 +386,10 @@ export async function displayPhotoMarkers(photosData) { // photosData = array fr
         return;
     }
 
+    // Increment session ID to cancel any active loads
+    photoLoadSessionId++;
+    const currentSession = photoLoadSessionId;
+
     showLoading(true, `Processing ${photosData.length} photos...`);
     try {
         const locatedPhotos = photosData.filter((photo) => photo.location?.length === 2 && photo.unique_id);
@@ -363,19 +400,27 @@ export async function displayPhotoMarkers(photosData) { // photosData = array fr
             return;
         }
 
-        locatedPhotos.forEach((photo) => {
+        locatedPhotos.forEach(async (photo) => {
             if (!photo.location || photo.location.length !== 2 || !photo.unique_id) return; // Skip if no location or ID
 
             const lat = photo.location[0];
             const lng = photo.location[1];
 
             if (!Number.isFinite(lat) || !Number.isFinite(lng) || lat < -90 || lat > 90 || lng < -180 || lng > 180) return;
-            let photoThumbUrl = photo.urls?.["100"];
-            if (!photoThumbUrl) {
-                photoThumbUrl = photo.urls?.["600"];
-            }
-            if (!photoThumbUrl) {
-                photoThumbUrl = photo.urls?.["1000"];
+            
+            // Prefer the high-res 1000 or 600 url for resizing to ensure quality, fallback to 100
+            const photoUrlToResize = photo.urls?.["600"] || photo.urls?.["1000"] || photo.urls?.["100"];
+            if (!photoUrlToResize) return;
+
+            const proxiedUrl = getMarkerPhotoUrl(photoUrlToResize);
+            
+            // Resize image to exactly 100x100 pixels
+            const resizedDataUrl = await resizeImageToDataUrl(proxiedUrl, 100, 100);
+
+            // Guard against race conditions (e.g. route changed while loading)
+            if (currentSession !== photoLoadSessionId) {
+                console.log("[displayPhotoMarkers] Discarding loaded photo due to session change.");
+                return;
             }
 
             // Create Popover
@@ -469,7 +514,7 @@ export async function displayPhotoMarkers(photosData) { // photosData = array fr
             // Create custom photo thumbnail using HTMLTemplateElement
             const template = document.createElement('template');
             const img = document.createElement('img');
-            img.src = getMarkerPhotoUrl(photoThumbUrl);
+            img.src = resizedDataUrl;
             img.setAttribute('width', '100');
             img.setAttribute('height', '100');
             img.style.width = '100px';
