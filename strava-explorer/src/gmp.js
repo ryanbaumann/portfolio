@@ -288,7 +288,7 @@ function addRouteEndpointMarkers(path) {
             glyphColor: '#ffffff',
             scale: 1.0,
         });
-        marker.append(pin.element);
+        marker.append(pin);
         map3d.append(marker);
         routeMarkers.push(marker);
     });
@@ -391,7 +391,7 @@ export async function displayPhotoMarkers(photosData) { // photosData = array fr
                 borderColor: '#e5e7eb',
                 glyphSrc: getMarkerPhotoUrl(photoThumbUrl)
             });
-            marker.append(pin.element);
+            marker.append(pin);
 
             // Create Popover
             const popover = new PopoverElement({
@@ -550,7 +550,7 @@ export function updateTrackingMarker(position, color = '#3b82f6') {
             glyphColor: color, // hides the dot inside
             scale: 1.2,
         });
-        trackingMarker.append(pin.element);
+        trackingMarker.append(pin);
         map3d.append(trackingMarker);
     }
 }

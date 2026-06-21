@@ -146,7 +146,7 @@ Use the marker type based on interaction and scale:
 To style interactive markers with custom backgrounds, border colors, or glyphs (e.g. text/image overlays):
 1. Load `"marker"` library dynamically: `const { PinElement } = await google.maps.importLibrary("marker");`
 2. Instantiate `PinElement` with your styles or modern `glyphSrc` image URL.
-3. **CRITICAL:** Append `pin.element` (the HTML custom element) to the interactive marker, NOT the `pin` helper object. Appending the class wrapper itself will trigger infinite observer loops and a `RangeError: Maximum call stack size exceeded` crash.
+3. **CRITICAL:** Append the `PinElement` instance itself (`marker.append(pin)`). In modern Maps SDKs, `PinElement` extends `HTMLElement` directly. Calling the deprecated `.element` property or passing non-DOM objects triggers infinite recursion and a `RangeError: Maximum call stack size exceeded` crash in the custom element observer.
 4. **CRITICAL:** Use `glyphSrc` for remote/dynamic image URLs; do not use the deprecated `glyph` property with URLs.
 
 PinElement pattern:
@@ -168,8 +168,8 @@ const marker = new Marker3DInteractiveElement({
   title: "Start Point"
 });
 
-// CRITICAL: Must append pin.element, not pin
-marker.append(pin.element);
+// CRITICAL: Append the pin directly, not pin.element
+marker.append(pin);
 map3d.append(marker);
 ```
 

@@ -14,7 +14,7 @@ All notable changes to this project will be documented in this file.
 - **Improved Elevation Tracking**: Connected elevation profile clicks directly to tracking markers and follow-camera progress, enabling fluid map scrub previews.
 
 ### Fixed
-- **Call Stack Overflow Crash**: Resolved a severe `RangeError: Maximum call stack size exceeded` crash in the Maps 3D custom element observer by appending `pin.element` instead of the raw `pin` wrapper object (e.g. `marker.append(pin.element)`).
+- **Call Stack Overflow Crash**: Resolved a severe `RangeError: Maximum call stack size exceeded` crash in the Maps 3D custom element observer by appending the native `PinElement` directly (`marker.append(pin)`) instead of the deprecated, recursive `.element` property. In modern Maps JS API libraries, `PinElement` directly extends `HTMLElement`.
 - **Custom Pin Image Deprecation**: Swapped deprecated `glyph` to `glyphSrc` for loading photo URLs onto custom `PinElement` markers, preventing WebGL/Maps 3D serialization failures.
 - **3D Photo Marker Sizing**: Replaced custom unscalable `HTMLTemplateElement` image billboards with properly proportioned, natively scalable `PinElement` structures.
 
