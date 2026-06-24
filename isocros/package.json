@@ -1,0 +1,21 @@
+{
+  "name": "isocros-demo",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Interactive Google Maps Platform Isochrones demo for reachability, commute, and service-area analysis.",
+  "scripts": {
+    "dev": "node server.js --dev",
+    "build": "vite build",
+    "preview": "node server.js",
+    "test": "npm run build"
+  },
+  "dependencies": {
+    "@googlemaps/js-api-loader": "^2.1.1",
+    "vite": "^8.0.16"
+  },
+  "devDependencies": {},
+  "engines": {
+    "node": ">=20"
+  }
+}
