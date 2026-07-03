@@ -19,6 +19,7 @@ jobs:
   deploy:
     name: Deploy to GCP
     runs-on: ubuntu-latest
+    if: github.repository == 'ryanbaumann/trails.ninja'
 
     permissions:
       contents: 'read'
@@ -35,8 +36,6 @@ jobs:
         # Supports Workload Identity Federation (recommended)
         workload_identity_provider: ${{ secrets.GCP_WIF_PROVIDER }}
         service_account: ${{ secrets.GCP_SA_EMAIL }}
-        # Fallback to Service Account Key JSON if WIF is not set
-        credentials_json: ${{ secrets.GCP_SA_KEY }}
 
     - name: Set up Cloud SDK
       uses: google-github-actions/setup-gcloud@v2
@@ -46,7 +45,7 @@ jobs:
       with:
         node-version: '20'
         cache: 'npm'
-        cache-dependency-path: 'strava-explorer/package.json'
+        cache-dependency-path: 'strava-explorer/package-lock.json'
 
     - name: Check for Server Changes
       id: changes
@@ -84,5 +83,5 @@ jobs:
         
         ./scripts/deploy-gcp.sh \
           --account "$ACCOUNT_EMAIL" \
-          --project "geojson-bq-blog" \
-          --bucket "geojson-bq-blog-strava-explorer"
+          --project "${{ vars.GCP_PROJECT_ID }}" \
+          --bucket "${{ vars.GCS_BUCKET }}"

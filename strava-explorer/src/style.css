@@ -1,0 +1,195 @@
+@import "tailwindcss";
+
+html, body { height: 100%; margin: 0; padding: 0; overflow: hidden; font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+/* Container for the 3D map web component */
+#map3d-host { height: 100%; width: 100%; background-color: #333; }
+/* Target the 3D map element itself */
+gmp-map-3d { display: block; height: 100%; width: 100%; }
+
+.map-hud { pointer-events: none; }
+.map-hud > * { pointer-events: auto; }
+.focus-ring:focus-visible { outline: 3px solid rgba(79,70,229,.45); outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; } }
+/* Basic scrollbar styling */
+.sidebar-content::-webkit-scrollbar { width: 6px; }
+.sidebar-content::-webkit-scrollbar-thumb { background-color: rgba(255,255,255,0.2); border-radius: 3px; }
+
+
+/* Premium Optimization CSS */
+:root {
+  --glass-bg: rgba(13, 17, 23, 0.75);
+  --glass-blur: 24px;
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+  --accent-color: #6366f1;
+  --accent-hover: #4f46e5;
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+}
+
+.premium-glass {
+  background: var(--glass-bg) !important;
+  backdrop-filter: blur(var(--glass-blur)) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(180%) !important;
+  border: 1px solid var(--glass-border) !important;
+  box-shadow: var(--glass-shadow) !important;
+}
+
+/* Custom Slider */
+.custom-range {
+  -webkit-appearance: none;
+  background: rgba(255, 255, 255, 0.1) !important;
+  height: 6px !important;
+  border-radius: 3px !important;
+  outline: none !important;
+  transition: background 0.2s ease !important;
+}
+
+.custom-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  height: 16px !important;
+  width: 16px !important;
+  border-radius: 50% !important;
+  background: #6366f1 !important;
+  box-shadow: 0 0 8px rgba(99, 102, 241, 0.8) !important;
+  cursor: pointer !important;
+  transition: transform 0.1s ease, background 0.2s ease !important;
+  border: 2px solid #ffffff !important;
+}
+
+.custom-range::-webkit-slider-thumb:hover {
+  transform: scale(1.2) !important;
+  background: #4f46e5 !important;
+}
+
+/* Custom Select */
+.custom-select {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  padding: 0.5rem 2.5rem 0.5rem 1rem !important;
+  border-radius: 0.5rem !important;
+  color: #f8fafc !important;
+  appearance: none !important;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%2394a3b8' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e") !important;
+  background-repeat: no-repeat !important;
+  background-position: right 0.75rem center !important;
+  background-size: 1.5em 1.5em !important;
+  transition: border-color 0.2s ease, background-color 0.2s ease !important;
+}
+
+.custom-select:focus {
+  border-color: #6366f1 !important;
+  background-color: rgba(255, 255, 255, 0.08) !important;
+  outline: none !important;
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2) !important;
+}
+
+/* Stats Card */
+.stat-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 0.5rem;
+  padding: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.stat-card:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.1);
+  transform: translateY(-1px);
+}
+
+.stat-card p.value {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #f8fafc;
+}
+
+.stat-card p.label {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #94a3b8;
+  margin-top: 0.25rem;
+}
+
+/* Tooltip Optimization */
+.premium-tooltip {
+  background: rgba(13, 17, 23, 0.9) !important;
+  backdrop-filter: blur(8px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4) !important;
+  border-radius: 0.25rem !important;
+}
+
+/* Elevation Glow */
+#elevation-line {
+  filter: drop-shadow(0px 2px 4px rgba(99, 102, 241, 0.6)) !important;
+}
+
+/* Custom Date Inputs */
+input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(1) opacity(0.5);
+  cursor: pointer;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator:hover {
+  opacity: 0.8;
+}
+
+/* Button Premium States */
+.btn-primary {
+  background-image: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%) !important;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3) !important;
+  transition: all 0.2s ease !important;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background-image: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%) !important;
+  box-shadow: 0 6px 16px rgba(99, 102, 241, 0.4) !important;
+  transform: translateY(-1px) !important;
+}
+
+.btn-secondary {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  transition: all 0.2s ease !important;
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.1) !important;
+  border-color: rgba(255, 255, 255, 0.2) !important;
+  transform: translateY(-1px) !important;
+}
+
+/* Skeleton loader shimmers (D7) */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+.skeleton-shimmer {
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.03) 25%, rgba(255, 255, 255, 0.08) 50%, rgba(255, 255, 255, 0.03) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite linear;
+}
+
+/* Coarse pointer queries for touch devices (D6) */
+@media (pointer: coarse) {
+  .custom-range {
+    height: 10px !important;
+  }
+  .custom-range::-webkit-slider-thumb {
+    height: 24px !important;
+    width: 24px !important;
+  }
+}
+

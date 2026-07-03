@@ -1,17 +1,32 @@
 // strava-explorer/src/followCamera.js
 
+import { debug, warn, error } from './log.js';
+import { toLatLngLiteral } from './latlng.js';
+import {
+    DEFAULT_ALTITUDE_M,
+    clamp,
+    lerp,
+    lerpAngle,
+    haversineKm,
+    bearingDeg,
+    samplePointAlongLine,
+    samplePointAlongLineExact,
+    calculateCumulativeDistances,
+    smoothPath
+} from './geo.js';
+
 // --- Module-Level Variables ---
 let map3d = null;
-let LatLng = null; // To be initialized
-let getClientElevation = async () => 10; // Placeholder, to be initialized
-let showError = (message) => console.error(`Error: ${message}`); // Placeholder
+let LatLng = null; // Kept for signature compatibility, not strictly needed
+let getClientElevation = async () => DEFAULT_ALTITUDE_M; // Placeholder, to be initialized
+let showError = (message) => error(`Error: ${message}`); // Placeholder
 
 // Follow Camera State
 let followCameraActive = false; // Is the animation currently running (playing)?
 let followCameraTimeoutId = null; // Timeout ID for any delays
 let followCameraAnimationId = null; // requestAnimationFrame ID
-let followCameraCoords = []; // Coordinates of the current route
-let followCameraSamples = []; // Precomputed camera samples
+let followCameraCoords = []; // Coordinates of the current route (plain literals)
+let followCameraSamples = []; // Precomputed camera samples (plain literals)
 let followCameraBaseDuration = 90000; // Dynamic base duration (ms) for the full tour
 let followCameraPathDistance = 0; // Total distance of the path in km
 let followCameraCumulativeDistances = null; // Float64Array of cumulative distances for exact snapping
@@ -47,7 +62,7 @@ export function initializeFollowCamera(mapInstance, latLngClass, elevationGetter
     getClientElevation = elevationGetter;
     showError = errorReporter;
     updateTrackingMarkerCb = trackingMarkerUpdater;
-    console.log("Follow Camera module initialized.");
+    debug("Follow Camera module initialized.");
 }
 
 /**
@@ -102,15 +117,16 @@ export function getTourState() {
 export function setFollowCameraSpeed(multiplier) {
     if (typeof multiplier === 'number' && multiplier > 0) {
         followCameraSpeedMultiplier = multiplier;
-        console.log(`Follow camera speed set to: ${multiplier}x`);
+        debug(`Follow camera speed set to: ${multiplier}x`);
     }
 }
 
-// --- Helper Functions ---
-
-function clamp(value, min, max) {
-    return Math.max(min, Math.min(max, value));
+// --- Re-export for compatibility with other client modules ---
+export function haversineDistance(p1, p2) {
+    return haversineKm(toLatLngLiteral(p1), toLatLngLiteral(p2));
 }
+
+// --- Helper Functions ---
 
 function analyzeUpcomingTerrain(distanceAlongPath, windowKm = 0.5) {
     const sampleCount = 6;
@@ -119,7 +135,7 @@ function analyzeUpcomingTerrain(distanceAlongPath, windowKm = 0.5) {
     
     for (let i = 0; i <= sampleCount; i++) {
         const dist = distanceAlongPath + (windowKm * (i / sampleCount));
-        const sample = samplePointAlongLine(followCameraSamples, clamp(dist, 0, followCameraPathDistance));
+        const sample = samplePointAlongLine(followCameraSamples, clamp(dist, 0, followCameraPathDistance), DEFAULT_ALTITUDE_M);
         if (sample?.point?.altitude != null) {
             minAlt = Math.min(minAlt, sample.point.altitude);
             maxAlt = Math.max(maxAlt, sample.point.altitude);
@@ -147,9 +163,9 @@ function calculateTerrainClearanceAltitude(distanceAlongPath, fallbackAltitude) 
         distanceAlongPath + sampleWindowKm * 3
     ];
 
-    let highestTerrainAltitude = fallbackAltitude ?? 10;
+    let highestTerrainAltitude = fallbackAltitude ?? DEFAULT_ALTITUDE_M;
     sampleDistances.forEach((distanceKm) => {
-        const sample = samplePointAlongLine(followCameraSamples, clamp(distanceKm, 0, followCameraPathDistance));
+        const sample = samplePointAlongLine(followCameraSamples, clamp(distanceKm, 0, followCameraPathDistance), DEFAULT_ALTITUDE_M);
         if (sample?.point?.altitude != null) {
             highestTerrainAltitude = Math.max(highestTerrainAltitude, sample.point.altitude);
         }
@@ -158,217 +174,43 @@ function calculateTerrainClearanceAltitude(distanceAlongPath, fallbackAltitude) 
     return highestTerrainAltitude + cameraHeightOffset;
 }
 
-
-/** Linear interpolation */
-function lerp(start, end, amt) {
-    amt = clamp(amt, 0, 1);
-    return (1 - amt) * start + amt * end;
-}
-
-/** Shortest angle interpolation (degrees) */
-function lerpAngle(start, end, amt) {
-    amt = clamp(amt, 0, 1);
-    const difference = Math.abs(end - start);
-    if (difference > 180) {
-        if (end > start) {
-            start += 360;
-        } else {
-            end += 360;
-        }
-    }
-    let value = lerp(start, end, amt);
-    return (value + 360) % 360;
-}
-
-/** Haversine distance in km */
-export function haversineDistance(p1, p2) {
-    if (!p1 || !p2) return 0;
-    const R = 6371;
-    const lat1 = typeof p1.lat === 'function' ? p1.lat() : (p1.lat ?? 0);
-    const lng1 = typeof p1.lng === 'function' ? p1.lng() : (p1.lng ?? 0);
-    const lat2 = typeof p2.lat === 'function' ? p2.lat() : (p2.lat ?? 0);
-    const lng2 = typeof p2.lng === 'function' ? p2.lng() : (p2.lng ?? 0);
-    const dLat = (lat2 - lat1) * Math.PI / 180;
-    const dLon = (lng2 - lng1) * Math.PI / 180;
-    const a =
-        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-        Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-        Math.sin(dLon / 2) * Math.sin(dLon / 2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    return R * c;
-}
-
-/** Bearing in degrees */
-function calculateBearing(p1, p2) {
-    if (!p1 || !p2) return 0;
-    const lat1 = (typeof p1.lat === 'function' ? p1.lat() : (p1.lat ?? 0)) * Math.PI / 180;
-    const lng1 = (typeof p1.lng === 'function' ? p1.lng() : (p1.lng ?? 0)) * Math.PI / 180;
-    const lat2 = (typeof p2.lat === 'function' ? p2.lat() : (p2.lat ?? 0)) * Math.PI / 180;
-    const lng2 = (typeof p2.lng === 'function' ? p2.lng() : (p2.lng ?? 0)) * Math.PI / 180;
-
-    const y = Math.sin(lng2 - lng1) * Math.cos(lat2);
-    const x = Math.cos(lat1) * Math.sin(lat2) -
-              Math.sin(lat1) * Math.cos(lat2) * Math.cos(lng2 - lng1);
-    let bearing = Math.atan2(y, x) * 180 / Math.PI;
-    bearing = (bearing + 360) % 360;
-    return bearing;
-}
-
-/** Sample a point along a line at a specific distance in km */
-export function samplePointAlongLine(coords, distance) {
-    if (!coords || coords.length < 2 || distance < 0 || !LatLng) return null;
-
-    let cumulativeDistance = 0;
-    for (let i = 0; i < coords.length - 1; i++) {
-        const p1 = coords[i];
-        const p2 = coords[i + 1];
-        if (!p1 || !p2) continue;
-        const segmentDistance = haversineDistance(p1, p2);
-
-        if (segmentDistance <= 0) continue;
-
-        const epsilon = 1e-9;
-        if (cumulativeDistance + segmentDistance >= distance - epsilon) {
-            const fraction = Math.max(0, Math.min(1, (distance - cumulativeDistance) / segmentDistance));
-            const bearing = calculateBearing(p1, p2);
-            const lat1 = typeof p1.lat === 'function' ? p1.lat() : (p1.lat ?? 0);
-            const lng1 = typeof p1.lng === 'function' ? p1.lng() : (p1.lng ?? 0);
-            const lat2 = typeof p2.lat === 'function' ? p2.lat() : (p2.lat ?? 0);
-            const lng2 = typeof p2.lng === 'function' ? p2.lng() : (p2.lng ?? 0);
-            const lat = lat1 + (lat2 - lat1) * fraction;
-            const lng = lng1 + (lng2 - lng1) * fraction;
-            const alt1 = p1.altitude ?? 10;
-            const alt2 = p2.altitude ?? 10;
-            const altitude = alt1 + (alt2 - alt1) * fraction;
-
-            const pt = new LatLng(lat, lng);
-            pt.altitude = altitude;
-            return { point: pt, bearing: bearing };
-        }
-        cumulativeDistance += segmentDistance;
-    }
-
-    if (coords.length >= 2) {
-        const lastPoint = coords[coords.length - 1];
-        const secondLastPoint = coords[coords.length - 2];
-        if (!lastPoint || !secondLastPoint) return null;
-        const bearing = calculateBearing(secondLastPoint, lastPoint);
-        const lastPointWithAlt = new LatLng(lastPoint.lat(), lastPoint.lng());
-        lastPointWithAlt.altitude = lastPoint.altitude ?? 10;
-        return { point: lastPointWithAlt, bearing: bearing };
-    }
-
-    return null;
-}
-
-function samplePointAlongLineExact(coords, cumDists, distance) {
-    if (!coords || coords.length < 2 || !cumDists || distance < 0 || !LatLng) return null;
-    
-    // Fast Integer Scan (O(1) sequential during playback, or binary search)
-    let idx = 0;
-    while (idx < cumDists.length - 1 && cumDists[idx + 1] < distance) {
-        idx++;
-    }
-    
-    if (idx >= coords.length - 1) {
-        const last = coords[coords.length - 1];
-        const pt = new LatLng(typeof last.lat === 'function' ? last.lat() : last.lat, typeof last.lng === 'function' ? last.lng() : last.lng);
-        pt.altitude = last.altitude ?? 10;
-        return pt;
-    }
-    
-    const p1 = coords[idx];
-    const p2 = coords[idx + 1];
-    const d1 = cumDists[idx];
-    const d2 = cumDists[idx + 1];
-    const segmentD = d2 - d1;
-    if (segmentD <= 0) {
-        const pt = new LatLng(typeof p1.lat === 'function' ? p1.lat() : p1.lat, typeof p1.lng === 'function' ? p1.lng() : p1.lng);
-        pt.altitude = p1.altitude ?? 10;
-        return pt;
-    }
-    
-    const fraction = clamp((distance - d1) / segmentD, 0, 1);
-    const lat1 = typeof p1.lat === 'function' ? p1.lat() : (p1.lat ?? 0);
-    const lng1 = typeof p1.lng === 'function' ? p1.lng() : (p1.lng ?? 0);
-    const lat2 = typeof p2.lat === 'function' ? p2.lat() : (p2.lat ?? 0);
-    const lng2 = typeof p2.lng === 'function' ? p2.lng() : (p2.lng ?? 0);
-    
-    const lat = lat1 + (lat2 - lat1) * fraction;
-    const lng = lng1 + (lng2 - lng1) * fraction;
-    const alt1 = p1.altitude ?? 10;
-    const alt2 = p2.altitude ?? 10;
-    const altitude = alt1 + (alt2 - alt1) * fraction;
-    
-    const pt = new LatLng(lat, lng);
-    pt.altitude = altitude;
-    return pt;
-}
-
-
-
 /**
  * Loads a new route's coordinates into the follow camera module.
  * Precomputes the camera samples via a rolling average and calculates path distance.
  */
 export async function loadTourRoute(routeCoords) {
     if (!routeCoords || routeCoords.length < 2) return;
-    console.log("Loading new route coordinates for follow tour...");
+    debug("Loading new route coordinates for follow tour...");
     
     // 1. Evaluate coordinates down to absolute primitives to avoid call stack loops
     const baseCoords = routeCoords.map(p => {
-        const lat = typeof p.lat === 'function' ? p.lat() : p.lat;
-        const lng = typeof p.lng === 'function' ? p.lng() : p.lng;
-        const alt = p.altitude ?? 10;
-        return { lat, lng, altitude: alt };
+        const lit = toLatLngLiteral(p);
+        lit.altitude = p.altitude ?? DEFAULT_ALTITUDE_M;
+        return lit;
     });
 
     // 2. Apply a simple rolling average across a window of 15 points (75-meter strike)
     // This organically rounds harsh geometric edges into swooping cinematic curves.
-    const windowSize = 15;
-    const halfWindow = Math.floor(windowSize / 2);
-    const smoothedRouteCoords = [];
-    
-    for (let i = 0; i < baseCoords.length; i++) {
-        let latSum = 0, lngSum = 0, altSum = 0;
-        let count = 0;
-        for (let j = i - halfWindow; j <= i + halfWindow; j++) {
-            if (j >= 0 && j < baseCoords.length) {
-                latSum += baseCoords[j].lat;
-                lngSum += baseCoords[j].lng;
-                altSum += baseCoords[j].altitude;
-                count++;
-            }
-        }
-        const pt = new LatLng(latSum / count, lngSum / count);
-        pt.altitude = altSum / count;
-        smoothedRouteCoords.push(pt);
-    }
+    const smoothedRouteCoords = smoothPath(baseCoords, 15, DEFAULT_ALTITUDE_M);
     
     // 3. Bind the definitive smoothed path to the engine
     followCameraCoords = smoothedRouteCoords;
     followCameraSamples = smoothedRouteCoords; // Use high-res smoothed array entirely
     
     // 4. Calculate high-fidelity cumulative distances for exact polyline snapping
-    followCameraCumulativeDistances = new Float64Array(smoothedRouteCoords.length);
-    followCameraCumulativeDistances[0] = 0;
-    let totalD = 0;
-    for (let i = 0; i < smoothedRouteCoords.length - 1; i++) {
-        totalD += haversineDistance(smoothedRouteCoords[i], smoothedRouteCoords[i + 1]);
-        followCameraCumulativeDistances[i + 1] = totalD;
-    }
-    followCameraPathDistance = totalD;
+    followCameraCumulativeDistances = calculateCumulativeDistances(smoothedRouteCoords);
+    followCameraPathDistance = followCameraCumulativeDistances[followCameraCumulativeDistances.length - 1] || 0;
     followCameraBaseDuration = calculateTourDuration(followCameraPathDistance);
     
     // Reset photo triggers list
     photoTriggers = [];
-    console.log(`Follow camera duration set to ${(followCameraBaseDuration / 1000).toFixed(0)}s for ${followCameraPathDistance.toFixed(1)} km (Exact snap array built: ${followCameraCumulativeDistances.length} points).`);
+    debug(`Follow camera duration set to ${(followCameraBaseDuration / 1000).toFixed(0)}s for ${followCameraPathDistance.toFixed(1)} km (Exact snap array built: ${followCameraCumulativeDistances.length} points).`);
     
     // Smart profile defaults assessment based on terrain and elevation gain
     let globalMinAlt = Infinity;
     let globalMaxAlt = -Infinity;
     followCameraSamples.forEach(p => {
-        const alt = typeof p.altitude === 'number' ? p.altitude : (typeof p.altitude === 'function' ? p.altitude() : 10);
+        const alt = p.altitude ?? DEFAULT_ALTITUDE_M;
         globalMinAlt = Math.min(globalMinAlt, alt);
         globalMaxAlt = Math.max(globalMaxAlt, alt);
     });
@@ -378,17 +220,17 @@ export async function loadTourRoute(routeCoords) {
         cameraHeightOffset = 180;
         cameraRangeOffset = 1150;
         cameraTiltOffset = 42;
-        console.log(`[loadTourRoute] Smart Profile: High Alpine. Gain: ${totalElevationGain.toFixed(0)}m. Set tight tilt and high range.`);
+        debug(`[loadTourRoute] Smart Profile: High Alpine. Gain: ${totalElevationGain.toFixed(0)}m. Set tight tilt and high range.`);
     } else if (totalElevationGain > 120) { // Rolling Hills / Moderate
         cameraHeightOffset = 130;
         cameraRangeOffset = 760;
         cameraTiltOffset = 58;
-        console.log(`[loadTourRoute] Smart Profile: Rolling Hills. Gain: ${totalElevationGain.toFixed(0)}m.`);
+        debug(`[loadTourRoute] Smart Profile: Rolling Hills. Gain: ${totalElevationGain.toFixed(0)}m.`);
     } else { // Flat Coastal / Urban
         cameraHeightOffset = 85;
         cameraRangeOffset = 460;
         cameraTiltOffset = 68;
-        console.log(`[loadTourRoute] Smart Profile: Flat Coastal. Gain: ${totalElevationGain.toFixed(0)}m. Set scenic close range.`);
+        debug(`[loadTourRoute] Smart Profile: Flat Coastal. Gain: ${totalElevationGain.toFixed(0)}m. Set scenic close range.`);
     }
     
     currentProgress = 0;
@@ -439,7 +281,7 @@ export async function playFollowCamera(routeCoords) {
 
     if (followCameraActive) return; // Already playing
 
-    console.log("Playing follow camera tour.");
+    debug("Playing follow camera tour.");
     followCameraActive = true;
     lastFrameTime = null; // Reset frame timestamp
     
@@ -463,7 +305,7 @@ export async function playFollowCamera(routeCoords) {
  */
 export function pauseFollowCamera() {
     if (!followCameraActive) return;
-    console.log("Pausing follow camera tour.");
+    debug("Pausing follow camera tour.");
     followCameraActive = false;
     lastFrameTime = null;
     
@@ -479,7 +321,7 @@ export function pauseFollowCamera() {
  * Stop and reset the tour.
  */
 export function stopFollowCamera() {
-    console.log("Stopping and resetting follow camera tour.");
+    debug("Stopping and resetting follow camera tour.");
     followCameraActive = false;
     lastFrameTime = null;
     currentProgress = 0; // Reset progress
@@ -550,7 +392,7 @@ function frame(time) {
         currentProgress = 1;
         followCameraActive = false;
         lastFrameTime = null;
-        console.log("Follow camera animation finished.");
+        debug("Follow camera animation finished.");
         
         const distanceElapsedKm = followCameraPathDistance * currentProgress;
         if (onProgressUpdate) onProgressUpdate(currentProgress, distanceElapsedKm);
@@ -577,7 +419,7 @@ export function updateCameraForProgress(progress, snapDirectly = false) {
     if (!map3d || !followCameraSamples || followCameraSamples.length < 2) return;
 
     const distanceAlongPath = followCameraPathDistance * progress;
-    const alongCoords = samplePointAlongLine(followCameraSamples, distanceAlongPath);
+    const alongCoords = samplePointAlongLine(followCameraSamples, distanceAlongPath, DEFAULT_ALTITUDE_M);
 
     if (!alongCoords || !alongCoords.point) return;
 
@@ -590,7 +432,7 @@ export function updateCameraForProgress(progress, snapDirectly = false) {
     const dynamicRangeBoost = varianceMeters * 12; // Inflate range less aggressively (12x variance instead of 25x)
     const dynamicTiltBoost = varianceFactor * 21; // Lift tilt towards the horizon (up to 85) instead of dropping it to go vertical
 
-    const baseClearance = calculateTerrainClearanceAltitude(distanceAlongPath, alongCoords.point.altitude ?? 10);
+    const baseClearance = calculateTerrainClearanceAltitude(distanceAlongPath, alongCoords.point.altitude ?? DEFAULT_ALTITUDE_M);
     const rawTargetAltitude = Math.max(baseClearance, upcomingTerrain.maxAlt + cameraHeightOffset + dynamicHeightBoost);
 
     // Velocity Slope Clamping (Jank Prevention)
@@ -611,7 +453,8 @@ export function updateCameraForProgress(progress, snapDirectly = false) {
 
     const lookAheadSample = samplePointAlongLine(
         followCameraSamples,
-        Math.min(followCameraPathDistance, distanceAlongPath + lookAheadDistanceKm)
+        Math.min(followCameraPathDistance, distanceAlongPath + lookAheadDistanceKm),
+        DEFAULT_ALTITUDE_M
     );
     let smoothedBearing = lookAheadSample ? lookAheadSample.bearing : alongCoords.bearing;
 
@@ -628,11 +471,11 @@ export function updateCameraForProgress(progress, snapDirectly = false) {
     lastCameraUpdateTime = now;
 
     // 4. Exact spatial lookup using the Integer Scan on the smoothed points
-    const exactPoint = samplePointAlongLineExact(followCameraCoords, followCameraCumulativeDistances, distanceAlongPath);
+    const exactPoint = samplePointAlongLineExact(followCameraCoords, followCameraCumulativeDistances, distanceAlongPath, DEFAULT_ALTITUDE_M);
     if (!exactPoint) return;
 
     const targetCameraPosition = {
-        center: { lat: exactPoint.lat(), lng: exactPoint.lng(), altitude: targetCameraAltitude },
+        center: { lat: exactPoint.lat, lng: exactPoint.lng, altitude: targetCameraAltitude },
         heading: smoothedBearing,
         range: clamp(cameraRangeOffset + dynamicRangeBoost, 200, 3000), // Max range 3000 instead of 3500
         tilt: clamp(cameraTiltOffset + dynamicTiltBoost, 20, 85), // Boost tilt towards horizon
@@ -669,12 +512,10 @@ export function updateCameraForProgress(progress, snapDirectly = false) {
 
     // Synchronize the marker EXACTLY to the high-fidelity route line position
     if (typeof updateTrackingMarkerCb === 'function') {
-        const lat = typeof exactPoint.lat === 'function' ? exactPoint.lat() : exactPoint.lat;
-        const lng = typeof exactPoint.lng === 'function' ? exactPoint.lng() : exactPoint.lng;
         updateTrackingMarkerCb({
-            lat,
-            lng,
-            altitude: 10
+            lat: exactPoint.lat,
+            lng: exactPoint.lng,
+            altitude: DEFAULT_ALTITUDE_M
         });
     }
 
@@ -720,7 +561,7 @@ export function registerPhotoTriggers(photoGroups) {
         let closestIdx = 0;
         for (let i = 0; i < followCameraCoords.length; i++) {
             const pt = followCameraCoords[i];
-            const d = haversineDistance({ lat, lng }, pt);
+            const d = haversineKm({ lat, lng }, pt);
             if (d < minD) {
                 minD = d;
                 closestIdx = i;
@@ -734,14 +575,13 @@ export function registerPhotoTriggers(photoGroups) {
             openUntil: 0
         };
     });
-    console.log(`[registerPhotoTriggers] Registered ${photoTriggers.length} auto-pop triggers.`);
+    debug(`[registerPhotoTriggers] Registered ${photoTriggers.length} auto-pop triggers.`);
 }
 
 /**
  * Resets photo triggers when progress changes backward/forward via scrubs or play/stops
  */
 export function resetPhotoTriggers(currentDistKm) {
-    const nowMs = performance.now();
     photoTriggers.forEach(t => {
         if (t.distanceKm > currentDistKm) {
             // Re-arm triggers that are ahead of our new position
@@ -756,15 +596,4 @@ export function resetPhotoTriggers(currentDistKm) {
             t.openUntil = 0;
         }
     });
-}
-
-/**
- * Backward compatibility wrapper for old setFollowCameraState API
- */
-export function setFollowCameraState(isActive, routeCoords, useDelay = false) {
-    if (isActive) {
-        playFollowCamera(routeCoords);
-    } else {
-        pauseFollowCamera();
-    }
 }

@@ -2,12 +2,13 @@
 
 ## Project Overview
 
-This repository contains two small geospatial web apps:
+This repository contains three geospatial web apps:
 
 - `strava-explorer/`: Vite app for exploring Strava activities on Google Maps Platform 3D Maps.
 - `aqi-map/`: Browserify/Budo app for a Mapbox GL + PurpleAir hyperlocal AQI map.
+- `isochrones/`: Vite + Node app for reachability analysis using Google Maps Platform Isochrones.
 
-Prefer small, reviewable changes. Keep app-specific code, commands, and dependencies inside the app directory you are modifying.
+Prefer small, reviewable changes. Keep app-specific code, commands, and dependencies inside the app directory you are modifying. Only use npm for dependency management (do not use yarn or other package managers).
 
 ## Agent Workflow
 
@@ -23,16 +24,24 @@ Run commands from the app directory unless noted.
 
 ### `strava-explorer/`
 
-- Install: `yarn install` or `npm install`.
-- Dev server: `yarn dev` or `npm run dev`.
-- Production build: `yarn build` or `npm run build`.
-- Preview build: `yarn preview` or `npm run preview`.
+- Install: `npm install` (Only use npm, never yarn).
+- Dev server: `npm run dev`.
+- Production build: `npm run build`.
+- Preview build: `npm run preview`.
+- Run unit/integration tests: `npm run test` (runs vitest).
+- Run linter: `npm run lint` (runs eslint).
 
 ### `aqi-map/`
 
-- Install: `yarn install` or `npm install`.
-- Dev server: `yarn start` or `npm start`.
-- Production build: `yarn build` or `npm run build`.
+- Install: `npm install`.
+- Dev server: `npm start`.
+- Production build: `npm run build`.
+
+### `isochrones/`
+
+- Install: `npm install`.
+- Dev server: `npm run dev`.
+- Production build: `npm run build`.
 
 ## Environment Variables and Secrets
 
@@ -79,12 +88,12 @@ Use these repo-local skills when the task matches their scope:
 
 ## How to Use AGENTS.md and the Changelog
 
-This document ([AGENTS.md](file:///Users/ryanbaumann/projects/trails.ninja/AGENTS.md)) serves as the source of truth for repository structure, commands, styles, and guidelines.
+This document ([AGENTS.md](AGENTS.md)) serves as the source of truth for repository structure, commands, styles, and guidelines.
 
 ### Developer & Agent Guidelines
 1. **Always Read first:** Read this file at the start of any task or session.
-2. **Keep the Changelog updated:** Document all features, bug fixes, deprecations, and critical lessons learned in the root [CHANGELOG.md](file:///Users/ryanbaumann/projects/trails.ninja/CHANGELOG.md).
-3. **Reference historical learnings:** When working with Maps JavaScript API 3D, refer to the [CHANGELOG.md](file:///Users/ryanbaumann/projects/trails.ninja/CHANGELOG.md) for solutions to common pitfalls (such as the `PinElement` call stack overflow or `glyph` deprecations).
+2. **Keep the Changelog updated:** Document all features, bug fixes, deprecations, and critical lessons learned in the root [CHANGELOG.md](CHANGELOG.md).
+3. **Reference historical learnings:** When working with Maps JavaScript API 3D, refer to the [CHANGELOG.md](CHANGELOG.md) for solutions to common pitfalls (such as the `PinElement` call stack overflow or `glyph` deprecations).
 
 ## Pull Request Expectations
 

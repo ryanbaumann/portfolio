@@ -4,8 +4,8 @@ This repository contains lightweight, static-friendly geospatial web application
 
 ## Projects
 
-*   **[Strava 3D Explorer](file:///Users/ryanbaumann/projects/trails.ninja/strava-explorer/README.md)**: A Vite-powered web application to visualize Strava routes, endpoints, and photos in Google Maps Platform Photorealistic 3D with follow-camera animations.
-*   **[Hyperlocal AQI Map](file:///Users/ryanbaumann/projects/trails.ninja/aqi-map/README.md)**: A Browserify-powered 2D Mapbox GL map that interpolates real-time PurpleAir sensor data to render local air quality index (AQI) contours.
+*   **[Strava 3D Explorer](strava-explorer/README.md)**: A Vite-powered web application to visualize Strava routes, endpoints, and photos in Google Maps Platform Photorealistic 3D with follow-camera animations.
+*   **[Hyperlocal AQI Map](aqi-map/README.md)**: A Browserify-powered 2D Mapbox GL map that interpolates real-time PurpleAir sensor data to render local air quality index (AQI) contours.
 *   **[Isochrones](isochrones/README.md)**: A Vite + Node Google Maps Platform demo for analyzing delivery, commute, and response reachability with selectable Isochrones API polygons.
 
 ## Getting Started
@@ -35,7 +35,12 @@ npm run dev
 To keep these projects clean and secure, adhere to the following best practices:
 *   **No Hardcoded Secrets**: Never commit API keys, client secrets, access tokens, or generated `.env.*` files. Use environment files locally (which are excluded via `.gitignore`).
 *   **Key Restrictions**: Always restrict Google Maps browser keys by referrer (e.g., `http://localhost:5173/*` and your production domain) and limit their API scope to only the services required.
-*   **Backend Broker**: For production deployment of the Strava Explorer, use the included Cloud Run OAuth broker so the Strava client secret remains safely server-side and is never exposed to the client browser.
+*   **Backend Broker**: The Strava Explorer uses a secure backend broker design (Node dev-server middleware locally, and Cloud Run in production) so the Strava client secret is never exposed to the user's browser.
+
+## Cost Note
+
+> [!NOTE]
+> Google Maps Platform usage may incur costs. Consider using the free Maps Demo Key for prototyping: https://mapsplatform.google.com/maps-demo-key.
 
 ## Terms of Service Compliance
 

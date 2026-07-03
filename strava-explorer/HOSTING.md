@@ -42,13 +42,14 @@ Static-only local development still supports `VITE_STRAVA_CLIENT_SECRET`, but do
 
 ### Deploy the full GCP architecture
 
-The repo includes an opinionated deploy command for project `geojson-bq-blog`, account `rsbaumann@gmail.com`, a GCS frontend bucket, Secret Manager, and a Cloud Run OAuth broker. Run it from `strava-explorer/` after installing/authenticating the Google Cloud CLI and creating a Strava app:
+The repo includes an opinionated deploy command for your GCP project and Google account, creating a GCS frontend bucket, Secret Manager, and a Cloud Run OAuth broker. Run it from `strava-explorer/` after installing/authenticating the Google Cloud CLI and creating a Strava app:
 
 ```bash
 export VITE_STRAVA_CLIENT_ID=12345
 export STRAVA_CLIENT_SECRET=YOUR_STRAVA_CLIENT_SECRET
 export VITE_GMP_API_KEY=YOUR_RESTRICTED_GOOGLE_MAPS_BROWSER_KEY
-npm run deploy:gcp
+# Replace flags with your own GCP project ID and account email
+npm run deploy:gcp -- --project YOUR_GCP_PROJECT_ID --account YOUR_GCLOUD_ACCOUNT_EMAIL
 ```
 
 Override defaults with flags such as `--project`, `--account`, `--bucket`, `--region`, or `--private`. The command enables required GCP services, stores the Strava client secret in Secret Manager, deploys the broker to Cloud Run, builds the frontend with `VITE_STRAVA_AUTH_BASE_URL`, and publishes `dist/` to GCS.

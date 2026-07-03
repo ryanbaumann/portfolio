@@ -1,4 +1,6 @@
-// strava-explorer/strava.js
+// strava-explorer/src/strava.js
+
+import { debug, warn, error } from './log.js';
 
 // --- Module-Level Variables ---
 let stravatoken = null;
@@ -9,14 +11,13 @@ const AUTH_STORAGE_KEY = 'trailsNinja.stravaAuth.v1';
 
 // --- Environment Variables ---
 const STRAVA_CLIENT_ID = import.meta.env.VITE_STRAVA_CLIENT_ID;
-const STRAVA_CLIENT_SECRET = import.meta.env.VITE_STRAVA_CLIENT_SECRET;
 const STRAVA_REDIRECT_URI = import.meta.env.VITE_STRAVA_REDIRECT_URI;
 const STRAVA_API_BASE_URL = (import.meta.env.VITE_STRAVA_API_BASE_URL || 'https://www.strava.com/api/v3').replace(/\/$/, '');
 const STRAVA_AUTH_BASE_URL = (import.meta.env.VITE_STRAVA_AUTH_BASE_URL || '').replace(/\/$/, '');
 
 // --- Helper Functions (Dependencies - will be passed or imported if moved to utils) ---
-let showLoading = (isLoading, text) => console.log(`Loading: ${isLoading}, Text: ${text}`);
-let showError = (message) => console.error(`Error: ${message}`);
+let showLoading = (isLoading, text) => debug(`Loading: ${isLoading}, Text: ${text}`);
+let showError = (message) => error(`Error: ${message}`);
 
 // Function to set helper dependencies (called from index.js)
 export function setHelpers(helpers) {
@@ -26,44 +27,37 @@ export function setHelpers(helpers) {
 
 // --- Strava Auth ---
 export async function exchangeToken(code) {
-    if (!STRAVA_CLIENT_ID || (!STRAVA_AUTH_BASE_URL && !STRAVA_CLIENT_SECRET)) {
-        throw new Error("Strava Client ID and either Auth Broker URL or Client Secret are missing from environment variables.");
+    if (!STRAVA_CLIENT_ID) {
+        throw new Error("Strava Client ID is missing from environment variables.");
     }
-    const tokenUrl = STRAVA_AUTH_BASE_URL ? `${STRAVA_AUTH_BASE_URL}/api/strava/token` : 'https://www.strava.com/oauth/token';
-    const params = STRAVA_AUTH_BASE_URL
-        ? JSON.stringify({ code })
-        : new URLSearchParams({
-            client_id: STRAVA_CLIENT_ID,
-            client_secret: STRAVA_CLIENT_SECRET,
-            code: code,
-            grant_type: 'authorization_code'
-        });
+    const tokenUrl = `${STRAVA_AUTH_BASE_URL}/api/strava/token`;
+    const params = JSON.stringify({ code });
 
     showLoading(true, "Authenticating with Strava...");
     try {
         const response = await fetch(tokenUrl, {
             method: 'POST',
-            headers: { 'Content-Type': STRAVA_AUTH_BASE_URL ? 'application/json' : 'application/x-www-form-urlencoded' },
+            headers: { 'Content-Type': 'application/json' },
             body: params
         });
 
         if (!response.ok) {
-            const errorData = await response.json();
+            const errorData = await response.json().catch(() => ({}));
             throw new Error(`Strava token exchange failed: ${response.status} ${response.statusText} - ${JSON.stringify(errorData)}`);
         }
 
-        const data = await response.json();
-        console.log("Strava authentication succeeded; token cached in this browser.");
+        const data = await response.json().catch(() => ({}));
+        debug("Strava authentication succeeded; token cached in this browser.");
         if (data.access_token) {
             storeAuthData(data);
             return data; // Return the full auth data including athlete info
         } else {
             throw new Error("Access token not found in Strava auth response.");
         }
-    } catch (error) {
-        console.error('Error exchanging Strava token:', error);
-        showError(`Strava authentication failed: ${error.message}`);
-        throw error; // Re-throw error to be caught by caller
+    } catch (err) {
+        error('Error exchanging Strava token:', err);
+        showError(`Strava authentication failed: ${err.message}`);
+        throw err; // Re-throw error to be caught by caller
     } finally {
         showLoading(false);
     }
@@ -71,7 +65,7 @@ export async function exchangeToken(code) {
 
 export async function fetchActivityStreams(activityId, token, streamTypes) {
     if (!activityId || !token || !streamTypes || !streamTypes.length) {
-        console.error("Missing parameters for fetchActivityStreams");
+        error("Missing parameters for fetchActivityStreams");
         // helpers are globally available in this module after setHelpers is called
         showError("Cannot fetch activity streams: Missing required info.");
         throw new Error("Missing parameters for fetchActivityStreams");
@@ -87,16 +81,16 @@ export async function fetchActivityStreams(activityId, token, streamTypes) {
 
         if (!response.ok) {
             const errorData = await response.json();
-            console.error("Strava API error (streams):", errorData);
+            error("Strava API error (streams):", errorData);
             throw new Error(`Strava API Error: ${response.status} ${response.statusText}`);
         }
         const streamsData = await response.json();
         showLoading(false);
         return streamsData;
-    } catch (error) {
-        console.error("Error in fetchActivityStreams:", error);
+    } catch (err) {
+        error("Error in fetchActivityStreams:", err);
         showLoading(false);
-        throw error;
+        throw err;
     }
 }
 
@@ -129,7 +123,6 @@ export async function ensureValidToken() {
 export function getUserId() {
     return userid;
 }
-
 
 export async function deauthorizeStrava() {
     if (!stravatoken) getCachedAuthData();
@@ -173,37 +166,35 @@ function storeAuthData(data) {
 function readStoredAuthData() {
     const raw = localStorage.getItem(AUTH_STORAGE_KEY);
     if (!raw) return null;
-    const authData = JSON.parse(raw);
-    if (!authData?.access_token) return null;
-    return authData;
+    try {
+        const authData = JSON.parse(raw);
+        if (!authData?.access_token) return null;
+        return authData;
+    } catch (e) {
+        localStorage.removeItem(AUTH_STORAGE_KEY);
+        return null;
+    }
 }
 
 async function refreshAccessToken() {
-    if (!STRAVA_CLIENT_ID || (!STRAVA_AUTH_BASE_URL && !STRAVA_CLIENT_SECRET) || !refreshToken) {
+    if (!STRAVA_CLIENT_ID || !refreshToken) {
         clearStravaToken();
         return null;
     }
     showLoading(true, "Refreshing Strava session...");
-    const tokenUrl = STRAVA_AUTH_BASE_URL ? `${STRAVA_AUTH_BASE_URL}/api/strava/refresh` : 'https://www.strava.com/oauth/token';
-    const params = STRAVA_AUTH_BASE_URL
-        ? JSON.stringify({ refresh_token: refreshToken })
-        : new URLSearchParams({
-            client_id: STRAVA_CLIENT_ID,
-            client_secret: STRAVA_CLIENT_SECRET,
-            refresh_token: refreshToken,
-            grant_type: 'refresh_token'
-        });
+    const tokenUrl = `${STRAVA_AUTH_BASE_URL}/api/strava/refresh`;
+    const params = JSON.stringify({ refresh_token: refreshToken });
     try {
         const response = await fetch(tokenUrl, {
             method: 'POST',
-            headers: { 'Content-Type': STRAVA_AUTH_BASE_URL ? 'application/json' : 'application/x-www-form-urlencoded' },
+            headers: { 'Content-Type': 'application/json' },
             body: params
         });
         if (!response.ok) {
             clearStravaToken();
             throw new Error(`Strava token refresh failed: ${response.status} ${response.statusText}`);
         }
-        const data = await response.json();
+        const data = await response.json().catch(() => ({}));
         storeAuthData(data);
         return getCachedAuthData();
     } finally {
@@ -213,19 +204,20 @@ async function refreshAccessToken() {
 
 export function getStravaAuthUrl() {
     if (!STRAVA_CLIENT_ID || !STRAVA_REDIRECT_URI) {
-        console.error("Strava Client ID or Redirect URI missing from environment variables.");
+        error("Strava Client ID or Redirect URI missing from environment variables.");
         showError("Configuration error: Cannot initiate Strava connection.");
         return null;
     }
-    const stravaAuthScope = 'read_all,activity:read_all';
-    return `https://www.strava.com/oauth/authorize?client_id=${STRAVA_CLIENT_ID}&response_type=code&redirect_uri=${encodeURIComponent(STRAVA_REDIRECT_URI)}&approval_prompt=auto&scope=${stravaAuthScope}`;
+    const state = crypto.randomUUID();
+    sessionStorage.setItem('oauth_state', state);
+    const stravaAuthScope = 'activity:read_all';
+    return `https://www.strava.com/oauth/authorize?client_id=${STRAVA_CLIENT_ID}&response_type=code&redirect_uri=${encodeURIComponent(STRAVA_REDIRECT_URI)}&approval_prompt=auto&scope=${stravaAuthScope}&state=${state}`;
 }
-
 
 // --- Strava API Fetching ---
 
 export async function fetchActivities(accessToken, beforeTimestamp = null, afterTimestamp = null, perPage = 30) {
-    console.log(`Fetching activities with token: ${accessToken ? '******' : 'null'}, Before: ${beforeTimestamp}, After: ${afterTimestamp}, Count: ${perPage}`);
+    debug(`Fetching activities with token: ${accessToken ? '******' : 'null'}, Before: ${beforeTimestamp}, After: ${afterTimestamp}, Count: ${perPage}`);
     if (!accessToken) throw new Error("Strava access token is required.");
 
     const activitiesUrl = `${STRAVA_API_BASE_URL}/athlete/activities`;
@@ -242,18 +234,18 @@ export async function fetchActivities(accessToken, beforeTimestamp = null, after
         });
 
         if (!response.ok) {
-            const errorData = await response.json();
+            const errorData = await response.json().catch(() => ({}));
             throw new Error(`Strava activities fetch failed: ${response.status} ${response.statusText} - ${JSON.stringify(errorData)}`);
         }
 
-        const activities = await response.json();
-        console.log(`Parsed ${activities.length} activities.`);
+        const activities = await response.json().catch(() => ({}));
+        debug(`Parsed ${activities.length} activities.`);
         return activities;
 
-    } catch (error) {
-        console.error('Error fetching Strava activities:', error);
-        showError(`Failed to fetch activities: ${error.message}`);
-        throw error;
+    } catch (err) {
+        error('Error fetching Strava activities:', err);
+        showError(`Failed to fetch activities: ${err.message}`);
+        throw err;
     } finally {
         showLoading(false);
     }
@@ -269,7 +261,7 @@ export async function fetchDetailedActivityData(activityId, accessToken) {
         throw new Error("No Activity ID provided.");
     }
 
-    console.log(`Fetching detailed data for activity ID: ${activityId}`);
+    debug(`Fetching detailed data for activity ID: ${activityId}`);
     const detailedActivityUrl = `${STRAVA_API_BASE_URL}/activities/${activityId}`;
 
     showLoading(true, "Fetching activity details...");
@@ -277,30 +269,29 @@ export async function fetchDetailedActivityData(activityId, accessToken) {
         const response = await fetch(detailedActivityUrl, {
             headers: { 'Authorization': `Bearer ${accessToken}` }
         });
-        console.log(`[fetchDetailedActivityData] Called for activity ID: ${activityId}`);
+        debug(`[fetchDetailedActivityData] Called for activity ID: ${activityId}`);
 
         if (!response.ok) {
-            const errorData = await response.json();
+            const errorData = await response.json().catch(() => ({}));
             throw new Error(`Strava detailed activity fetch failed: ${response.status} ${response.statusText} - ${JSON.stringify(errorData)}`);
         }
 
-        const detailedActivityData = await response.json();
-        console.log("Detailed activity data received.");
+        const detailedActivityData = await response.json().catch(() => ({}));
+        debug("Detailed activity data received.");
         return detailedActivityData;
 
-    } catch (error) {
-        console.error('Error fetching Strava detailed activity:', error);
-        showError(`Failed to fetch activity details: ${error.message}`);
-        throw error;
+    } catch (err) {
+        error('Error fetching Strava detailed activity:', err);
+        showError(`Failed to fetch activity details: ${err.message}`);
+        throw err;
     } finally {
         showLoading(false);
-        console.log(`[fetchDetailedActivityData] Successfully fetched data for ${activityId}.`);
+        debug(`[fetchDetailedActivityData] Successfully fetched data for ${activityId}.`);
     }
 }
 
-
 export async function fetchPhotoData(activityId, accessToken) {
-    console.log(`[fetchPhotoData] Called for activity ID: ${activityId}`);
+    debug(`[fetchPhotoData] Called for activity ID: ${activityId}`);
     if (!accessToken) throw new Error("Strava access token is required.");
     if (!activityId) throw new Error("Activity ID is required.");
 
@@ -311,12 +302,12 @@ export async function fetchPhotoData(activityId, accessToken) {
             headers: { 'Authorization': `Bearer ${accessToken}` }
         });
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-        const photos = await response.json();
-        console.log(`[fetchPhotoData] Received ${photos.length} photos from Strava.`);
+        const photos = await response.json().catch(() => ({}));
+        debug(`[fetchPhotoData] Received ${photos.length} photos from Strava.`);
         return photos;
-    } catch (error) {
-        console.error("Error fetching Strava photos:", error);
-        throw error; // Re-throw
+    } catch (err) {
+        error("Error fetching Strava photos:", err);
+        throw err; // Re-throw
     } finally {
         showLoading(false);
     }

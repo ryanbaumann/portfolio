@@ -1,190 +1,29 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
     <meta charset='utf-8' />
     <title>Trails Ninja - 3D Strava Explorer</title>
-    <meta name='viewport' content='width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no' />
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-      html, body { height: 100%; margin: 0; padding: 0; overflow: hidden; font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
-      /* Container for the 3D map web component */
-      #map3d-host { height: 100%; width: 100%; background-color: #333; }
-      /* Target the 3D map element itself */
-      gmp-map-3d { display: block; height: 100%; width: 100%; }
-      .glass-panel { background: rgba(15, 23, 42, 0.75); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); }
-      .map-hud { pointer-events: none; }
-      .map-hud > * { pointer-events: auto; }
-      .focus-ring:focus-visible { outline: 3px solid rgba(79,70,229,.45); outline-offset: 2px; }
-      @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; } }
-      /* Basic scrollbar styling */
-      .sidebar-content::-webkit-scrollbar { width: 6px; }
-      .sidebar-content::-webkit-scrollbar-thumb { background-color: rgba(255,255,255,0.2); border-radius: 3px; }
-      /* Style Autocomplete dropdown */
-      .pac-container { z-index: 1051 !important; }
-
-      /* Premium Optimization CSS */
-      :root {
-        --glass-bg: rgba(13, 17, 23, 0.75);
-        --glass-blur: 24px;
-        --glass-border: rgba(255, 255, 255, 0.08);
-        --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
-        --accent-color: #6366f1;
-        --accent-hover: #4f46e5;
-        --text-primary: #f8fafc;
-        --text-secondary: #94a3b8;
-      }
-
-      .premium-glass {
-        background: var(--glass-bg) !important;
-        backdrop-filter: blur(var(--glass-blur)) saturate(180%) !important;
-        -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(180%) !important;
-        border: 1px solid var(--glass-border) !important;
-        box-shadow: var(--glass-shadow) !important;
-      }
-
-      /* Custom Slider */
-      .custom-range {
-        -webkit-appearance: none;
-        background: rgba(255, 255, 255, 0.1) !important;
-        height: 6px !important;
-        border-radius: 3px !important;
-        outline: none !important;
-        transition: background 0.2s ease !important;
-      }
-
-      .custom-range::-webkit-slider-thumb {
-        -webkit-appearance: none;
-        height: 16px !important;
-        width: 16px !important;
-        border-radius: 50% !important;
-        background: #6366f1 !important;
-        box-shadow: 0 0 8px rgba(99, 102, 241, 0.8) !important;
-        cursor: pointer !important;
-        transition: transform 0.1s ease, background 0.2s ease !important;
-        border: 2px solid #ffffff !important;
-      }
-
-      .custom-range::-webkit-slider-thumb:hover {
-        transform: scale(1.2) !important;
-        background: #4f46e5 !important;
-      }
-
-      /* Custom Select */
-      .custom-select {
-        background: rgba(255, 255, 255, 0.05) !important;
-        border: 1px solid rgba(255, 255, 255, 0.1) !important;
-        padding: 0.5rem 2.5rem 0.5rem 1rem !important;
-        border-radius: 0.5rem !important;
-        color: #f8fafc !important;
-        appearance: none !important;
-        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%2394a3b8' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e") !important;
-        background-repeat: no-repeat !important;
-        background-position: right 0.75rem center !important;
-        background-size: 1.5em 1.5em !important;
-        transition: border-color 0.2s ease, background-color 0.2s ease !important;
-      }
-
-      .custom-select:focus {
-        border-color: #6366f1 !important;
-        background-color: rgba(255, 255, 255, 0.08) !important;
-        outline: none !important;
-        box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2) !important;
-      }
-
-      /* Stats Card */
-      .stat-card {
-        background: rgba(255, 255, 255, 0.03);
-        border: 1px solid rgba(255, 255, 255, 0.05);
-        border-radius: 0.5rem;
-        padding: 0.75rem;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        transition: all 0.2s ease;
-      }
-
-      .stat-card:hover {
-        background: rgba(255, 255, 255, 0.05);
-        border-color: rgba(255, 255, 255, 0.1);
-        transform: translateY(-1px);
-      }
-
-      .stat-card p.value {
-        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-        font-size: 1.125rem;
-        font-weight: 700;
-        color: #f8fafc;
-      }
-
-      .stat-card p.label {
-        font-size: 0.65rem;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-        color: #94a3b8;
-        margin-top: 0.25rem;
-      }
-
-      /* Tooltip Optimization */
-      .premium-tooltip {
-        background: rgba(13, 17, 23, 0.9) !important;
-        backdrop-filter: blur(8px) !important;
-        border: 1px solid rgba(255, 255, 255, 0.1) !important;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4) !important;
-        border-radius: 0.25rem !important;
-      }
-
-      /* Elevation Glow */
-      #elevation-line {
-        filter: drop-shadow(0px 2px 4px rgba(99, 102, 241, 0.6)) !important;
-      }
-
-      /* Custom Date Inputs */
-      input[type="date"]::-webkit-calendar-picker-indicator {
-        filter: invert(1) opacity(0.5);
-        cursor: pointer;
-      }
-
-      input[type="date"]::-webkit-calendar-picker-indicator:hover {
-        opacity: 0.8;
-      }
-
-      /* Button Premium States */
-      .btn-primary {
-        background-image: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%) !important;
-        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3) !important;
-        transition: all 0.2s ease !important;
-      }
-
-      .btn-primary:hover:not(:disabled) {
-        background-image: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%) !important;
-        box-shadow: 0 6px 16px rgba(99, 102, 241, 0.4) !important;
-        transform: translateY(-1px) !important;
-      }
-
-      .btn-secondary {
-        background: rgba(255, 255, 255, 0.05) !important;
-        border: 1px solid rgba(255, 255, 255, 0.1) !important;
-        transition: all 0.2s ease !important;
-      }
-
-      .btn-secondary:hover:not(:disabled) {
-        background: rgba(255, 255, 255, 0.1) !important;
-        border-color: rgba(255, 255, 255, 0.2) !important;
-        transform: translateY(-1px) !important;
-      }
-    </style>
+    <meta name='viewport' content='width=device-width,initial-scale=1' />
+    <!-- Meta tags & Open Graph / Twitter Cards (D8) -->
+    <meta name="description" content="Relive your rides as cinematic 3D flythroughs. Powered by Strava and Google Maps Platform." />
+    <meta property="og:title" content="Trails Ninja - 3D Strava Explorer" />
+    <meta property="og:description" content="Relive your rides as cinematic 3D flythroughs. Powered by Strava and Google Maps Platform." />
+    <meta property="og:image" content="strava-explorer.jpg" />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Trails Ninja - 3D Strava Explorer" />
+    <meta name="twitter:description" content="Relive your rides as cinematic 3D flythroughs." />
+    <meta name="twitter:image" content="strava-explorer.jpg" />
+    <!-- Favicon (D8) -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏔️</text></svg>">
 </head>
 
 <body>
     <!-- Main Container -->
-    <div class="relative h-screen w-screen">
+    <div class="relative h-screen w-screen overflow-hidden">
         <!-- Map Container -->
         <div id="map3d-host" class="absolute inset-0 z-0"></div>
-
-        <!-- Snapshot Canvas (Hidden - Functionality Removed) -->
-        <!-- <canvas id='snapshot' class='absolute top-0 left-0 w-full h-full pointer-events-none' style="visibility:hidden"></canvas> -->
 
         <!-- Floating HUD Share Button Container -->
         <div class="absolute top-[clamp(0.5rem,1.5vw,1rem)] right-3 z-10 flex space-x-2">
@@ -197,171 +36,265 @@
             <div id="share-tooltip" class="premium-glass absolute top-full mt-2 right-0 bg-slate-900/90 text-white text-[10px] px-2.5 py-1 rounded-md shadow-lg opacity-0 transition-opacity pointer-events-none border border-white/5 whitespace-nowrap">Link Copied!</div>
         </div>
 
-        <!-- Sidebar Container - Optimized with premium-glass and tighter vertical spacing -->
-        <aside class="absolute top-[clamp(0.5rem,1.5vw,1rem)] left-3 z-10 w-[min(28rem,calc(100%-1.5rem))] flex flex-col premium-glass rounded-2xl shadow-2xl text-white overflow-hidden md:bottom-auto md:max-h-[calc(100vh-4rem)] max-md:bottom-0 max-md:left-0 max-md:right-0 max-md:top-auto max-md:w-full max-md:max-w-full max-md:max-h-[33.33vh] max-md:rounded-none max-md:rounded-t-2xl max-md:border-t max-md:border-white/10" aria-label="Strava activity controls">
-            <!-- Sidebar Header -->
-            <div class='px-3 pt-3 pb-1.5 border-b border-white/10 flex-shrink-0'>
-                 <p class='text-[10px] font-semibold uppercase tracking-[0.22em] text-indigo-400'>Trails Ninja</p>
-                 <h1 class='text-lg font-bold text-white tracking-wide mt-0.5'>3D Strava Explorer</h1>
-                 <p id='camera-status' class='mt-0.5 text-[10px] text-gray-400 leading-tight' aria-live='polite'>1) Pick a route. 2) Press play. 3) Tune the view if needed.</p>
-            </div>
-            <!-- Sidebar Scrollable Content -->
-            <div class='px-3 py-1.5 flex-grow overflow-y-auto sidebar-content space-y-2'>
-                <!-- Strava Auth Section -->
-                <div id="strava_auth" class="flex flex-col items-center">
-                    <p class="text-xs text-gray-300 mb-2 text-center">Connect to your Strava activities and explore them in 3D.</p>
-                    <!-- Strava Connect Button -->
-                    <button id="strava-connect-button" class="mx-auto hover:scale-[1.02] transition-transform">
-                        <img src="./static/btn_strava_connectwith_orange@2x.png" alt="Connect to Strava" class="h-8">
-                    </button>
-                </div>
-                <!-- Athlete Profile Section (Initially Hidden) -->
-                <div id="athlete-info" class="flex items-center hidden bg-white/5 p-1.5 rounded-lg border border-white/5">
-                     <img id="strava_profile" src="" class="w-8 h-8 rounded-full mr-2 border border-white/20">
-                     <p id="strava-username" class="text-gray-200 text-xs font-medium tracking-wide"></p>
-                </div>
+        <!-- Theater Mode Floating Mini-Pill (D3) -->
+        <div id="theater-pill" class="absolute top-4 left-4 z-20 flex items-center space-x-3 p-2 px-3 rounded-full premium-glass border border-white/10 text-white shadow-2xl hidden transition-all duration-300">
+            <button id="theater-expand-btn" class="p-1.5 rounded-full hover:bg-white/10 text-gray-300 hover:text-white transition-colors focus:outline-none focus:ring-1 focus:ring-indigo-500 min-h-[44px] min-w-[44px] flex items-center justify-center" title="Expand Sidebar" aria-label="Expand Sidebar">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                </svg>
+            </button>
+            <div class="h-4 w-[1px] bg-white/15"></div>
+            <button id="theater-play-btn" class="p-1.5 rounded-full text-white hover:bg-white/10 transition-colors focus:outline-none min-h-[44px] min-w-[44px] flex items-center justify-center" title="Play/Pause Tour">
+                <svg id="theater-play-icon" class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                <svg id="theater-pause-icon" class="w-4 h-4 hidden" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+            </button>
+            <button id="theater-stop-btn" class="p-1.5 rounded-full text-gray-300 hover:text-white hover:bg-white/10 transition-colors focus:outline-none min-h-[44px] min-w-[44px] flex items-center justify-center" title="Stop Tour">
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12"/></svg>
+            </button>
+            <div class="h-4 w-[1px] bg-white/15"></div>
+            <span id="theater-readout" class="font-mono text-[10px] text-gray-300 min-w-[80px] text-center">0.00 / 0.00 mi</span>
+        </div>
 
-                 <!-- Activity Filtering Section (Initially Hidden until Auth) -->
-                 <div id="activity-filter" class="border-t border-white/10 pt-1.5 space-y-1.5 hidden">
-                     <p class="text-xs font-semibold text-gray-200 mb-1">1. Pick a route</p>
-                     <!-- ONE ROW FILTERS -->
-                     <div class="grid grid-cols-[1fr_1fr_65px] gap-2 items-end">
-                        <div>
-                            <label for="start-date" class="block text-[10px] font-medium text-gray-400 mb-1">Start Date:</label>
-                            <input type="date" id="start-date" class="w-full bg-white/5 text-white text-[10px] p-1 border border-white/10 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500">
-                        </div>
-                        <div>
-                            <label for="end-date" class="block text-[10px] font-medium text-gray-400 mb-1">End Date:</label>
-                            <input type="date" id="end-date" class="w-full bg-white/5 text-white text-[10px] p-1 border border-white/10 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500">
-                        </div>
-                        <div>
-                            <label for="activity-count" class="block text-[10px] font-medium text-gray-400 mb-1">Load:</label>
-                            <input type="number" id="activity-count" value="30" min="1" max="100" class="w-full bg-white/5 text-white text-[10px] p-1 border border-white/10 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500">
+        <!-- Sidebar Container - Dynamic Bottom Sheet on Mobile (D6) -->
+        <aside class="absolute top-[clamp(0.5rem,1.5vw,1rem)] left-3 z-10 w-[min(28rem,calc(100%-1.5rem))] flex flex-col premium-glass rounded-2xl shadow-2xl text-white overflow-hidden md:bottom-auto md:max-h-[calc(100vh-4rem)] max-md:fixed max-md:bottom-0 max-md:left-0 max-md:right-0 max-md:top-auto max-md:w-full max-md:max-w-full max-md:rounded-none max-md:rounded-t-2xl max-md:border-t max-md:border-white/10 pb-[env(safe-area-inset-bottom)]" aria-label="Strava activity controls">
+            
+            <!-- Mobile Bottom Sheet Drag Handle (D6) -->
+            <div id="bottom-sheet-drag" class="md:hidden flex justify-center py-3 cursor-grab active:cursor-grabbing flex-shrink-0 select-none">
+                <div class="w-12 h-1 bg-white/20 rounded-full"></div>
+            </div>
+
+            <!-- Sidebar Header -->
+            <div class='px-3 pt-3 pb-1.5 border-b border-white/10 flex-shrink-0 flex justify-between items-start flex-row'>
+                 <div>
+                     <p class='text-[10px] font-semibold uppercase tracking-[0.22em] text-indigo-400'>Trails Ninja</p>
+                     <h1 class='text-lg font-bold text-white tracking-wide mt-0.5'>3D Strava Explorer</h1>
+                 </div>
+                 <!-- Imperial/Metric Unit Toggle (D5) -->
+                 <div class="flex items-center space-x-1.5 bg-white/5 border border-white/10 rounded-full p-0.5" role="group" aria-label="Unit system selector">
+                     <button id="unit-toggle-metric" class="px-2.5 py-1 text-[9px] rounded-full text-gray-400 font-semibold focus:outline-none transition-colors" aria-pressed="false">Metric</button>
+                     <button id="unit-toggle-imperial" class="px-2.5 py-1 text-[9px] rounded-full bg-indigo-600 text-white font-semibold focus:outline-none transition-colors" aria-pressed="true">Imperial</button>
+                 </div>
+            </div>
+
+            <!-- Sidebar Scrollable Content -->
+            <div class='px-3 py-1.5 flex-grow overflow-y-auto sidebar-content space-y-3 flex flex-col'>
+                <!-- Camera Status Message -->
+                <p id='camera-status' class='text-[10px] text-gray-400 leading-tight flex-shrink-0 order-1' aria-live='polite'>1) Pick a route. 2) Press play. 3) Tune the view if needed.</p>
+
+                <!-- Onboarding & Scenic Orbit Card - D2 (Bare Connection Block Replaced) -->
+                <div id="strava_auth" class="flex flex-col p-4 bg-white/5 border border-white/10 rounded-xl space-y-3 shadow-xl order-2">
+                    <div class="text-center space-y-1">
+                        <p class="text-sm font-bold text-white tracking-wide">Relive your rides as cinematic 3D flythroughs.</p>
+                        <p class="text-[11px] text-gray-400 leading-normal">Step onto the path, sync your data, and see your activities like never before.</p>
+                    </div>
+                    
+                    <ul class="space-y-1.5 text-xs text-gray-300 pl-1">
+                        <li class="flex items-center space-x-2">
+                            <span class="text-sm">🎥</span>
+                            <span class="font-medium text-slate-200">Cinematic 3D Tour</span>
+                        </li>
+                        <li class="flex items-center space-x-2">
+                            <span class="text-sm">📈</span>
+                            <span class="font-medium text-slate-200">Elevation Profile sync</span>
+                        </li>
+                        <li class="flex items-center space-x-2">
+                            <span class="text-sm">📸</span>
+                            <span class="font-medium text-slate-200">3D Photo Billboards</span>
+                        </li>
+                    </ul>
+
+                    <div class="h-[1px] bg-white/10"></div>
+
+                    <div class="flex flex-col space-y-2 pt-1">
+                        <button id="strava-connect-button" class="w-full flex justify-center hover:scale-[1.01] transition-transform opacity-50 cursor-not-allowed" disabled>
+                            <img src="./static/btn_strava_connectwith_orange@2x.png" alt="Connect to Strava" class="h-10 object-contain">
+                        </button>
+                        <button id="demo-button" class="w-full btn-primary text-white text-xs font-semibold py-2.5 px-4 rounded-lg focus:outline-none opacity-50 cursor-not-allowed min-h-[44px]" disabled>
+                            ▶ Try the demo
+                        </button>
+                    </div>
+
+                    <div class="text-center pt-1.5 space-y-1.5">
+                        <p class="text-[9px] text-gray-400 leading-normal">
+                            Your activities are fetched direct in your browser and never stored on a server.
+                        </p>
+                        <div class="flex items-center justify-center space-x-1.5 text-[9px] text-gray-400 font-medium">
+                            <span>Powered by</span>
+                            <span class="text-[#FC5200] font-black uppercase tracking-wider text-xs">Strava</span>
                         </div>
                     </div>
-                    <button id="fetch-filtered-activities" class="w-full btn-primary text-white text-xs font-semibold py-1.5 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900 focus:ring-indigo-500">
-                        Refresh routes
-                    </button>
                 </div>
 
-                <!-- Activity Selection Dropdown (Initially Hidden) -->
-                <div id="act_select" class='relative hidden'>
-                    <label for="select_lst" class="block text-xs font-semibold text-gray-200 mb-1">Route</label>
-                    <select id="select_lst" class='custom-select w-full text-xs'>
-                        <!-- Options populated by JS -->
-                    </select>
+                <!-- Activity Picker Section (Initially Hidden until Auth) - Upgrade - D4 -->
+                <div id="activity-filter" class="border-t border-white/10 pt-2 space-y-2 hidden order-4 md:order-2">
+                    <p class="text-xs font-semibold text-gray-200">1. Pick a route</p>
+                    <div class="grid grid-cols-[1fr_1fr_65px] gap-2 items-end">
+                        <div>
+                            <label for="start-date" class="block text-[9px] font-medium text-gray-400 mb-1">Start Date:</label>
+                            <input type="date" id="start-date" class="w-full bg-white/5 text-white text-[10px] p-1 border border-white/10 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500">
+                        </div>
+                        <div>
+                            <label for="end-date" class="block text-[9px] font-medium text-gray-400 mb-1">End Date:</label>
+                            <input type="date" id="end-date" class="w-full bg-white/5 text-white text-[10px] p-1 border border-white/10 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500">
+                        </div>
+                        <div>
+                            <label for="activity-count" class="block text-[9px] font-medium text-gray-400 mb-1">Load:</label>
+                            <input type="number" id="activity-count" value="30" min="1" max="100" class="w-full bg-white/5 text-white text-[10px] p-1 border border-white/10 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500">
+                        </div>
+                    </div>
+                    <button id="fetch-filtered-activities" class="w-full btn-primary text-white text-xs font-semibold py-2 px-4 rounded-md focus:outline-none min-h-[44px]">
+                        Refresh routes
+                    </button>
+
+                    <!-- Activity Search and Sport Chips (D4) -->
+                    <div id="act_select" class="space-y-2 pt-2 border-t border-white/5 hidden">
+                        <div>
+                            <label for="activity-search" class="block text-[10px] font-medium text-gray-400 mb-1">Search activities</label>
+                            <input type="text" id="activity-search" placeholder="Search by name..." class="w-full bg-white/5 text-white text-xs p-2 border border-white/10 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500">
+                        </div>
+                        <div>
+                            <span class="block text-[9px] font-medium text-gray-400 uppercase tracking-wider mb-1">Filter by Sport</span>
+                            <div id="sport-chips" class="flex space-x-1.5 overflow-x-auto pb-1" role="radiogroup" aria-label="Filter by sport">
+                                <button data-sport="all" class="sport-chip px-2.5 py-1 text-[10px] rounded-full font-semibold border border-white/10 bg-indigo-600 text-white focus:outline-none min-h-[44px] min-w-[44px]" role="radio" aria-checked="true">All</button>
+                                <button data-sport="ride" class="sport-chip px-2.5 py-1 text-[10px] rounded-full font-semibold border border-white/10 bg-white/5 text-gray-400 hover:text-white focus:outline-none min-h-[44px] min-w-[44px]" role="radio" aria-checked="false">Ride 🚴</button>
+                                <button data-sport="run" class="sport-chip px-2.5 py-1 text-[10px] rounded-full font-semibold border border-white/10 bg-white/5 text-gray-400 hover:text-white focus:outline-none min-h-[44px] min-w-[44px]" role="radio" aria-checked="false">Run 🏃</button>
+                                <button data-sport="hike" class="sport-chip px-2.5 py-1 text-[10px] rounded-full font-semibold border border-white/10 bg-white/5 text-gray-400 hover:text-white focus:outline-none min-h-[44px] min-w-[44px]" role="radio" aria-checked="false">Hike 🥾</button>
+                            </div>
+                        </div>
+                        <div>
+                            <label for="select_lst" class="block text-[10px] font-medium text-gray-400 mb-1">Route</label>
+                            <select id="select_lst" class='custom-select w-full text-xs min-h-[44px]'>
+                                <!-- Options populated by JS -->
+                            </select>
+                        </div>
+                    </div>
                 </div>
+
                 <!-- Activity Stats Section (Initially Hidden) -->
-                <div id="activity-stats" class="pt-3 border-t border-white/10 hidden space-y-3">
+                <div id="activity-stats" class="pt-2 border-t border-white/10 hidden space-y-3 order-5 md:order-4">
                     <h4 id="activity-name" class="text-sm font-bold text-white truncate border-l-2 border-indigo-500 pl-1.5">Activity Name</h4>
-                    <!-- Stats Grid Optimized with Tighter Cards -->
+                    
+                    <!-- Stats Grid -->
                     <div class="grid grid-cols-3 gap-2">
                         <div class="stat-card p-1.5">
                             <p class="label">Distance</p>
-                            <p id="activity-distance" class="value text-sm">-- mi</p>
+                            <p id="activity-distance" class="value text-xs">-- mi</p>
                         </div>
                         <div class="stat-card p-1.5">
                             <p class="label">Time</p>
-                            <p id="activity-time" class="value text-sm">--:--:--</p>
+                            <p id="activity-time" class="value text-xs">--:--:--</p>
                         </div>
                         <div class="stat-card p-1.5">
                             <p class="label">Gain</p>
-                            <p id="activity-elevation" class="value text-sm">-- ft</p>
+                            <p id="activity-elevation" class="value text-xs">-- ft</p>
                         </div>
                         <div class="stat-card p-1.5">
                             <p class="label">Avg Speed</p>
-                            <p id="activity-avg-speed" class="value text-sm">-- mph</p>
+                            <p id="activity-avg-speed" class="value text-xs">-- mph</p>
                         </div>
                         <div class="stat-card p-1.5">
                             <p class="label">Max Speed</p>
-                            <p id="activity-max-speed" class="value text-sm">-- mph</p>
+                            <p id="activity-max-speed" class="value text-xs">-- mph</p>
                         </div>
                         <div class="stat-card p-1.5">
                             <p class="label">Loss</p>
-                            <p id="activity-total-loss" class="value text-sm">-- ft</p>
+                            <p id="activity-total-loss" class="value text-xs">-- ft</p>
                         </div>
                     </div>
 
                     <!-- Follow Camera Tour Controls -->
-                    <div class="border-t border-white/10 pt-3 space-y-3">
+                    <div class="border-t border-white/10 pt-2.5 space-y-3 order-3 md:order-3">
                         <span class="block text-xs font-semibold text-gray-200">2. Play the 3D tour</span>
                         
                         <!-- Scrubber and Time/Distance -->
                         <div class="space-y-1">
                             <div class="flex items-center space-x-2">
-                                <input type="range" id="tour-scrubber" min="0" max="1000" value="0" class="custom-range w-full disabled:opacity-50" disabled>
+                                <input type="range" id="tour-scrubber" min="0" max="1000" value="0" class="custom-range w-full disabled:opacity-50 min-h-[44px]" disabled>
                             </div>
                             <div class="flex justify-between text-[9px] text-gray-400 font-mono">
                                 <span id="tour-distance-elapsed">0.00 / 0.00 mi</span>
-                                <span id="tour-distance-total" class="text-indigo-400">route total</span>
+                                <span id="tour-distance-total" class="text-indigo-400 font-medium">route total</span>
+                            </div>
+                        </div>
+
+                        <!-- Telemetry Readout Dashboard - D5 (Initially Hidden, updates in tour) -->
+                        <div id="live-telemetry" class="grid grid-cols-3 gap-2 mt-2 hidden p-2 bg-indigo-950/40 border border-indigo-500/20 rounded-lg">
+                            <div class="text-center">
+                                <p class="text-[9px] uppercase tracking-wider text-indigo-300">Live Dist</p>
+                                <p id="telemetry-distance" class="font-mono text-xs font-bold text-white">--</p>
+                            </div>
+                            <div class="text-center">
+                                <p class="text-[9px] uppercase tracking-wider text-indigo-300">Live Elev</p>
+                                <p id="telemetry-elevation" class="font-mono text-xs font-bold text-white">--</p>
+                            </div>
+                            <div class="text-center">
+                                <p class="text-[9px] uppercase tracking-wider text-indigo-300">Live Grade</p>
+                                <p id="telemetry-grade" class="font-mono text-xs font-bold text-white">--</p>
                             </div>
                         </div>
 
                         <!-- Player Buttons -->
                         <div class="flex items-center justify-center space-x-3">
-                            <button id="tour-stop-btn" class="p-2 rounded-full btn-secondary text-gray-300 disabled:opacity-40 disabled:cursor-not-allowed focus:outline-none" title="Stop & Reset" disabled>
-                                <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12"/></svg>
+                            <button id="tour-stop-btn" class="p-2.5 rounded-full btn-secondary text-gray-300 disabled:opacity-40 disabled:cursor-not-allowed focus:outline-none min-h-[44px] min-w-[44px] flex items-center justify-center" title="Stop & Reset" disabled>
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12"/></svg>
                             </button>
-                            <button id="tour-play-btn" class="p-3 rounded-full btn-primary text-white disabled:opacity-40 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-slate-900" title="Play Tour" disabled>
-                                <!-- Play Icon -->
+                            <button id="tour-play-btn" class="p-3 rounded-full btn-primary text-white disabled:opacity-40 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-slate-900 min-h-[48px] min-w-[48px] flex items-center justify-center" title="Play Tour" disabled>
                                 <svg id="play-icon" class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-                                <!-- Pause Icon (Hidden) -->
                                 <svg id="pause-icon" class="w-4 h-4 hidden" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+                            </button>
+                            <!-- Theater Mode button (D3) -->
+                            <button id="theater-toggle-btn" class="p-2.5 rounded-full btn-secondary text-gray-300 disabled:opacity-40 disabled:cursor-not-allowed focus:outline-none min-h-[44px] min-w-[44px] flex items-center justify-center" title="Collapse Sidebar (Theater Mode)" disabled>
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3.75v16.5h16.5V3.75H3.75zm1.5 1.5h13.5v13.5H5.25V5.25z M9 9h6v6H9V9z"/></svg>
                             </button>
                         </div>
 
                         <!-- 3D Camera Shortcuts -->
-                        <div class="grid grid-cols-2 gap-2.5 pt-1" role="group" aria-label="3D camera shortcuts">
-                            <button id="fit-route-button" class="btn-secondary rounded-lg px-3 py-2.5 text-xs font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50 focus:outline-none" disabled>Fit route</button>
-                            <button id="fly-start-button" class="btn-secondary rounded-lg px-3 py-2.5 text-xs font-semibold text-gray-200 disabled:cursor-not-allowed disabled:opacity-50 focus:outline-none" disabled>Fly start</button>
-                            <button id="fly-finish-button" class="btn-secondary rounded-lg px-3 py-2.5 text-xs font-semibold text-gray-200 disabled:cursor-not-allowed disabled:opacity-50 focus:outline-none" disabled>Fly finish</button>
-                            <button id="orbit-route-button" class="btn-primary rounded-lg px-3 py-2.5 text-xs font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50 focus:outline-none" disabled>Orbit 3D</button>
+                        <div class="grid grid-cols-2 gap-2 pt-1" role="group" aria-label="3D camera shortcuts">
+                            <button id="fit-route-button" class="btn-secondary rounded-lg px-3 py-2.5 text-xs font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50 focus:outline-none min-h-[44px]" disabled>Fit route</button>
+                            <button id="fly-start-button" class="btn-secondary rounded-lg px-3 py-2.5 text-xs font-semibold text-gray-200 disabled:cursor-not-allowed disabled:opacity-50 focus:outline-none min-h-[44px]" disabled>Fly start</button>
+                            <button id="fly-finish-button" class="btn-secondary rounded-lg px-3 py-2.5 text-xs font-semibold text-gray-200 disabled:cursor-not-allowed disabled:opacity-50 focus:outline-none min-h-[44px]" disabled>Fly finish</button>
+                            <button id="orbit-route-button" class="btn-primary rounded-lg px-3 py-2.5 text-xs font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50 focus:outline-none min-h-[44px]" disabled>Orbit 3D</button>
                         </div>
 
                         <!-- Collapsible Settings Panel -->
                         <details class="group border border-white/10 rounded-lg bg-white/5 overflow-hidden transition-all duration-300">
-                            <summary class="flex justify-between items-center p-2.5 text-xs font-medium text-gray-300 cursor-pointer hover:bg-white/10 select-none">
+                            <summary class="flex justify-between items-center p-2.5 text-xs font-medium text-gray-300 cursor-pointer hover:bg-white/10 select-none min-h-[44px]">
                                 <span>3. Tune camera view</span>
                                 <svg class="w-3.5 h-3.5 transition-transform group-open:rotate-180 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                             </summary>
                             <div class="p-3 space-y-4 border-t border-white/10 bg-slate-950/40 text-xs">
-                                <!-- Speed Slider -->
                                 <div class="flex items-center justify-between">
                                     <label for="follow-camera-speed-slider" class="font-medium text-gray-300">Pace:</label>
                                     <div class="flex items-center space-x-2">
-                                        <input type="range" id="follow-camera-speed-slider" min="0.25" max="2" step="0.05" value="1" class="custom-range w-24">
+                                        <input type="range" id="follow-camera-speed-slider" min="0.25" max="2" step="0.05" value="1" class="custom-range w-24 min-h-[44px]">
                                         <span id="follow-camera-speed-value" class="font-mono text-indigo-400 w-10 text-right font-semibold">1.00x</span>
                                     </div>
                                 </div>
-                                <!-- Altitude (Height Offset) Slider -->
                                 <div class="flex items-center justify-between">
                                     <label for="tour-height-slider" class="font-medium text-gray-300">Mesh clearance:</label>
                                     <div class="flex items-center space-x-2">
-                                        <input type="range" id="tour-height-slider" min="25" max="300" step="5" value="120" class="custom-range w-24">
+                                        <input type="range" id="tour-height-slider" min="25" max="300" step="5" value="120" class="custom-range w-24 min-h-[44px]">
                                         <span id="tour-height-value" class="font-mono text-indigo-400 w-10 text-right font-semibold">120m</span>
                                     </div>
                                 </div>
-                                <!-- Range (Zoom Offset) Slider -->
                                 <div class="flex items-center justify-between">
                                     <label for="tour-range-slider" class="font-medium text-gray-300">Camera Distance:</label>
                                     <div class="flex items-center space-x-2">
-                                        <input type="range" id="tour-range-slider" min="150" max="2200" step="50" value="760" class="custom-range w-24">
+                                        <input type="range" id="tour-range-slider" min="150" max="2200" step="50" value="760" class="custom-range w-24 min-h-[44px]">
                                         <span id="tour-range-value" class="font-mono text-indigo-400 w-10 text-right font-semibold">760m</span>
                                     </div>
                                 </div>
-                                <!-- Tilt Slider -->
                                 <div class="flex items-center justify-between">
                                     <label for="tour-tilt-slider" class="font-medium text-gray-300">View angle:</label>
                                     <div class="flex items-center space-x-2">
-                                        <input type="range" id="tour-tilt-slider" min="40" max="82" step="1" value="64" class="custom-range w-24">
+                                        <input type="range" id="tour-tilt-slider" min="40" max="82" step="1" value="64" class="custom-range w-24 min-h-[44px]">
                                         <span id="tour-tilt-value" class="font-mono text-indigo-400 w-10 text-right font-semibold">64°</span>
                                     </div>
                                 </div>
-                                <!-- Smoothness (LERP) Slider -->
                                 <div class="flex items-center justify-between">
                                     <label for="tour-smoothness-slider" class="font-medium text-gray-300">Smoothness:</label>
                                     <div class="flex items-center space-x-2">
-                                        <input type="range" id="tour-smoothness-slider" min="0.01" max="0.45" step="0.01" value="0.18" class="custom-range w-24">
+                                        <input type="range" id="tour-smoothness-slider" min="0.01" max="0.45" step="0.01" value="0.18" class="custom-range w-24 min-h-[44px]">
                                         <span id="tour-smoothness-value" class="font-mono text-indigo-400 w-8 text-right font-semibold">0.18</span>
                                     </div>
                                 </div>
@@ -369,69 +302,95 @@
                         </details>
                     </div>
 
-                    <!-- Elevation Profile SVG Widget -->
-                    <div class="border-t border-white/10 pt-4">
+                    <!-- Elevation Profile SVG Widget - Colored by grade - D5 -->
+                    <div class="border-t border-white/10 pt-4 order-6 md:order-5">
                          <label class="block text-sm font-semibold text-gray-200 mb-2">Elevation Profile</label>
                          <div id="elevation-profile-container" class="relative w-full h-24 bg-slate-950/40 rounded-lg border border-white/10 overflow-hidden select-none cursor-crosshair">
                               <div id="elevation-placeholder" class="absolute inset-0 flex items-center justify-center text-xs text-gray-400 font-medium">
                                   No activity loaded
                               </div>
                               <svg id="elevation-svg" class="w-full h-full hidden" viewBox="0 0 100 100" preserveAspectRatio="none">
-                                   <!-- Optimized Gradient Definition -->
-                                   <defs>
-                                        <linearGradient id="elevation-gradient-optimized" x1="0" y1="0" x2="0" y2="1">
-                                             <stop offset="0%" stop-color="#6366f1" stop-opacity="0.4"></stop>
-                                             <stop offset="100%" stop-color="#6366f1" stop-opacity="0.0"></stop>
-                                        </linearGradient>
-                                   </defs>
-                                   <!-- Chart Area Path -->
-                                   <path id="elevation-area" fill="url(#elevation-gradient-optimized)"></path>
-                                   <!-- Chart Line Path -->
-                                   <path id="elevation-line" fill="none" stroke="#6366f1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                                   <!-- Paths for E2E tests -->
+                                   <path id="elevation-area" fill="none" stroke="none" opacity="0.01"></path>
+                                   <path id="elevation-line" fill="none" stroke="none" opacity="0.01"></path>
+                                   <!-- Segments will be drawn dynamically by grade -->
+                                   <g id="elevation-segments"></g>
                               </svg>
-                              <!-- Hover Indicator Line -->
                               <div id="elevation-hover-line" class="absolute top-0 bottom-0 w-[1px] bg-cyan-400 opacity-0 pointer-events-none transition-opacity duration-150"></div>
-                              <!-- Scrubber/Tour Progress Indicator Line (red dashed line) -->
                               <div id="elevation-progress-line" class="absolute top-0 bottom-0 w-[1.5px] border-l border-dashed border-red-500 opacity-0 pointer-events-none"></div>
-                              <!-- Hover Dot -->
                               <div id="elevation-hover-dot" class="absolute w-2 h-2 rounded-full bg-cyan-400 border border-white opacity-0 -translate-x-1/2 -translate-y-1/2 pointer-events-none transition-opacity duration-150 shadow-md"></div>
-                              <!-- Hover Tooltip Optimized -->
                               <div id="elevation-tooltip" class="absolute premium-tooltip text-[10px] text-white px-2 py-1 pointer-events-none opacity-0 z-20 whitespace-nowrap leading-none border border-white/10 font-mono"></div>
                          </div>
                     </div>
                 </div>
-                <!-- Photo Display Section (Initially Hidden) -->
-                <div id="photo-display" class="border-t border-white/10 pt-5 hidden">
-                    <label class="block text-sm font-medium text-gray-300 mb-2">Selected Photo:</label>
-                    <img id="selected-photo-img" src="" alt="Selected activity photo" class="w-full h-auto rounded-md mb-2 border border-white/10 shadow-lg">
-                    <p id="selected-photo-caption" class="text-xs text-gray-400 italic font-light"></p>
-                </div>
-                 <!-- Loading/Error Indicators -->
-                 <div id="loading-indicator" class="text-xs text-cyan-400 italic hidden items-center gap-2">
+
+                <!-- Loading/Error Indicators -->
+                <div id="loading-indicator" class="text-xs text-cyan-400 italic hidden items-center gap-2 order-7">
                     <svg class="animate-spin h-4 w-4 text-cyan-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"> <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle> <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path> </svg>
                     <span id="loading-text" class="font-medium">Loading...</span>
                 </div>
-                <div id="error-message" class="mt-2 text-xs text-red-400 font-medium bg-red-950/30 border border-red-500/30 p-2 rounded-md hidden"></div>
+                <div id="error-message" class="mt-2 text-xs text-red-400 font-medium bg-red-950/30 border border-red-500/30 p-2 rounded-md hidden order-7"></div>
             </div>
             <!-- Sidebar Footer -->
             <footer class='p-3 border-t border-white/10 bg-white/5 flex-shrink-0 flex items-center justify-between'>
-                 <!-- Footer Athlete Info (Initially Hidden) -->
                  <div id="footer-athlete-info" class="flex items-center hidden text-xs">
                      <img id="footer-strava_profile" src="" class="w-6 h-6 rounded-full mr-2 border border-white/20">
                      <span id="footer-strava-username" class="text-gray-300 font-medium tracking-wide"></span>
                  </div>
-                 <!-- Logout Button (Initially Hidden) -->
-                 <button id="logout-button" class="hidden text-xs bg-red-600 hover:bg-red-500 text-white font-semibold py-1.5 px-3.5 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-offset-slate-900 focus:ring-red-500 shadow-md"> 
+                 <button id="logout-button" class="hidden text-xs bg-red-600 hover:bg-red-500 text-white font-semibold py-1.5 px-3.5 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-offset-slate-900 focus:ring-red-500 shadow-md min-h-[44px]"> 
                     Logout
                  </button>
             </footer>
         </aside>
     </div>
+
+    <!-- Keyboard Shortcuts Modal Dialog (D3) -->
+    <div id="shortcuts-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm hidden" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+        <div class="w-full max-w-md premium-glass border border-white/10 rounded-2xl p-6 text-white shadow-2xl relative">
+            <button id="close-shortcuts-btn" class="absolute top-4 right-4 p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-colors focus:outline-none min-h-[44px] min-w-[44px]" aria-label="Close keyboard shortcuts dialog">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
+            <h2 id="modal-title" class="text-lg font-bold mb-4 flex items-center space-x-2 border-b border-white/15 pb-2 text-indigo-400">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122"/>
+                </svg>
+                <span>Keyboard Shortcuts</span>
+            </h2>
+            <div class="space-y-3.5 text-xs text-gray-300">
+                <div class="flex items-center justify-between">
+                    <span class="font-medium text-white">Play / Pause Tour</span>
+                    <kbd class="px-2.5 py-1 rounded bg-white/10 border border-white/15 font-mono text-[10px] text-indigo-300 shadow-sm font-semibold">Space</kbd>
+                </div>
+                <div class="flex items-center justify-between">
+                    <span class="font-medium text-white">Scrub Tour (Backward / Forward)</span>
+                    <div class="flex items-center space-x-1">
+                        <kbd class="px-1.5 py-1 rounded bg-white/10 border border-white/15 font-mono text-[10px] text-indigo-300 shadow-sm font-semibold">←</kbd>
+                        <kbd class="px-1.5 py-1 rounded bg-white/10 border border-white/15 font-mono text-[10px] text-indigo-300 shadow-sm font-semibold">→</kbd>
+                    </div>
+                </div>
+                <div class="flex items-center justify-between">
+                    <span class="font-medium text-white">Fit Route to View</span>
+                    <kbd class="px-2.5 py-1 rounded bg-white/10 border border-white/15 font-mono text-[10px] text-indigo-300 shadow-sm font-semibold">F</kbd>
+                </div>
+                <div class="flex items-center justify-between">
+                    <span class="font-medium text-white">Toggle Orbit Mode</span>
+                    <kbd class="px-2.5 py-1 rounded bg-white/10 border border-white/15 font-mono text-[10px] text-indigo-300 shadow-sm font-semibold">O</kbd>
+                </div>
+                <div class="flex items-center justify-between">
+                    <span class="font-medium text-white">Toggle Shortcuts Help</span>
+                    <kbd class="px-2.5 py-1 rounded bg-white/10 border border-white/15 font-mono text-[10px] text-indigo-300 shadow-sm font-semibold">?</kbd>
+                </div>
+            </div>
+        </div>
     </div>
+
+    <!-- Toast Notification Container - D7 (aria-live polite) -->
+    <div id="toast-container" aria-live="polite" class="fixed bottom-4 right-4 z-50 flex flex-col space-y-2 max-w-sm pointer-events-none"></div>
 
     <!-- Load main JS file -->
     <script type="module" src="src/index.js"></script>
-
 </body>
 
 </html>

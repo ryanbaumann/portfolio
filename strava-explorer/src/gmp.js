@@ -1,4 +1,10 @@
-import { initializeFollowCamera, registerPhotoTriggers, setPhotoTriggerCallback, haversineDistance } from './followCamera.js'; // Import initializer
+// strava-explorer/src/gmp.js
+
+import { initializeFollowCamera, registerPhotoTriggers, setPhotoTriggerCallback } from './followCamera.js';
+import { debug, warn, error } from './log.js';
+import { toLatLngLiteral } from './latlng.js';
+import { DEFAULT_ALTITUDE_M, haversineKm, downsamplePath } from './geo.js';
+import { groupPhotosByProximity } from './photos.js';
 
 // --- Module-Level Variables ---
 let map3d = null;
@@ -8,16 +14,17 @@ let routeMarkers = [];
 let photoMarkers = new Map(); // Stores { marker, popover } pairs, key = photo.unique_id
 let trackingMarker = null;
 let photoLoadSessionId = 0;
+let mapReadyPromise = null;
+let defaultOrbitActive = false;
 
-// Follow Camera state moved to followCamera.js
 // GMP Class variables (populated in initMap)
 let Map3DElement, Marker3DElement, Marker3DInteractiveElement, Polyline3DElement, AltitudeMode, MapMode, PinElement, PopoverElement;
-let ElevationService, ElevationElement; // Removed Place
+let ElevationService;
 let LatLng, LatLngBounds, encoding;
 
-// --- Helper Functions (Dependencies - will be passed or imported if moved to utils) ---
-let showLoading = (isLoading, text) => console.log(`Loading: ${isLoading}, Text: ${text}`);
-let showError = (message) => console.error(`Error: ${message}`);
+// --- Helper Functions ---
+let showLoading = (isLoading, text) => debug(`Loading: ${isLoading}, Text: ${text}`);
+let showError = (message) => error(`Error: ${message}`);
 const PHOTO_PROXY_BASE_URL = (import.meta.env.VITE_STRAVA_AUTH_BASE_URL || '').replace(/\/$/, '');
 
 // Function to set helper dependencies (called from index.js)
@@ -26,13 +33,17 @@ export function setHelpers(helpers) {
     showError = helpers.showError;
 }
 
-
 async function loadGoogleMapsApi(apiKey, libraries) {
     const GoogleMapsLoader = await import('@googlemaps/js-api-loader');
     const loaderModule = GoogleMapsLoader.default ?? GoogleMapsLoader;
 
     if (typeof GoogleMapsLoader.setOptions === 'function' && typeof GoogleMapsLoader.importLibrary === 'function') {
-        GoogleMapsLoader.setOptions({ key: apiKey, v: 'alpha', libraries });
+        GoogleMapsLoader.setOptions({
+            key: apiKey,
+            v: 'beta',
+            libraries,
+            internalUsageAttributionIds: ['gmp_git_agentskills_v1']
+        });
         return GoogleMapsLoader.importLibrary;
     }
 
@@ -41,8 +52,9 @@ async function loadGoogleMapsApi(apiKey, libraries) {
     const LoaderClass = GoogleMapsLoader.Loader ?? loaderModule.Loader;
     const loader = new LoaderClass({
         apiKey,
-        version: 'alpha',
+        version: 'beta',
         libraries,
+        internalUsageAttributionIds: ['gmp_git_agentskills_v1']
     });
     await loader.load();
     return google.maps.importLibrary.bind(google.maps);
@@ -54,17 +66,16 @@ export async function initMap(mapHostElement, apiKey) {
     if (!apiKey) throw new Error("Google Maps API Key is required.");
 
     showLoading(true, "Loading Google Maps...");
-    const libraries = ["maps3d", "marker", "elevation", "places", "geometry", "core"];
+    const libraries = ["maps3d", "marker", "elevation", "geometry", "core"];
 
     try {
         const importLibrary = await loadGoogleMapsApi(apiKey, libraries);
-        console.log("Google Maps API loaded.");
+        debug("Google Maps API loaded.");
 
         // Import necessary classes *after* API is loaded
         ({ Map3DElement, Marker3DElement, Marker3DInteractiveElement, Polyline3DElement, AltitudeMode, MapMode, PopoverElement } = await importLibrary("maps3d"));
         ({ PinElement } = await importLibrary("marker")); // Keep PinElement if default marker appearance is customized later
-        ({ ElevationService, ElevationElement } = await importLibrary("elevation"));
-        // ({ Place } = await importLibrary("places")); // Removed Place import
+        ({ ElevationService } = await importLibrary("elevation"));
         ({ LatLng, LatLngBounds } = await importLibrary("core"));
         ({ encoding } = await importLibrary("geometry"));
 
@@ -81,7 +92,21 @@ export async function initMap(mapHostElement, apiKey) {
             defaultUIHidden: true, // Hide default controls; app provides custom accessible controls
         });
         mapHostElement.appendChild(map3d);
-        console.log("3D Map initialized.");
+        debug("3D Map initialized.");
+
+        // E3: Listen for gmp-error to show error notices
+        map3d.addEventListener('gmp-error', (e) => {
+            error("Map3DElement error:", e);
+            showError("Google Maps 3D error. Your browser or hardware may not support Photorealistic 3D Maps.");
+        });
+
+        // E3: Listen for gmp-steadystate event before triggering route flights
+        mapReadyPromise = new Promise((resolve) => {
+            map3d.addEventListener('gmp-steadystate', () => {
+                debug("Map reached initial steady state.");
+                resolve();
+            }, { once: true });
+        });
 
         // Initialize Follow Camera module after map and dependencies are ready
         // Pass the module-level showError and updateTrackingMarker
@@ -105,32 +130,32 @@ export async function initMap(mapHostElement, apiKey) {
         showLoading(false);
         return map3d; // Return the map instance
 
-    } catch (error) {
-        console.error("Map Initialization failed:", error);
-        showError(`Map initialization failed: ${error.message}. Check API key or network connection.`);
+    } catch (errorObj) {
+        error("Map Initialization failed:", errorObj);
+        showError(`Map initialization failed: ${errorObj.message}. Check API key or network connection.`);
         showLoading(false);
-        throw error; // Re-throw
+        throw errorObj; // Re-throw
     }
 }
 
 // --- Elevation Helpers ---
 export async function getClientElevation(latLng) { // latLng = { lat: number, lng: number }
     if (!elevator) {
-        console.warn("ElevationService not initialized.");
-        return 10; // Default elevation
+        warn("ElevationService not initialized.");
+        return DEFAULT_ALTITUDE_M; // Default elevation
     }
     try {
         const { results } = await elevator.getElevationForLocations({ locations: [latLng] });
-        return results?.[0]?.elevation ?? 10; // Return elevation or default
+        return results?.[0]?.elevation ?? DEFAULT_ALTITUDE_M; // Return elevation or default
     } catch (e) {
-        console.error("Elevation lookup failed:", e);
+        error("Elevation lookup failed:", e);
         showError(`Elevation lookup error: ${e.message}`);
-        return 10; // Default on error
+        return DEFAULT_ALTITUDE_M; // Default on error
     }
 }
 
 export async function getElevationsForPoints(locations) { // locations = [{ lat, lng }, ...]
-    if (!elevator || locations.length === 0) return locations.map(() => 10); // Default if no service/locations
+    if (!elevator || locations.length === 0) return locations.map(() => DEFAULT_ALTITUDE_M); // Default if no service/locations
     const batchSize = 200; // API limit often around 512, use smaller batches
     let allElevations = [];
     showLoading(true, `Fetching ${locations.length} elevations...`);
@@ -138,16 +163,16 @@ export async function getElevationsForPoints(locations) { // locations = [{ lat,
         for (let i = 0; i < locations.length; i += batchSize) {
             const batchLocations = locations.slice(i, i + batchSize);
             const { results } = await elevator.getElevationForLocations({ locations: batchLocations });
-            const elevations = results.map(result => result?.elevation ?? 10); // Default to 10 if null
+            const elevations = results.map(result => result?.elevation ?? DEFAULT_ALTITUDE_M); // Default to fallback if null
             allElevations.push(...elevations);
         }
     } catch (e) {
-        console.error(`Elevation fetch error:`, e);
+        error(`Elevation fetch error:`, e);
         showError(`Elevation fetch error: ${e.message}`);
         // Fill remaining with default if error occurred mid-batch
         const remaining = locations.length - allElevations.length;
         if (remaining > 0) {
-            allElevations.push(...Array(remaining).fill(10));
+            allElevations.push(...Array(remaining).fill(DEFAULT_ALTITUDE_M));
         }
     } finally {
         showLoading(false);
@@ -169,20 +194,27 @@ export async function flyToLocation(targetCoords, range = 1000, tilt = 60, headi
     try {
         showLoading(true, "Moving camera...");
         await map3d.flyCameraTo({ endCamera, durationMillis: duration });
-    } catch (error) {
-        if (error.name === 'AbortError' || error.message?.includes('interrupted')) {
-           console.log("Camera animation interrupted.");
+    } catch (errorObj) {
+        if (errorObj.name === 'AbortError' || errorObj.message?.includes('interrupted')) {
+           debug("Camera animation interrupted.");
         } else {
-            console.error("flyCameraTo error:", error);
-            showError(`Camera movement error: ${error.message}`);
+            error("flyCameraTo error:", errorObj);
+            showError(`Camera movement error: ${errorObj.message}`);
         }
     } finally {
         showLoading(false);
     }
 }
 
-
 export async function frameRoute(decodedPathLatLng, options = {}) {
+    // E3: Wait for map initial steady state if promise exists (with a 500ms timeout fallback)
+    if (mapReadyPromise) {
+        await Promise.race([
+            mapReadyPromise,
+            new Promise((resolve) => setTimeout(resolve, 500))
+        ]);
+    }
+
     if (!decodedPathLatLng || decodedPathLatLng.length === 0) return;
     const LatLngBoundsClass = LatLngBounds;
     const bounds = new LatLngBoundsClass();
@@ -215,10 +247,10 @@ export async function orbitCurrentView(duration = 9000) {
     try {
         showLoading(true, 'Orbiting route...');
         await map3d.flyCameraAround({ camera: { center: map3d.center, range: map3d.range, tilt: Math.max(map3d.tilt ?? 65, 65), heading: map3d.heading ?? 0 }, durationMillis: duration, repeatCount: 1 });
-    } catch (error) {
-        if (!(error.name === 'AbortError' || error.message?.includes('interrupted'))) {
-            console.error('flyCameraAround error:', error);
-            showError(`Camera orbit error: ${error.message}`);
+    } catch (errorObj) {
+        if (!(errorObj.name === 'AbortError' || errorObj.message?.includes('interrupted'))) {
+            error('flyCameraAround error:', errorObj);
+            showError(`Camera orbit error: ${errorObj.message}`);
         }
     } finally {
         showLoading(false);
@@ -227,6 +259,15 @@ export async function orbitCurrentView(duration = 9000) {
 
 // --- Polyline Handling ---
 export function decodePolyline(polylineString) {
+    if (polylineString && polylineString.startsWith('demo:')) {
+        try {
+            const dataStr = polylineString.substring(5);
+            return JSON.parse(dataStr);
+        } catch (e) {
+            error("Failed to parse demo polyline points:", e);
+            return [];
+        }
+    }
     if (!encoding) {
         showError("Geometry library (encoding) not loaded.");
         return [];
@@ -240,10 +281,10 @@ export function decodePolyline(polylineString) {
         if (!decodedPath || decodedPath.length === 0) {
             throw new Error("Decoded path is empty or invalid.");
         }
-        console.log(`Successfully decoded polyline. Path length: ${decodedPath.length}`);
+        debug(`Successfully decoded polyline. Path length: ${decodedPath.length}`);
         return decodedPath; // Returns array of LatLng objects
     } catch (e) {
-        console.error("GMP polyline decoding failed:", e);
+        error("GMP polyline decoding failed:", e);
         showError(`Failed to decode activity route: ${e.message}`);
         return []; // Return empty on error
     }
@@ -259,18 +300,18 @@ export function displayPolyline(decodedPathLatLng) { // Expects array of LatLng 
         return null;
     }
 
-    console.log(`[displayPolyline] Displaying polyline with ${decodedPathLatLng.length} points.`);
+    debug(`[displayPolyline] Displaying polyline with ${decodedPathLatLng.length} points.`);
 
     // Remove previous polyline
     removePreviousPolyline();
     clearRouteMarkers();
 
     // Create new 3D Polyline clamped to ground with normalized literals
-    const pathLiterals = decodedPathLatLng.map((point) => ({
-        lat: typeof point.lat === 'function' ? point.lat() : (point.lat ?? 0),
-        lng: typeof point.lng === 'function' ? point.lng() : (point.lng ?? 0),
-        altitude: Number.isFinite(point.altitude) ? point.altitude : 10
-    }));
+    const pathLiterals = decodedPathLatLng.map((point) => {
+        const literal = toLatLngLiteral(point);
+        literal.altitude = Number.isFinite(point.altitude) ? point.altitude : DEFAULT_ALTITUDE_M;
+        return literal;
+    });
 
     const routePolyline = new Polyline3DElement({
         path: pathLiterals, // Pass plain LatLngAltitudeLiteral objects
@@ -285,7 +326,7 @@ export function displayPolyline(decodedPathLatLng) { // Expects array of LatLng 
     map3d.appendChild(routePolyline);
     previousPolyline = routePolyline; // Store reference
     addRouteEndpointMarkers(decodedPathLatLng);
-    console.log(`[displayPolyline] Appended routePolyline to map.`);
+    debug(`[displayPolyline] Appended routePolyline to map.`);
     return routePolyline; // Return the created element
 }
 
@@ -296,10 +337,9 @@ function addRouteEndpointMarkers(path) {
         { label: 'Finish', point: path[path.length - 1], color: '#ef4444' },
     ];
     endpoints.forEach(({ label, point, color }) => {
-        const lat = typeof point.lat === 'function' ? point.lat() : (point.lat ?? 0);
-        const lng = typeof point.lng === 'function' ? point.lng() : (point.lng ?? 0);
+        const literal = toLatLngLiteral(point);
         const marker = new Marker3DInteractiveElement({
-            position: { lat, lng },
+            position: literal,
             altitudeMode: AltitudeMode.CLAMP_TO_GROUND,
             title: `${label} of activity route`,
             label,
@@ -318,7 +358,7 @@ function addRouteEndpointMarkers(path) {
 
 export function clearRouteMarkers() {
     routeMarkers.forEach((marker) => {
-        try { map3d?.removeChild(marker); } catch (e) { console.warn('Error removing route marker', e); }
+        try { map3d?.removeChild(marker); } catch (e) { warn('Error removing route marker', e); }
     });
     routeMarkers = [];
     updateTrackingMarker(null);
@@ -327,18 +367,17 @@ export function clearRouteMarkers() {
 export function removePreviousPolyline() {
     if (previousPolyline && map3d) {
         try {
-            console.log(`[removePreviousPolyline] Attempting to remove previous polyline.`);
+            debug(`[removePreviousPolyline] Attempting to remove previous polyline.`);
             map3d.removeChild(previousPolyline);
-            console.log(`[removePreviousPolyline] Successfully removed previous polyline.`);
+            debug(`[removePreviousPolyline] Successfully removed previous polyline.`);
         } catch (e) {
-            console.warn("[removePreviousPolyline] Could not remove previous polyline:", e);
+            warn("[removePreviousPolyline] Could not remove previous polyline:", e);
         } finally {
              previousPolyline = null;
         }
     }
     clearRouteMarkers();
 }
-
 
 function getMarkerPhotoUrl(imageUrl) {
     if (!imageUrl || !PHOTO_PROXY_BASE_URL) return imageUrl;
@@ -347,8 +386,8 @@ function getMarkerPhotoUrl(imageUrl) {
         if (url.protocol === 'https:' && url.hostname === 'dgtzuqphqg23d.cloudfront.net') {
             return `${PHOTO_PROXY_BASE_URL}/api/photo-proxy?url=${encodeURIComponent(url.href)}`;
         }
-    } catch (error) {
-        console.warn('Invalid photo marker URL:', imageUrl, error);
+    } catch (errorObj) {
+        warn('Invalid photo marker URL:', imageUrl, errorObj);
     }
     return imageUrl;
 }
@@ -405,7 +444,7 @@ function resizeImageToDataUrl(imageUrl, maxDim = 100, photoCount = 1) {
                     height: targetHeight
                 });
             } catch (e) {
-                console.warn("Canvas resize failed (CORS):", e);
+                warn("Canvas resize failed (CORS):", e);
                 resolve({ dataUrl: imageUrl, width: maxDim, height: maxDim }); // Fallback
             }
         };
@@ -426,7 +465,7 @@ export async function displayPhotoMarkers(photosData) { // photosData = array fr
     clearPhotoMarkers();
 
     if (!photosData || photosData.length === 0) {
-        console.log("No photos data provided to display.");
+        debug("No photos data provided to display.");
         return;
     }
 
@@ -436,40 +475,15 @@ export async function displayPhotoMarkers(photosData) { // photosData = array fr
 
     showLoading(true, `Processing ${photosData.length} photos...`);
     try {
-        const locatedPhotos = photosData.filter((photo) => photo.location?.length === 2 && photo.unique_id);
+        const photoGroups = groupPhotosByProximity(photosData, haversineKm);
 
-        if (locatedPhotos.length === 0) {
-            console.log("No valid locations found in photo data.");
+        if (photoGroups.length === 0) {
+            debug("No valid locations found in photo data.");
             showLoading(false);
             return;
         }
 
-        // Group photos that are close to each other (within 10 meters / 0.01 km) to prevent overlaps and flicker
-        const photoGroups = [];
-        locatedPhotos.forEach(photo => {
-            const lat = photo.location[0];
-            const lng = photo.location[1];
-            
-            let foundGroup = null;
-            for (const group of photoGroups) {
-                const dist = haversineDistance({ lat, lng }, { lat: group.lat, lng: group.lng });
-                if (dist < 0.01) { // 10 meters
-                    foundGroup = group;
-                    break;
-                }
-            }
-            if (foundGroup) {
-                foundGroup.photos.push(photo);
-            } else {
-                photoGroups.push({
-                    lat,
-                    lng,
-                    photos: [photo]
-                });
-            }
-        });
-
-        console.log(`[displayPhotoMarkers] Grouped ${locatedPhotos.length} photos into ${photoGroups.length} spatial clusters.`);
+        debug(`[displayPhotoMarkers] Grouped photos into ${photoGroups.length} spatial clusters.`);
 
         // Register trigger positions in the follow camera module
         registerPhotoTriggers(photoGroups);
@@ -490,7 +504,7 @@ export async function displayPhotoMarkers(photosData) { // photosData = array fr
 
             // Guard against race conditions (e.g. route changed while loading)
             if (currentSession !== photoLoadSessionId) {
-                console.log("[displayPhotoMarkers] Discarding loaded photo due to session change.");
+                debug("[displayPhotoMarkers] Discarding loaded photo due to session change.");
                 return;
             }
 
@@ -657,7 +671,7 @@ export async function displayPhotoMarkers(photosData) { // photosData = array fr
 
             // Add Click Listener to Marker for camera fly-to
             marker.addEventListener('gmp-click', async () => {
-                console.log("Clicked Photo Marker:", primePhotoId);
+                debug("Clicked Photo Marker:", primePhotoId);
                 // Close other open popovers
                 photoMarkers.forEach(({ popover: otherPopover }, key) => {
                     if (key !== primePhotoId) {
@@ -675,84 +689,29 @@ export async function displayPhotoMarkers(photosData) { // photosData = array fr
 
             // Store Marker and Popover References (keyed by first photo's ID)
             photoMarkers.set(primePhotoId, { marker, popover });
-            console.log(`[displayPhotoMarkers] Appended marker/popover for photo ${primePhotoId}`);
+            debug(`[displayPhotoMarkers] Appended marker/popover for photo ${primePhotoId}`);
         });
 
-    } catch (error) {
-        console.error("Error processing or displaying photo markers:", error);
-        showError(`Failed to display photos: ${error.message}`);
+    } catch (errorObj) {
+        error("Error processing or displaying photo markers:", errorObj);
+        showError(`Failed to display photos: ${errorObj.message}`);
     } finally {
         showLoading(false);
     }
 }
 
-
 export function clearPhotoMarkers() {
     if (photoMarkers.size > 0 && map3d) {
-        console.log(`[clearPhotoMarkers] Clearing ${photoMarkers.size} photo markers and popovers.`);
+        debug(`[clearPhotoMarkers] Clearing ${photoMarkers.size} photo markers and popovers.`);
         photoMarkers.forEach(({ marker, popover }) => {
-            try { map3d.removeChild(marker); } catch(e) { console.warn("Error removing marker", e); }
-            try { map3d.removeChild(popover); } catch(e) { console.warn("Error removing popover", e); }
+            try { map3d.removeChild(marker); } catch(e) { warn("Error removing marker", e); }
+            try { map3d.removeChild(popover); } catch(e) { warn("Error removing popover", e); }
         });
         photoMarkers.clear(); // Clear the map
     }
 }
 
-// --- Utility ---
-export function getMapInstance() {
-    return map3d;
-}
-
-export function getLatLngClass() {
-    return LatLng;
-}
-
-// --- Follow Camera Implementation (Moved to followCamera.js) ---
-export function getLatLngBoundsClass() {
-    return LatLngBounds;
-}
-
-export function getElevationElementClass() {
-    return ElevationElement;
-}
-
-// --- Downsampling Function (Handles LatLng objects) ---
-// Moved here as it's primarily used for the GMP Elevation Widget path
-export function downsamplePath(path, maxPoints) { // path = array of LatLng objects
-    console.log(`[downsamplePath] Called with path length: ${path?.length}, maxPoints: ${maxPoints}`);
-    if (!path || path.length <= maxPoints) {
-        return path; // No need to downsample
-    }
-
-    const originalLength = path.length;
-    const keepEvery = Math.ceil(originalLength / maxPoints);
-    const newPath = [];
-
-    for (let i = 0; i < originalLength; i += keepEvery) {
-        newPath.push(path[i]);
-    }
-
-    // Ensure the last point is always included
-    if (newPath.length > 0 && path.length > 0 && newPath[newPath.length - 1] !== path[originalLength - 1]) {
-         // Check if the last element added is actually the last element of the original path
-         const lastOriginalPoint = path[originalLength - 1];
-         const lastAddedPoint = newPath[newPath.length - 1];
-         // Compare LatLng objects (need to compare lat/lng values)
-         if (lastAddedPoint.lat() !== lastOriginalPoint.lat() || lastAddedPoint.lng() !== lastOriginalPoint.lng()) {
-            newPath.push(lastOriginalPoint);
-         }
-    } else if (newPath.length === 0 && path.length > 0) {
-        // If keepEvery was larger than length, add the first and last points at least
-        newPath.push(path[0]);
-        if (originalLength > 1) {
-            newPath.push(path[originalLength - 1]);
-        }
-    }
-
-
-    console.log(`[downsamplePath] Returning new path. Length: ${newPath?.length}`);
-    return newPath;
-}
+export { downsamplePath };
 
 export function updateTrackingMarker(position, color = '#3b82f6') {
     if (!map3d || !Marker3DInteractiveElement || !AltitudeMode) return;
@@ -765,9 +724,9 @@ export function updateTrackingMarker(position, color = '#3b82f6') {
                 extruded: true,
                 drawsWhenOccluded: true
             });
-            console.log("[updateTrackingMarker] Created trackingMarker singleton volumetric Marker3DElement.");
+            debug("[updateTrackingMarker] Created trackingMarker singleton volumetric Marker3DElement.");
         } catch (e) {
-            console.error("[updateTrackingMarker] Failed to initialize tracking marker:", e);
+            error("[updateTrackingMarker] Failed to initialize tracking marker:", e);
             return;
         }
     }
@@ -777,21 +736,64 @@ export function updateTrackingMarker(position, color = '#3b82f6') {
             try {
                 map3d.removeChild(trackingMarker);
             } catch (e) {
-                console.warn("[updateTrackingMarker] Error removing marker:", e);
+                warn("[updateTrackingMarker] Error removing marker:", e);
             }
         }
         return;
     }
     
-    const lat = typeof position.lat === 'function' ? position.lat() : position.lat;
-    const lng = typeof position.lng === 'function' ? position.lng() : position.lng;
-    // Support both altitude and elevationM, fallback to 10
+    const literal = toLatLngLiteral(position);
     try {
-        trackingMarker.position = { lat, lng, altitude: 5 }; // Boost relative to ground directly by 5 meters
+        trackingMarker.position = { ...literal, altitude: 5 }; // Boost relative to ground directly by 5 meters
         if (!trackingMarker.parentNode) {
             map3d.append(trackingMarker);
         }
     } catch (e) {
-        console.warn("[updateTrackingMarker] Error updating position:", e);
+        warn("[updateTrackingMarker] Error updating position:", e);
+    }
+}
+
+export async function startDefaultOrbit() {
+    if (!map3d) return;
+    if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
+        debug("Skipping scenic orbit due to prefers-reduced-motion.");
+        return;
+    }
+    debug("Starting scenic orbit over the Dolomites.");
+    defaultOrbitActive = true;
+    try {
+        const dolomitesCenter = { lat: 46.4312, lng: 11.8512, altitude: 2500 };
+        map3d.center = dolomitesCenter;
+        map3d.range = 4000;
+        map3d.tilt = 60;
+        map3d.heading = 0;
+
+        await map3d.flyCameraAround({
+            camera: {
+                center: dolomitesCenter,
+                range: 4000,
+                tilt: 60,
+                heading: 0
+            },
+            durationMillis: 60000,
+            repeatCount: 99999
+        });
+    } catch (e) {
+        if (!(e.name === 'AbortError' || e.message?.includes('interrupted'))) {
+            warn("Default orbit failed or interrupted:", e);
+        }
+    }
+}
+
+export function stopDefaultOrbit() {
+    if (!defaultOrbitActive) return;
+    defaultOrbitActive = false;
+    debug("Stopping scenic orbit.");
+    if (map3d?.stopCameraAnimation) {
+        try {
+            map3d.stopCameraAnimation();
+        } catch (e) {
+            warn("Failed to stop camera animation:", e);
+        }
     }
 }

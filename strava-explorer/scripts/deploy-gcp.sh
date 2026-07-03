@@ -1,14 +1,32 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-PROJECT_ID="${GCP_PROJECT_ID:-geojson-bq-blog}"
-ACCOUNT="${GCLOUD_ACCOUNT:-rsbaumann@gmail.com}"
+PROJECT_ID="${GCP_PROJECT_ID:-}"
+ACCOUNT="${GCLOUD_ACCOUNT:-}"
 REGION="${GCP_REGION:-us-central1}"
 LOCATION="${GCS_LOCATION:-US}"
-BUCKET="${GCS_BUCKET:-${PROJECT_ID}-strava-explorer}"
+BUCKET="${GCS_BUCKET:-}"
 SERVICE="${CLOUD_RUN_SERVICE:-strava-explorer-broker}"
 PUBLIC="${GCS_PUBLIC:-true}"
 DEPLOY_BACKEND="${DEPLOY_BACKEND:-false}"
+
+usage() {
+  echo "Usage: $0 --project <GCP_PROJECT_ID> --account <GCLOUD_ACCOUNT> [options]" >&2
+  echo "" >&2
+  echo "Required parameters (or set via environment variables):" >&2
+  echo "  --project         GCP Project ID (env: GCP_PROJECT_ID)" >&2
+  echo "  --account         Google Cloud Account email (env: GCLOUD_ACCOUNT)" >&2
+  echo "" >&2
+  echo "Options:" >&2
+  echo "  --region          GCP Region (default: us-central1, env: GCP_REGION)" >&2
+  echo "  --location        GCS Location (default: US, env: GCS_LOCATION)" >&2
+  echo "  --bucket          GCS Bucket name (default: <project-id>-strava-explorer, env: GCS_BUCKET)" >&2
+  echo "  --service         Cloud Run Service name (default: strava-explorer-broker, env: CLOUD_RUN_SERVICE)" >&2
+  echo "  --private         Make GCS bucket private" >&2
+  echo "  --public          Make GCS bucket public (default)" >&2
+  echo "  --deploy-backend  Force redeploy Cloud Run broker (default: false)" >&2
+  exit 1
+}
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -21,9 +39,23 @@ while [[ $# -gt 0 ]]; do
     --private) PUBLIC="false"; shift ;;
     --public) PUBLIC="true"; shift ;;
     --deploy-backend) DEPLOY_BACKEND="true"; shift ;;
-    *) echo "Unknown argument: $1" >&2; exit 2 ;;
+    *) echo "Unknown argument: $1" >&2; usage ;;
   esac
 done
+
+if [[ -z "$PROJECT_ID" ]]; then
+  echo "Error: GCP Project ID is required." >&2
+  usage
+fi
+
+if [[ -z "$ACCOUNT" ]]; then
+  echo "Error: Google Cloud Account is required." >&2
+  usage
+fi
+
+if [[ -z "$BUCKET" ]]; then
+  BUCKET="${PROJECT_ID}-strava-explorer"
+fi
 
 if ! command -v gcloud >/dev/null 2>&1; then
   echo "gcloud CLI is required. Install Google Cloud SDK and run: gcloud auth login $ACCOUNT" >&2

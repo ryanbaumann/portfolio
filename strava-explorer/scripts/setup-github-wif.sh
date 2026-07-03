@@ -1,12 +1,54 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-PROJECT_ID="geojson-bq-blog"
-ACCOUNT="rsbaumann@gmail.com"
-REPO="ryanbaumann/trails.ninja"
-POOL_ID="github-actions-pool"
-PROVIDER_ID="github-actions-provider"
-SA_NAME="github-actions-deployer"
+PROJECT_ID="${GCP_PROJECT_ID:-}"
+ACCOUNT="${GCLOUD_ACCOUNT:-}"
+REPO="${GITHUB_REPO:-}"
+POOL_ID="${GCP_WIF_POOL:-github-actions-pool}"
+PROVIDER_ID="${GCP_WIF_PROVIDER_ID:-github-actions-provider}"
+SA_NAME="${GCP_WIF_SA_NAME:-github-actions-deployer}"
+
+usage() {
+  echo "Usage: $0 --project <GCP_PROJECT_ID> --account <GCLOUD_ACCOUNT> --repo <GITHUB_REPO> [options]" >&2
+  echo "" >&2
+  echo "Required parameters (or set via environment variables):" >&2
+  echo "  --project       GCP Project ID (env: GCP_PROJECT_ID)" >&2
+  echo "  --account       Google Cloud Account email (env: GCLOUD_ACCOUNT)" >&2
+  echo "  --repo          GitHub repository owner/name (env: GITHUB_REPO)" >&2
+  echo "" >&2
+  echo "Options:" >&2
+  echo "  --pool-id       Workload Identity Pool ID (default: github-actions-pool, env: GCP_WIF_POOL)" >&2
+  echo "  --provider-id   Workload Identity Provider ID (default: github-actions-provider, env: GCP_WIF_PROVIDER_ID)" >&2
+  echo "  --sa-name       Service Account name (default: github-actions-deployer, env: GCP_WIF_SA_NAME)" >&2
+  exit 1
+}
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --project) PROJECT_ID="$2"; shift 2 ;;
+    --account) ACCOUNT="$2"; shift 2 ;;
+    --repo) REPO="$2"; shift 2 ;;
+    --pool-id) POOL_ID="$2"; shift 2 ;;
+    --provider-id) PROVIDER_ID="$2"; shift 2 ;;
+    --sa-name) SA_NAME="$2"; shift 2 ;;
+    *) echo "Unknown argument: $1" >&2; usage ;;
+  esac
+done
+
+if [[ -z "$PROJECT_ID" ]]; then
+  echo "Error: GCP Project ID is required." >&2
+  usage
+fi
+
+if [[ -z "$ACCOUNT" ]]; then
+  echo "Error: Google Cloud Account is required." >&2
+  usage
+fi
+
+if [[ -z "$REPO" ]]; then
+  echo "Error: GitHub Repository is required." >&2
+  usage
+fi
 
 echo "Configuring gcloud context..."
 gcloud config set account "$ACCOUNT" >/dev/null
