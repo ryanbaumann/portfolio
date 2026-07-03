@@ -17,7 +17,7 @@ All notable changes to this project will be documented in this file.
   - Consolidated fallback altitude handling under the named constant `DEFAULT_ALTITUDE_M` = 10.
 - **Package Maintenance and Cleanups (B1, B2)**:
   - Renamed package to `"strava-3d-explorer"`, marked it private, updated scripts to support `"vitest"` for testing, and added `"lint": "eslint src/"`.
-  - Deleted historical files and dead weight (`MIGRATION_PLAN.md`, `resources/strava-v3.md`, `debug.js`, `scripts/curl_test.sh`, and `static/line.svg`).
+  - Deleted historical files and dead weight (`MIGRATION_PLAN.md`, `strava-explorer/PLAN.md`, `resources/strava-v3.md`, `debug.js`, `scripts/curl_test.sh`, and `static/line.svg`).
   - Removed dead athlete profile blocks, CSS rules, and old canvas tags from `index.html`.
 - **Docs and Licenses (B5)**:
   - Replicated project MIT license to the repository root `LICENSE` file.
