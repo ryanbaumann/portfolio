@@ -76,6 +76,10 @@ All notable changes to this project will be documented in this file.
 - A cache-control heuristic was flagging ordinary hyphenated filenames
   (`strava-explorer.jpg`, coincidentally 8 characters) as content-hashed
   and handing them a year-long immutable cache.
+- Re-enabled dynamic resolution of `STRAVA_REDIRECT_URI` by removing legacy
+  `.env.production` and `.env.development` files from the frontend subdirectories
+  that were silently overriding the dynamic fallback with hardcoded `localhost:5173`
+  values during Vite builds.
 
 ## [Unreleased] - 2026-07-03
 
