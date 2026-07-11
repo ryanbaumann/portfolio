@@ -58,7 +58,7 @@
     "d3-delaunay": "^6.0.4",
     "d3-scale": "^4.0.2",
     "d3-tricontour": "^0.1.0",
-    "mapbox-gl": "3.25.0"
+    "mapbox-gl": "3.26.0"
   },
   "engines": {
     "node": ">=20"
