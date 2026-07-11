@@ -11,9 +11,17 @@ const AUTH_STORAGE_KEY = 'trailsNinja.stravaAuth.v1';
 
 // --- Environment Variables ---
 const STRAVA_CLIENT_ID = import.meta.env.VITE_STRAVA_CLIENT_ID;
-const STRAVA_REDIRECT_URI = import.meta.env.VITE_STRAVA_REDIRECT_URI;
-const STRAVA_API_BASE_URL = (import.meta.env.VITE_STRAVA_API_BASE_URL || 'https://www.strava.com/api/v3').replace(/\/$/, '');
+// Same-origin by default: an empty base means every broker call below
+// (e.g. `${STRAVA_AUTH_BASE_URL}/api/strava/token`) resolves to a relative
+// `/api/strava/...` URL on the app's own origin, which is what the gateway
+// container expects. Set VITE_STRAVA_AUTH_BASE_URL to point at a
+// different-origin broker (e.g. the standalone Cloud Run deploy).
 const STRAVA_AUTH_BASE_URL = (import.meta.env.VITE_STRAVA_AUTH_BASE_URL || '').replace(/\/$/, '');
+// Default the OAuth redirect URI to this app's own base URL so it works
+// same-origin without configuration; override for non-default deployments.
+const STRAVA_REDIRECT_URI = import.meta.env.VITE_STRAVA_REDIRECT_URI
+    || (typeof window !== 'undefined' ? new URL(import.meta.env.BASE_URL, window.location.origin).href : undefined);
+const STRAVA_API_BASE_URL = (import.meta.env.VITE_STRAVA_API_BASE_URL || 'https://www.strava.com/api/v3').replace(/\/$/, '');
 
 // --- Helper Functions (Dependencies - will be passed or imported if moved to utils) ---
 let showLoading = (isLoading, text) => debug(`Loading: ${isLoading}, Text: ${text}`);
@@ -126,15 +134,22 @@ export function getUserId() {
 
 export async function deauthorizeStrava() {
     if (!stravatoken) getCachedAuthData();
-    if (!stravatoken || !STRAVA_AUTH_BASE_URL) {
+    if (!stravatoken) {
         clearStravaToken();
         return;
     }
-    await fetch(`${STRAVA_AUTH_BASE_URL}/api/strava/deauthorize`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ access_token: stravatoken })
-    });
+    // STRAVA_AUTH_BASE_URL defaults to '' (same-origin /api/strava/...), so
+    // an empty base is not a sign the broker is unconfigured — always try
+    // the network call and fall back to a local-only clear on failure.
+    try {
+        await fetch(`${STRAVA_AUTH_BASE_URL}/api/strava/deauthorize`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ access_token: stravatoken })
+        });
+    } catch (err) {
+        warn('Strava deauthorize request failed; clearing local session anyway.', err);
+    }
     clearStravaToken();
 }
 

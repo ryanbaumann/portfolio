@@ -2,11 +2,19 @@
 
 ## Project Overview
 
-This repository contains three geospatial web apps:
+This repository contains three geospatial demo apps, served together behind
+one zero-dependency Node gateway as a single Cloud Run container. See
+[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the full picture.
 
 - `strava-explorer/`: Vite app for exploring Strava activities on Google Maps Platform 3D Maps.
 - `aqi-map/`: Browserify/Budo app for a Mapbox GL + PurpleAir hyperlocal AQI map.
 - `isochrones/`: Vite + Node app for reachability analysis using Google Maps Platform Isochrones.
+- `gateway/`: zero-npm-dependency Node server that serves the portfolio
+  landing page (`gateway/public/`), every app's static build (routed via the
+  root `apps.json` manifest), and same-origin `/api/*` proxies for every
+  secret-bearing call (Strava OAuth, Isochrones, PurpleAir). This is what
+  actually runs in production; the per-app dev servers above are for local
+  development only.
 
 Prefer small, reviewable changes. Keep app-specific code, commands, and dependencies inside the app directory you are modifying. Only use npm for dependency management (do not use yarn or other package managers).
 
@@ -43,12 +51,40 @@ Run commands from the app directory unless noted.
 - Dev server: `npm run dev`.
 - Production build: `npm run build`.
 
+### Root / `gateway/` (container build, run this before checking in a container-facing change)
+
+- Build every app and stage its static output under `apps/<name>/`, exactly
+  like the Dockerfile's runtime stage does: `node scripts/build-local.mjs`
+  (from the repo root; equivalent to `npm run build` if you've added the
+  root `package.json`'s script).
+- Run the gateway against that staged output: `node gateway/server.js` (or
+  `npm start`), then open `http://localhost:8080/`.
+- Gateway unit tests (zero deps, `node:test`): `cd gateway && node --test`.
+- End-to-end smoke test (route liveness, asset resolution, OAuth URL shape,
+  secret-leak scan, keyless proxy behavior): `node scripts/smoke.mjs` (or
+  `npm run smoke`). This is what CI runs instead of the old Playwright
+  suite; run it after any gateway, apps.json, or per-app build-output
+  change.
+- `APPS_ROOT` (default `./apps` relative to cwd) picks where the gateway
+  looks for built apps; if an app isn't there, it falls back to that app's
+  `dev_build_dir` from `apps.json` so `node gateway/server.js` also works
+  straight after `npm run build` inside a single app directory, with no
+  staging step.
+
 ## Environment Variables and Secrets
 
 - Never commit real API keys, OAuth client secrets, access tokens, refresh tokens, or generated `.env.*` files.
-- `strava-explorer` expects Google Maps Platform and Strava configuration through Vite `import.meta.env` variables. Preserve the `VITE_` prefix for browser-exposed variables.
+- `strava-explorer` expects Google Maps Platform and Strava configuration through Vite `import.meta.env` variables. Preserve the `VITE_` prefix for browser-exposed variables. Anything with `VITE_` is inlined into the browser bundle by Vite — never put a real secret in a `VITE_`-prefixed variable (see `docs/ARCHITECTURE.md` rule 2).
 - If you encounter hard-coded credentials or tokens, prefer moving them to documented environment variables and note required API restrictions in the PR.
 - For Google Maps Platform browser keys, document required API restrictions, HTTP referrer restrictions, billing/quota expectations, and local development origins.
+- The gateway's server-side secrets are non-`VITE_` env vars read directly
+  by Node: `STRAVA_CLIENT_ID`, `STRAVA_CLIENT_SECRET`, `GMP_SERVER_API_KEY`,
+  `PURPLEAIR_API_KEY`, `MAPBOX_PUBLIC_TOKEN`, `MAPBOX_STYLE_URL`. Every
+  `/api/*` proxy endpoint returns `503` with a JSON error (never a crash)
+  when its secret is unset, so the gateway always boots and smoke-tests
+  keyless. Only `MAPBOX_PUBLIC_TOKEN` is designed to reach the browser (via
+  `/api/config/aqi-map`) — it's a referrer-restricted public token, the same
+  category as the `VITE_` browser keys above, not a server secret.
 
 ## Code Style
 
@@ -75,6 +111,49 @@ Run commands from the app directory unless noted.
 - Keep controls keyboard-accessible and screen-reader-friendly with explicit labels, useful `alt` text, focus styles, and semantic elements.
 - Respect reduced-motion preferences for camera, map, and UI animation work.
 - If a perceptible web UI change is made, run or document a browser/screenshot check when the environment allows it.
+
+## Adding a new demo app
+
+Apps are folders (`docs/ARCHITECTURE.md` design rule 1): the gateway
+discovers whatever is listed in the root `apps.json`, so adding a demo is
+just adding a folder plus a manifest entry. No gateway code changes needed.
+
+1. `mkdir my-demo` at the repo root and build it like the existing apps: a
+   `package.json` with a `build` script that emits static output (`dist/`
+   or `build/`) and an `engines.node >= 20` field. Keep its dependencies and
+   config inside `my-demo/` only.
+2. If the app needs a secret-bearing API call, do not call the third-party
+   API directly from the browser — add a proxy module under `gateway/lib/`
+   (follow the pattern in `gateway/lib/isochrones.js` or
+   `gateway/lib/purpleair.js`: validate input, read the secret from a
+   non-`VITE_` env var, return `503` with a JSON error if it's unset, add a
+   10s upstream timeout) and wire a route for it in `gateway/server.js`.
+3. Add an entry to the root `apps.json`:
+   ```json
+   {
+     "name": "my-demo",
+     "title": "My Demo",
+     "description": "One line, shown on the landing page card.",
+     "path": "/my-demo/",
+     "dev_build_dir": "my-demo/dist",
+     "tags": ["..."],
+     "preview": null
+   }
+   ```
+   `dev_build_dir` is also the local-dev fallback: `node gateway/server.js`
+   will serve straight from it if `apps/my-demo/` (the staged/container
+   layout) doesn't exist yet.
+4. Add a builder stage for it in the root `Dockerfile` (copy the pattern of
+   the other `*-builder` stages: `npm ci`, set `BASE_PATH=/my-demo/` if the
+   app's bundler supports a configurable base path, `npm run build`) and a
+   matching `COPY --from=my-demo-builder ... ./apps/my-demo` in the runtime
+   stage.
+5. Run `node scripts/build-local.mjs && node scripts/smoke.mjs` — the smoke
+   test picks up the new app automatically from `apps.json` (route
+   liveness, asset resolution, and the secret-leak scan all iterate over
+   every listed app) and will fail loudly if something's missing.
+6. If your app needs npm dependency updates over time, add it to
+   `.github/dependabot.yml` alongside the other app directories.
 
 ## Local Skills
 

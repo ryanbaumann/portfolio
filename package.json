@@ -1,0 +1,13 @@
+{
+  "name": "trails-ninja",
+  "private": true,
+  "description": "trails.ninja portfolio container: gateway + demo apps. See docs/ARCHITECTURE.md.",
+  "scripts": {
+    "build": "node scripts/build-local.mjs",
+    "start": "node gateway/server.js",
+    "smoke": "node scripts/smoke.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

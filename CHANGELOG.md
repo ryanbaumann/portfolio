@@ -2,6 +2,81 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Unreleased] - 2026-07-11
+
+### Added — Single-container portfolio gateway
+- **`gateway/`**: a zero-npm-dependency Node >=20 ES-module server
+  (`gateway/server.js` + `gateway/lib/`) that is now the single entry point
+  for the whole repo in production. It serves the portfolio landing page
+  (`gateway/public/`), every app's static build (routed from the new root
+  `apps.json` manifest, with a local-dev fallback to each app's
+  `dev_build_dir`), and same-origin `/api/*` proxies for every
+  secret-bearing call: Strava OAuth token exchange/refresh/deauthorize +
+  photo proxy (ported from `strava-explorer/server/broker.js`, which is
+  left intact for standalone use), Google Maps Isochrones, and PurpleAir
+  sensor data. Every proxy endpoint returns `503` with a JSON error instead
+  of crashing when its secret env var is unset, so the gateway always boots
+  and smoke-tests keyless. Adds path-traversal-safe static serving, MIME
+  typing, hashed-asset vs. HTML cache-control policy, security headers
+  (including HSTS) on every response, and per-route rate limiting.
+- **Portfolio landing page** (`gateway/public/index.html`): dependency-free
+  dark-theme hero + responsive app card grid, hydrated from `/api/apps`
+  with a baked-in static fallback, accessible (landmarks, skip link, AA
+  contrast, `prefers-reduced-motion`), no trackers.
+- **`apps.json`**: root-level manifest — adding a folder + an entry here is
+  the entire process for adding a new demo app (see AGENTS.md's "Adding a
+  new demo app").
+- **Root `Dockerfile`**: multi-stage build, one `node:20-slim` builder
+  stage per app, a slim non-root runtime stage carrying only `gateway/` +
+  each app's static output + `apps.json`. Plus `.dockerignore`. Updated to accept `VITE_GMP_API_KEY` and `VITE_STRAVA_CLIENT_ID` build arguments.
+- **`scripts/build-local.mjs`**: builds every app from `apps.json` and
+  stages output under `apps/<name>/` exactly like the Dockerfile's runtime
+  stage — the one code path both CI and humans use to answer "does it
+  build," since Docker itself isn't always available.
+- **`scripts/smoke.mjs`**: dependency-free end-to-end smoke test — route
+  liveness, HTML/asset-reference resolution for every app, the
+  `apps.json` <-> `/api/apps` contract, the `/<app>` -> `/<app>/` redirect,
+  Strava OAuth URL shape, a secret-leak scan (Google/Mapbox/Stripe key
+  patterns, PEM blocks, `client_secret`, a PurpleAir-key heuristic) over
+  every served asset, and keyless proxy behavior. Wired as `npm run smoke`.
+- **CI/CD**: rewrote `.github/workflows/ci.yml` (strava-explorer lint+test,
+  plus a new secrets-free build-all + smoke job; dropped the old Playwright
+  step, superseded by the smoke test) and `.github/workflows/deploy.yml`
+  (single Cloud Build + Cloud Run deploy via Workload Identity Federation,
+  replacing the old GCS-bucket + separate-broker deploy). Added
+  `.github/dependabot.yml` for weekly npm updates per app dir plus
+  GitHub Actions. Passing `VITE_GMP_API_KEY` and `VITE_STRAVA_CLIENT_ID` build arguments to `gcloud builds submit`.
+- **Real screenshots**: Generated and added high-resolution visual previews for `aqi-map` and `isochrones` landing cards, wired up via `apps.json` as `/previews/aqi-map.jpg` and `/previews/isochrones.jpg`.
+
+### Changed
+- `strava-explorer` and `isochrones` Vite configs now read `BASE_PATH` (env)
+  for their build `base`, so the gateway can mount them at
+  `/strava-explorer/` and `/isochrones/`; `strava.js` defaults the OAuth
+  broker base and redirect URI to same-origin when unset, and no longer
+  skips the Strava deauthorize network call just because that base is the
+  same-origin empty-string default.
+- `aqi-map` no longer requires a PurpleAir key in the browser: it fetches
+  Mapbox config from `/api/config/aqi-map` (falling back to
+  `window.AQI_MAP_CONFIG` for local `npm start`) and calls
+  `/api/purpleair/sensors` instead of PurpleAir directly.
+- Added an accessible "&larr; trails.ninja" home link to each app's UI.
+
+
+### Fixed (found via the new smoke test / gateway code review)
+- A keyless `strava-explorer` build was dead-code-eliminating the entire
+  Strava OAuth authorize URL: esbuild statically proves
+  `if (!STRAVA_CLIENT_ID) return null` is always true when
+  `VITE_STRAVA_CLIENT_ID` is unset, and strips the unreachable URL
+  construction below it. `scripts/build-local.mjs` now defaults it to an
+  obvious placeholder when unset (client IDs aren't secret — Strava puts
+  them directly in the authorize URL every user sees).
+- `gateway/lib/strava.js` and `gateway/lib/isochrones.js` checked broker
+  configuration before validating the request body, so a keyless server
+  503'd on a malformed request instead of 400ing.
+- A cache-control heuristic was flagging ordinary hyphenated filenames
+  (`strava-explorer.jpg`, coincidentally 8 characters) as content-hashed
+  and handing them a year-long immutable cache.
+
 ## [Unreleased] - 2026-07-03
 
 ### Changed / Improved (Workstreams B & E)

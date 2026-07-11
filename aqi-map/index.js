@@ -7,7 +7,6 @@ const turfTruncate = require("@turf/truncate").default;
 const turfCleanCoords = require('@turf/clean-coords').default;
 const d3 = require("d3-tricontour");
 
-const appConfig = globalThis.AQI_MAP_CONFIG || {};
 const errorMessageElement = document.getElementById("error_msg");
 
 function showError(message) {
@@ -16,61 +15,79 @@ function showError(message) {
   }
 }
 
+// The PurpleAir API key is a server secret, not a browser key: it is
+// injected by the gateway's /api/purpleair/sensors proxy and is never sent
+// to (or required by) the client. Only the referrer-restricted Mapbox
+// public token and style URL are needed here.
 const requiredConfig = [
   ["mapboxAccessToken", "Mapbox access token"],
-  ["mapboxStyleUrl", "Mapbox style URL"],
-  ["purpleAirApiKey", "PurpleAir API key"]
+  ["mapboxStyleUrl", "Mapbox style URL"]
 ];
 
-const missingConfig = requiredConfig
-  .filter(([key]) => !appConfig[key])
-  .map(([, label]) => label);
-
-if (missingConfig.length > 0) {
-  showError(`Missing configuration: ${missingConfig.join(", ")}.`);
-  throw new Error(`AQI map missing configuration: ${missingConfig.join(", ")}`);
+// Same-origin deploys (the gateway container) serve config from
+// /api/config/aqi-map so the Mapbox token/style can be set at deploy time
+// without committing them. Local `npm start` (budo) has no such endpoint,
+// so fall back to the inline `window.AQI_MAP_CONFIG` block in index.html.
+function loadConfig() {
+  return fetch('/api/config/aqi-map')
+    .then(function (response) {
+      if (!response.ok) return Promise.reject(new Error('config endpoint returned ' + response.status));
+      return response.json();
+    })
+    .catch(function () {
+      return globalThis.AQI_MAP_CONFIG || {};
+    });
 }
 
-mapboxgl.accessToken = appConfig.mapboxAccessToken;
+function initMap(appConfig) {
+  const missingConfig = requiredConfig
+    .filter(([key]) => !appConfig[key])
+    .map(([, label]) => label);
 
-var map = new mapboxgl.Map({
-  container: 'map',
-  style: appConfig.mapboxStyleUrl,
-  center: [-103.59179687498357, 40.66995747013945],
-  zoom: 3,
-  hash: true,
-  projection: 'globe'
-});
+  if (missingConfig.length > 0) {
+    showError(`Missing configuration: ${missingConfig.join(", ")}.`);
+    throw new Error(`AQI map missing configuration: ${missingConfig.join(", ")}`);
+  }
 
-map.addControl(
-  new MapboxGeocoder({
-    accessToken: mapboxgl.accessToken,
-    mapboxgl: mapboxgl,
-    marker: {
-      color: 'blue'
-    },
-  })
-);
+  mapboxgl.accessToken = appConfig.mapboxAccessToken;
 
-var geojson_data = {
-  "type": "FeatureCollection",
-  "features": []
-}
-var points_for_contours = [];
+  var map = new mapboxgl.Map({
+    container: 'map',
+    style: appConfig.mapboxStyleUrl,
+    center: [-103.59179687498357, 40.66995747013945],
+    zoom: 3,
+    hash: true,
+    projection: 'globe'
+  });
 
-const isLatitude = num => isFinite(num) && Math.abs(num) <= 90 && num != 0;
-const isLongitude = num => isFinite(num) && Math.abs(num) <= 180 && num != 0;
+  map.addControl(
+    new MapboxGeocoder({
+      accessToken: mapboxgl.accessToken,
+      mapboxgl: mapboxgl,
+      marker: {
+        color: 'blue'
+      },
+    })
+  );
 
-map.on('style.load', function () {
-  map.setFog({});
-  var sensorUrl = new URL('https://map.purpleair.com/v1/sensors');
-  sensorUrl.search = new URLSearchParams({
-    token: appConfig.purpleAirApiKey,
-    fields: 'name,latitude,longitude,confidence,pm2.5_10minute,humidity',
-    max_age: String(appConfig.maxSensorAgeSeconds || 604800)
-  }).toString();
-  showError("Data Loading...")
-  fetch(sensorUrl.toString())
+  var geojson_data = {
+    "type": "FeatureCollection",
+    "features": []
+  }
+  var points_for_contours = [];
+
+  const isLatitude = num => isFinite(num) && Math.abs(num) <= 90 && num != 0;
+  const isLongitude = num => isFinite(num) && Math.abs(num) <= 180 && num != 0;
+
+  map.on('style.load', function () {
+    map.setFog({});
+    var sensorUrl = new URL('/api/purpleair/sensors', window.location.origin);
+    sensorUrl.search = new URLSearchParams({
+      fields: 'name,latitude,longitude,confidence,pm2.5_10minute,humidity',
+      max_age: String(appConfig.maxSensorAgeSeconds || 604800)
+    }).toString();
+    showError("Data Loading...")
+    fetch(sensorUrl.toString())
     .then(response => {
       if (!response.ok) {
         // get error message from body or default to response status
@@ -401,4 +418,12 @@ map.on('style.load', function () {
 
       document.getElementById("error_msg").innerHTML = "Map ready!"
     })
+  });
+}
+
+loadConfig().then(function (appConfig) {
+  initMap(appConfig);
+}).catch(function (err) {
+  showError('Failed to load configuration.');
+  console.error('AQI map configuration error:', err);
 });

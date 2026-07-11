@@ -67,7 +67,10 @@ async function requestIsochrone(minutes) {
     },
   };
 
-  const response = await fetch('/api/isochrone', {
+  // Absolute path: this app is mounted at /isochrones/ inside the gateway
+  // container, so a relative 'api/isochrones' would resolve under that
+  // prefix instead of the gateway's top-level /api/isochrones route.
+  const response = await fetch('/api/isochrones', {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify(body),

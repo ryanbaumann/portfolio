@@ -7,7 +7,8 @@ on:
     branches: [ main ]
 
 jobs:
-  build-and-test:
+  strava-explorer:
+    name: strava-explorer lint + test
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
@@ -21,26 +22,42 @@ jobs:
           cache-dependency-path: 'strava-explorer/package-lock.json'
 
       - name: Install Dependencies
-        run: |
-          cd strava-explorer
-          npm ci
+        working-directory: strava-explorer
+        run: npm ci
 
       - name: Run Linter
-        run: |
-          cd strava-explorer
-          npm run lint
+        working-directory: strava-explorer
+        run: npm run lint
 
       - name: Run Unit & Broker Tests
-        run: |
-          cd strava-explorer
-          npm test
+        working-directory: strava-explorer
+        run: npm test
 
       - name: Build Application
-        run: |
-          cd strava-explorer
-          npm run build
+        working-directory: strava-explorer
+        run: npm run build
 
-      - name: Run Playwright E2E Tests
-        run: |
-          cd strava-explorer
-          npx playwright test || echo "Playwright E2E tests failed or skipped (non-blocking in CI due to missing local Chrome/keys), continuing..."
+  build-and-smoke:
+    name: Build all apps + gateway smoke test
+    runs-on: ubuntu-latest
+    # No secrets here: this job builds and smoke-tests the container's
+    # contents with dummy/no keys (see scripts/build-local.mjs and
+    # scripts/smoke.mjs), so it's safe to run on pull_request from forks.
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Build every app (stages apps/<name>/ like the Dockerfile does)
+        run: node scripts/build-local.mjs
+
+      - name: Run gateway unit tests
+        working-directory: gateway
+        run: node --test
+
+      - name: Smoke test the gateway against the staged apps
+        run: node scripts/smoke.mjs

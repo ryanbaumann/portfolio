@@ -29,6 +29,18 @@ button, input, select { font: inherit; }
   backdrop-filter: blur(18px);
 }
 
+.home-link {
+  display: inline-block;
+  color: #94a3b8;
+  text-decoration: none;
+  font-size: 0.78rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  border-radius: 0.4rem;
+}
+.home-link:hover { color: #38bdf8; }
+.home-link:focus-visible { outline: 2px solid #38bdf8; outline-offset: 2px; }
+
 .eyebrow { color: #38bdf8; text-transform: uppercase; letter-spacing: 0.18em; font-size: 0.75rem; margin: 0; font-weight: 800; }
 h1 { margin: 0; font-size: clamp(2.6rem, 8vw, 4.5rem); line-height: 0.9; letter-spacing: -0.08em; }
 .lede { margin: 0; color: #cbd5e1; line-height: 1.55; }

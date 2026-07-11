@@ -1,6 +1,10 @@
-# Trails Ninja Geospatial Projects
+# trails.ninja — Geospatial Engineering Demos
 
-This repository contains lightweight, static-friendly geospatial web applications designed to explore routes and environmental data on interactive maps.
+Ryan Baumann's portfolio of lightweight, static-friendly geospatial web
+apps — Strava routes in photorealistic 3D, hyperlocal air-quality mapping,
+and reachability isochrones — served together behind one zero-dependency
+Node gateway as a single Cloud Run container. See
+[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the full design.
 
 ## Projects
 
@@ -8,9 +12,29 @@ This repository contains lightweight, static-friendly geospatial web application
 *   **[Hyperlocal AQI Map](aqi-map/README.md)**: A Browserify-powered 2D Mapbox GL map that interpolates real-time PurpleAir sensor data to render local air quality index (AQI) contours.
 *   **[Isochrones](isochrones/README.md)**: A Vite + Node Google Maps Platform demo for analyzing delivery, commute, and response reachability with selectable Isochrones API polygons.
 
-## Getting Started
+## Quickstart: run the whole container locally
 
-Each project is self-contained. Navigate to the project's directory and follow its README:
+This builds every app and boots the same gateway that runs in production,
+with no secrets required (proxy endpoints return a clear `503` instead of
+crashing when a key is unset):
+
+```bash
+node scripts/build-local.mjs   # builds each app, stages apps/<name>/ like the Dockerfile does
+node gateway/server.js         # or: npm start
+```
+
+Then open `http://localhost:8080/`. To exercise it end-to-end (route
+liveness, asset resolution, OAuth URL shape, and a secret-leak scan over
+every built file):
+
+```bash
+node scripts/smoke.mjs         # or: npm run smoke
+```
+
+## Working on a single app
+
+Each app is still self-contained for day-to-day development — navigate to
+its directory and follow its README:
 
 ```bash
 # To run the Strava 3D Explorer
@@ -26,16 +50,29 @@ npm start
 # To run the Isochrones Demo
 cd isochrones
 npm install
-# Set up your .env file first (see isochrones/README.md)
 npm run dev
 ```
 
+Each app's own dev server (Vite, budo) proxies or stands in for the
+gateway's `/api/*` routes locally — see each app's README for details.
+`AGENTS.md` has a full "Adding a new demo app" walkthrough for wiring a new
+app into the gateway.
+
 ## Security Best Practices
 
-To keep these projects clean and secure, adhere to the following best practices:
 *   **No Hardcoded Secrets**: Never commit API keys, client secrets, access tokens, or generated `.env.*` files. Use environment files locally (which are excluded via `.gitignore`).
-*   **Key Restrictions**: Always restrict Google Maps browser keys by referrer (e.g., `http://localhost:5173/*` and your production domain) and limit their API scope to only the services required.
-*   **Backend Broker**: The Strava Explorer uses a secure backend broker design (Node dev-server middleware locally, and Cloud Run in production) so the Strava client secret is never exposed to the user's browser.
+*   **Key Restrictions**: Always restrict Google Maps and Mapbox browser keys by referrer (e.g., `http://localhost:5173/*` and your production domain) and limit their API scope to only the services required.
+*   **Server-Side Proxy**: `gateway/` brokers every secret-bearing API call (Strava OAuth token exchange/refresh/deauthorize + photo proxy, Google Maps Isochrones, PurpleAir sensors) same-origin under `/api/*`, so unrestricted API secrets never reach the browser — only referrer-restricted public browser keys (Google Maps JS, Mapbox public token) ship in the client bundles, which is their designed use.
+
+## Deploy
+
+`.github/workflows/deploy.yml` builds the container image with Cloud Build
+and deploys it to a single Cloud Run service (`trails-ninja`) on pushes to
+`main`, authenticating via Workload Identity Federation. It replaces the
+project's previous two-part deploy (a GCS bucket for the static frontend
+plus a separate Cloud Run OAuth broker) — see the workflow file's header
+comment for the one-time `gcloud run services update ... --update-secrets`
+command that sets runtime secrets on the service.
 
 ## Cost Note
 

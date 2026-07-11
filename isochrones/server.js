@@ -125,7 +125,11 @@ async function serveStatic(request, response) {
 
 const server = createHttpServer(async (request, response) => {
   const pathname = new URL(request.url, `http://${request.headers.host}`).pathname;
-  if (request.method === 'POST' && pathname === '/api/isochrone') {
+  // /api/isochrone (singular) is this standalone dev server's original
+  // route; /api/isochrones (plural) matches the gateway's route so the
+  // client code can call the same path in both standalone and
+  // gateway-mounted deployments.
+  if (request.method === 'POST' && (pathname === '/api/isochrone' || pathname === '/api/isochrones')) {
     await handleIsochrone(request, response);
     return;
   }

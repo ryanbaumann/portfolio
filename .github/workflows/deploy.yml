@@ -1,23 +1,29 @@
-name: Deploy Strava Explorer
+name: Deploy to Cloud Run
+
+# Single-container deploy (see docs/ARCHITECTURE.md). This replaces the
+# previous two-part deploy (GCS bucket for strava-explorer's static build +
+# a separate Cloud Run OAuth broker): the gateway and every app's static
+# build now ship in one image, built with Cloud Build and deployed to one
+# Cloud Run service. There is no GCS step anymore.
+#
+# Runtime secrets (STRAVA_CLIENT_SECRET, GMP_SERVER_API_KEY,
+# PURPLEAIR_API_KEY, MAPBOX_PUBLIC_TOKEN) and public config
+# (STRAVA_CLIENT_ID, MAPBOX_STYLE_URL) are set once on the Cloud Run
+# service, not passed through this workflow on every deploy — see the
+# comment above the `gcloud run deploy` step for the one-time setup
+# command. This workflow deliberately never passes a `VITE_*SECRET*`
+# build arg: Vite inlines every `VITE_` value into the browser bundle, so a
+# client secret passed that way would leak to every visitor.
 
 on:
   push:
     branches:
       - main
-    paths:
-      - 'strava-explorer/**'
-      - '.github/workflows/deploy.yml'
-  workflow_dispatch:
-    inputs:
-      deploy_backend:
-        description: 'Force redeploy Cloud Run OAuth broker'
-        required: false
-        type: boolean
-        default: false
+  workflow_dispatch: {}
 
 jobs:
   deploy:
-    name: Deploy to GCP
+    name: Build and deploy trails-ninja
     runs-on: ubuntu-latest
     if: github.repository == 'ryanbaumann/trails.ninja'
 
@@ -25,63 +31,58 @@ jobs:
       contents: 'read'
       id-token: 'write' # Required for Workload Identity Federation
 
+    env:
+      GCP_PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
+      GCP_REGION: ${{ vars.GCP_REGION || 'us-central1' }}
+
     steps:
-    - name: Checkout Code
-      uses: actions/checkout@v4
+      - name: Checkout Code
+        uses: actions/checkout@v4
 
-    - name: Authenticate to Google Cloud
-      id: auth
-      uses: google-github-actions/auth@v2
-      with:
-        # Supports Workload Identity Federation (recommended)
-        workload_identity_provider: ${{ secrets.GCP_WIF_PROVIDER }}
-        service_account: ${{ secrets.GCP_SA_EMAIL }}
+      - name: Authenticate to Google Cloud
+        id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WIF_PROVIDER }}
+          service_account: ${{ secrets.GCP_SA_EMAIL }}
 
-    - name: Set up Cloud SDK
-      uses: google-github-actions/setup-gcloud@v2
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
 
-    - name: Set up Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '20'
-        cache: 'npm'
-        cache-dependency-path: 'strava-explorer/package-lock.json'
+      - name: Build image with Cloud Build
+        run: |
+          set -euo pipefail
+          IMAGE="${GCP_REGION}-docker.pkg.dev/${GCP_PROJECT_ID}/trails-ninja/app:${GITHUB_SHA}"
+          echo "IMAGE=$IMAGE" >> "$GITHUB_ENV"
+          gcloud builds submit --project "$GCP_PROJECT_ID" --tag "$IMAGE" \
+            --build-arg VITE_GMP_API_KEY="${{ secrets.VITE_GMP_API_KEY }}" \
+            --build-arg VITE_STRAVA_CLIENT_ID="${{ secrets.VITE_STRAVA_CLIENT_ID }}" .
 
-    - name: Check for Server Changes
-      id: changes
-      uses: dorny/paths-filter@v3
-      with:
-        filters: |
-          server:
-            - 'strava-explorer/server/**'
+      - name: Deploy to Cloud Run
+        run: |
+          set -euo pipefail
+          gcloud run deploy trails-ninja \
+            --project "$GCP_PROJECT_ID" \
+            --image "$IMAGE" \
+            --region "$GCP_REGION" \
+            --allow-unauthenticated \
+            --port 8080
 
-    - name: Install Frontend Dependencies
-      run: |
-        cd strava-explorer
-        npm ci
-
-    - name: Deploy App
-      env:
-        VITE_GMP_API_KEY: ${{ secrets.VITE_GMP_API_KEY }}
-        VITE_STRAVA_CLIENT_ID: ${{ secrets.VITE_STRAVA_CLIENT_ID }}
-        VITE_STRAVA_CLIENT_SECRET: ${{ secrets.VITE_STRAVA_CLIENT_SECRET }}
-        STRAVA_CLIENT_SECRET: ${{ secrets.VITE_STRAVA_CLIENT_SECRET }}
-        DEPLOY_BACKEND: ${{ github.event.inputs.deploy_backend || steps.changes.outputs.server }}
-      run: |
-        cd strava-explorer
-        chmod +x scripts/deploy-gcp.sh scripts/deploy-gcs.sh
-        
-        # Determine the account email to use for the script.
-        # Fallback to active gcloud account if GCP_SA_EMAIL is not provided.
-        ACCOUNT_EMAIL="${{ secrets.GCP_SA_EMAIL }}"
-        if [ -z "$ACCOUNT_EMAIL" ]; then
-          ACCOUNT_EMAIL=$(gcloud config get-value account)
-        fi
-        
-        # Force production redirect URI fallback (unset local redirect overrides)
-        unset VITE_STRAVA_REDIRECT_URI
-        
-        ./scripts/deploy-gcp.sh \
-          --account "$ACCOUNT_EMAIL" \
-          --project "${{ vars.GCP_PROJECT_ID }}" \
-          --bucket "${{ vars.GCS_BUCKET }}"
+          # Runtime env vars/secrets persist on the Cloud Run service across
+          # revisions, so they are set once by hand (not on every deploy).
+          # First-time setup, after creating the secrets in Secret Manager:
+          #
+          #   gcloud run services update trails-ninja \
+          #     --project "$GCP_PROJECT_ID" --region "$GCP_REGION" \
+          #     --update-secrets=STRAVA_CLIENT_SECRET=strava-client-secret:latest \
+          #     --update-secrets=GMP_SERVER_API_KEY=gmp-server-api-key:latest \
+          #     --update-secrets=PURPLEAIR_API_KEY=purpleair-api-key:latest \
+          #     --update-secrets=MAPBOX_PUBLIC_TOKEN=mapbox-public-token:latest \
+          #     --set-env-vars=STRAVA_CLIENT_ID=<your Strava app's client id>,MAPBOX_STYLE_URL=<your Mapbox style URL>
+          #
+          # STRAVA_CLIENT_ID and MAPBOX_STYLE_URL aren't secret on their own
+          # (the client ID is public in the OAuth authorize URL; the style
+          # URL is a referrer-restricted-token-gated Mapbox style id), so
+          # plain --set-env-vars is fine for them. Everything else should
+          # be a Secret Manager reference via --update-secrets, never a
+          # literal value in this workflow.

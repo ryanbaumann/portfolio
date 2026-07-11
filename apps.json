@@ -1,0 +1,29 @@
+[
+  {
+    "name": "strava-explorer",
+    "title": "Strava 3D Explorer",
+    "description": "Fly through Strava routes and photos in Google Maps Platform Photorealistic 3D.",
+    "path": "/strava-explorer/",
+    "dev_build_dir": "strava-explorer/dist",
+    "tags": ["strava", "3d-maps", "google-maps-platform"],
+    "preview": "/previews/strava-explorer.jpg"
+  },
+  {
+    "name": "aqi-map",
+    "title": "Hyperlocal AQI Map",
+    "description": "Realtime PurpleAir sensor contours interpolated onto a Mapbox GL globe.",
+    "path": "/aqi-map/",
+    "dev_build_dir": "aqi-map/build",
+    "tags": ["air-quality", "mapbox", "purpleair"],
+    "preview": "/previews/aqi-map.jpg"
+  },
+  {
+    "name": "isochrones",
+    "title": "Isochrones",
+    "description": "Delivery, commute, and response-coverage reachability rings via Google Maps Platform.",
+    "path": "/isochrones/",
+    "dev_build_dir": "isochrones/dist",
+    "tags": ["isochrones", "routing", "google-maps-platform"],
+    "preview": "/previews/isochrones.jpg"
+  }
+]

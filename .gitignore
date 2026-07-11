@@ -11,6 +11,12 @@ isochrones/.env
 strava-explorer/build
 strava-explorer/dist
 isochrones/dist/
+isochrones/node_modules
+gateway/node_modules
+
+# scripts/build-local.mjs staging output (mirrors the Dockerfile's runtime
+# stage); regenerate with `node scripts/build-local.mjs`.
+/apps/
 
 # OS files
 .DS_Store

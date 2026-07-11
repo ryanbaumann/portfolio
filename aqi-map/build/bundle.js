@@ -13,238 +13,262 @@ var turfHelpers = require("@turf/helpers");
 var turfTruncate = require("@turf/truncate")["default"];
 var turfCleanCoords = require('@turf/clean-coords')["default"];
 var d3 = require("d3-tricontour");
-var appConfig = globalThis.AQI_MAP_CONFIG || {};
 var errorMessageElement = document.getElementById("error_msg");
 function showError(message) {
   if (errorMessageElement) {
     errorMessageElement.innerHTML = message;
   }
 }
-var requiredConfig = [["mapboxAccessToken", "Mapbox access token"], ["mapboxStyleUrl", "Mapbox style URL"], ["purpleAirApiKey", "PurpleAir API key"]];
-var missingConfig = requiredConfig.filter(function (_ref) {
-  var _ref2 = _slicedToArray(_ref, 1),
-    key = _ref2[0];
-  return !appConfig[key];
-}).map(function (_ref3) {
-  var _ref4 = _slicedToArray(_ref3, 2),
-    label = _ref4[1];
-  return label;
-});
-if (missingConfig.length > 0) {
-  showError("Missing configuration: ".concat(missingConfig.join(", "), "."));
-  throw new Error("AQI map missing configuration: ".concat(missingConfig.join(", ")));
+
+// The PurpleAir API key is a server secret, not a browser key: it is
+// injected by the gateway's /api/purpleair/sensors proxy and is never sent
+// to (or required by) the client. Only the referrer-restricted Mapbox
+// public token and style URL are needed here.
+var requiredConfig = [["mapboxAccessToken", "Mapbox access token"], ["mapboxStyleUrl", "Mapbox style URL"]];
+
+// Same-origin deploys (the gateway container) serve config from
+// /api/config/aqi-map so the Mapbox token/style can be set at deploy time
+// without committing them. Local `npm start` (budo) has no such endpoint,
+// so fall back to the inline `window.AQI_MAP_CONFIG` block in index.html.
+function loadConfig() {
+  return fetch('/api/config/aqi-map').then(function (response) {
+    if (!response.ok) return Promise.reject(new Error('config endpoint returned ' + response.status));
+    return response.json();
+  })["catch"](function () {
+    return globalThis.AQI_MAP_CONFIG || {};
+  });
 }
-mapboxgl.accessToken = appConfig.mapboxAccessToken;
-var map = new mapboxgl.Map({
-  container: 'map',
-  style: appConfig.mapboxStyleUrl,
-  center: [-103.59179687498357, 40.66995747013945],
-  zoom: 3,
-  hash: true,
-  projection: 'globe'
-});
-map.addControl(new MapboxGeocoder({
-  accessToken: mapboxgl.accessToken,
-  mapboxgl: mapboxgl,
-  marker: {
-    color: 'blue'
+function initMap(appConfig) {
+  var missingConfig = requiredConfig.filter(function (_ref) {
+    var _ref2 = _slicedToArray(_ref, 1),
+      key = _ref2[0];
+    return !appConfig[key];
+  }).map(function (_ref3) {
+    var _ref4 = _slicedToArray(_ref3, 2),
+      label = _ref4[1];
+    return label;
+  });
+  if (missingConfig.length > 0) {
+    showError("Missing configuration: ".concat(missingConfig.join(", "), "."));
+    throw new Error("AQI map missing configuration: ".concat(missingConfig.join(", ")));
   }
-}));
-var geojson_data = {
-  "type": "FeatureCollection",
-  "features": []
-};
-var points_for_contours = [];
-var isLatitude = function isLatitude(num) {
-  return isFinite(num) && Math.abs(num) <= 90 && num != 0;
-};
-var isLongitude = function isLongitude(num) {
-  return isFinite(num) && Math.abs(num) <= 180 && num != 0;
-};
-map.on('style.load', function () {
-  map.setFog({});
-  var sensorUrl = new URL('https://map.purpleair.com/v1/sensors');
-  sensorUrl.search = new URLSearchParams({
-    token: appConfig.purpleAirApiKey,
-    fields: 'name,latitude,longitude,confidence,pm2.5_10minute,humidity',
-    max_age: String(appConfig.maxSensorAgeSeconds || 604800)
-  }).toString();
-  showError("Data Loading...");
-  fetch(sensorUrl.toString()).then(function (response) {
-    if (!response.ok) {
-      // get error message from body or default to response status
-      var error = data && data.message || response.status;
-      return Promise.reject(error);
-    } else {
-      return response.json();
+  mapboxgl.accessToken = appConfig.mapboxAccessToken;
+  var map = new mapboxgl.Map({
+    container: 'map',
+    style: appConfig.mapboxStyleUrl,
+    center: [-103.59179687498357, 40.66995747013945],
+    zoom: 3,
+    hash: true,
+    projection: 'globe'
+  });
+  map.addControl(new MapboxGeocoder({
+    accessToken: mapboxgl.accessToken,
+    mapboxgl: mapboxgl,
+    marker: {
+      color: 'blue'
     }
-  })["catch"](function (error) {
-    console.error('Refresh too fast; try reloading your page in ~30 seconds!', error);
-    showError("API Rate Limited: Reload page in ~30 seconds");
-  }).then(function (mydata) {
-    mydata.data.forEach(function (row) {
-      var data = {};
-      data['id'] = row[0];
-      data['aqi_raw'] = row[6];
-      data['conf'] = row[4];
-      data['humidity'] = row[5];
-      data['label'] = row[1];
-      data['lat'] = row[2];
-      data['long'] = row[3];
-      if (isLongitude(data['long']) && isLatitude(data['lat']) && data['conf'] >= 96 // Only include high confidence sensor values
-      ) {
-        // Contour calculator
-        points_for_contours.push([parseFloat(data['long']), parseFloat(data['lat']), data['aqi_raw']]);
-        geojson_data.features.push(turfTruncate(turfCleanCoords({
-          "type": "Feature",
-          "id": data['id'],
-          "properties": {
-            "aqi_raw": data['aqi_raw'],
-            "name": data['label'],
-            "conf": data['conf'],
-            "humidity": data['humidity']
-          },
-          "geometry": {
-            "type": "Point",
-            "coordinates": [parseFloat(data['long']), parseFloat(data['lat'])]
-          }
-        }), {
-          precision: 6
-        }));
+  }));
+  var geojson_data = {
+    "type": "FeatureCollection",
+    "features": []
+  };
+  var points_for_contours = [];
+  var isLatitude = function isLatitude(num) {
+    return isFinite(num) && Math.abs(num) <= 90 && num != 0;
+  };
+  var isLongitude = function isLongitude(num) {
+    return isFinite(num) && Math.abs(num) <= 180 && num != 0;
+  };
+  map.on('style.load', function () {
+    map.setFog({});
+    var sensorUrl = new URL('/api/purpleair/sensors', window.location.origin);
+    sensorUrl.search = new URLSearchParams({
+      fields: 'name,latitude,longitude,confidence,pm2.5_10minute,humidity',
+      max_age: String(appConfig.maxSensorAgeSeconds || 604800)
+    }).toString();
+    showError("Data Loading...");
+    fetch(sensorUrl.toString()).then(function (response) {
+      if (!response.ok) {
+        // get error message from body or default to response status
+        var error = data && data.message || response.status;
+        return Promise.reject(error);
+      } else {
+        return response.json();
       }
-    });
-    var breaks = [0, 25, 50, 75, 100, 125, 150, 200, 250, 300, 350];
-    var tric = d3.tricontour().thresholds(breaks);
-    var contours = tric(points_for_contours);
-    var features = [];
-    contours.forEach(function (c) {
-      var value = c.value;
-      delete c.value;
-      features.push({
-        "type": "Feature",
-        "geometry": c,
-        "properties": {
-          "value": value
+    })["catch"](function (error) {
+      console.error('Refresh too fast; try reloading your page in ~30 seconds!', error);
+      showError("API Rate Limited: Reload page in ~30 seconds");
+    }).then(function (mydata) {
+      mydata.data.forEach(function (row) {
+        var data = {};
+        data['id'] = row[0];
+        data['aqi_raw'] = row[6];
+        data['conf'] = row[4];
+        data['humidity'] = row[5];
+        data['label'] = row[1];
+        data['lat'] = row[2];
+        data['long'] = row[3];
+        if (isLongitude(data['long']) && isLatitude(data['lat']) && data['conf'] >= 96 // Only include high confidence sensor values
+        ) {
+          // Contour calculator
+          points_for_contours.push([parseFloat(data['long']), parseFloat(data['lat']), data['aqi_raw']]);
+          geojson_data.features.push(turfTruncate(turfCleanCoords({
+            "type": "Feature",
+            "id": data['id'],
+            "properties": {
+              "aqi_raw": data['aqi_raw'],
+              "name": data['label'],
+              "conf": data['conf'],
+              "humidity": data['humidity']
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [parseFloat(data['long']), parseFloat(data['lat'])]
+            }
+          }), {
+            precision: 6
+          }));
         }
       });
-    });
-    var contours = turfHelpers.featureCollection(features);
-    map.addSource('isobands', {
-      type: 'geojson',
-      data: contours,
-      buffer: 10
-    });
-    map.addLayer({
-      id: "ranges",
-      type: "fill",
-      source: "isobands",
-      paint: {
-        "fill-color": ['interpolate', ['linear'], ["get", "value"], 0, '#8fec74', 50, '#77c853', 51, '#ffff00', 100, '#dfb743', 101, '#f5ba2a', 150, '#d3781c', 151, '#da5340', 200, '#bc2f26', 201, '#9c2424', 300, '#661414', 301, '#76205d', 400, '#521541'],
-        "fill-opacity": 0.5
-      }
-    }, 'water');
-    map.addSource('sensors', {
-      type: 'geojson',
-      data: geojson_data,
-      cluster: true,
-      buffer: 25,
-      clusterMaxZoom: 14,
-      clusterRadius: 28,
-      clusterProperties: {
-        "sum": ["+", ["get", "aqi_raw"]],
-        "max": ["max", ["get", "aqi_raw"]]
-      }
-    });
-    map.addLayer({
-      id: 'clusters',
-      type: 'circle',
-      source: 'sensors',
-      filter: ['has', 'sum'],
-      paint: {
-        'circle-color': ['interpolate', ['linear'], ["/", ['get', 'sum'], ["get", "point_count"]], 0, '#8fec74', 50, '#77c853', 51, '#ffff00', 100, '#dfb743', 101, '#f5ba2a', 150, '#d3781c', 151, '#da5340', 200, '#bc2f26', 201, '#9c2424', 300, '#661414', 301, '#76205d', 400, '#521541'],
-        'circle-stroke-color': "white",
-        'circle-stroke-width': 1,
-        'circle-radius': ['interpolate', ['exponential', 1.2], ["zoom"], 0, 15, 18, 30]
-      }
-    }, 'water-point-label');
-    map.addLayer({
-      id: 'cluster-count-label',
-      type: 'symbol',
-      source: 'sensors',
-      filter: ['has', 'sum'],
-      layout: {
-        'text-field': ["number-format", ["/", ['get', 'sum'], ["get", "point_count"]], {
-          "max-fraction-digits": 1
-        }],
-        'text-font': ['DIN Offc Pro Medium', 'Arial Unicode MS Bold'],
-        'text-size': 12
-      },
-      paint: {
-        'text-halo-color': "rgba(255, 255, 255, 1)",
-        'text-halo-width': ['interpolate', ['exponential', 1.2], ["zoom"], 0, 1, 18, 3]
-      }
-    });
-    map.addLayer({
-      id: 'unclustered-point',
-      type: 'circle',
-      source: 'sensors',
-      filter: ['!', ['has', 'point_count']],
-      paint: {
-        'circle-color': ['interpolate', ['linear'], ["get", "aqi_raw"], 0, '#8fec74', 50, '#77c853', 51, '#ffff00', 100, '#dfb743', 101, '#f5ba2a', 150, '#d3781c', 151, '#da5340', 200, '#bc2f26', 201, '#9c2424', 300, '#661414', 301, '#76205d', 400, '#521541'],
-        'circle-stroke-color': "rgba(255, 255, 255, 1)",
-        'circle-stroke-width': 1,
-        'circle-radius': ['interpolate', ['exponential', 1.2], ["zoom"], 0, 15, 18, 30]
-      }
-    }, 'water-point-label');
-    map.addLayer({
-      id: 'unclustered-point-label',
-      type: 'symbol',
-      source: 'sensors',
-      filter: ['!', ['has', 'point_count']],
-      layout: {
-        'text-field': ["number-format", ["get", "aqi_raw"], {
-          "max-fraction-digits": 1
-        }],
-        'text-font': ['DIN Offc Pro Medium', 'Arial Unicode MS Bold'],
-        'text-size': 12
-      },
-      paint: {
-        'text-halo-color': "rgba(255, 255, 255, 1)",
-        'text-halo-width': ['interpolate', ['exponential', 1.2], ["zoom"], 0, 1, 18, 3]
-      }
-    });
-    map.on('click', 'clusters', function (e) {
-      var features = map.queryRenderedFeatures(e.point, {
-        layers: ['clusters']
-      });
-      var clusterId = features[0].properties.cluster_id;
-      map.getSource('sensors').getClusterExpansionZoom(clusterId, function (err, zoom) {
-        if (err) return;
-        map.easeTo({
-          center: features[0].geometry.coordinates,
-          zoom: zoom
+      var breaks = [0, 25, 50, 75, 100, 125, 150, 200, 250, 300, 350];
+      var tric = d3.tricontour().thresholds(breaks);
+      var contours = tric(points_for_contours);
+      var features = [];
+      contours.forEach(function (c) {
+        var value = c.value;
+        delete c.value;
+        features.push({
+          "type": "Feature",
+          "geometry": c,
+          "properties": {
+            "value": value
+          }
         });
       });
+      var contours = turfHelpers.featureCollection(features);
+      map.addSource('isobands', {
+        type: 'geojson',
+        data: contours,
+        buffer: 10
+      });
+      map.addLayer({
+        id: "ranges",
+        type: "fill",
+        source: "isobands",
+        paint: {
+          "fill-color": ['interpolate', ['linear'], ["get", "value"], 0, '#8fec74', 50, '#77c853', 51, '#ffff00', 100, '#dfb743', 101, '#f5ba2a', 150, '#d3781c', 151, '#da5340', 200, '#bc2f26', 201, '#9c2424', 300, '#661414', 301, '#76205d', 400, '#521541'],
+          "fill-opacity": 0.5
+        }
+      }, 'water');
+      map.addSource('sensors', {
+        type: 'geojson',
+        data: geojson_data,
+        cluster: true,
+        buffer: 25,
+        clusterMaxZoom: 14,
+        clusterRadius: 28,
+        clusterProperties: {
+          "sum": ["+", ["get", "aqi_raw"]],
+          "max": ["max", ["get", "aqi_raw"]]
+        }
+      });
+      map.addLayer({
+        id: 'clusters',
+        type: 'circle',
+        source: 'sensors',
+        filter: ['has', 'sum'],
+        paint: {
+          'circle-color': ['interpolate', ['linear'], ["/", ['get', 'sum'], ["get", "point_count"]], 0, '#8fec74', 50, '#77c853', 51, '#ffff00', 100, '#dfb743', 101, '#f5ba2a', 150, '#d3781c', 151, '#da5340', 200, '#bc2f26', 201, '#9c2424', 300, '#661414', 301, '#76205d', 400, '#521541'],
+          'circle-stroke-color': "white",
+          'circle-stroke-width': 1,
+          'circle-radius': ['interpolate', ['exponential', 1.2], ["zoom"], 0, 15, 18, 30]
+        }
+      }, 'water-point-label');
+      map.addLayer({
+        id: 'cluster-count-label',
+        type: 'symbol',
+        source: 'sensors',
+        filter: ['has', 'sum'],
+        layout: {
+          'text-field': ["number-format", ["/", ['get', 'sum'], ["get", "point_count"]], {
+            "max-fraction-digits": 1
+          }],
+          'text-font': ['DIN Offc Pro Medium', 'Arial Unicode MS Bold'],
+          'text-size': 12
+        },
+        paint: {
+          'text-halo-color': "rgba(255, 255, 255, 1)",
+          'text-halo-width': ['interpolate', ['exponential', 1.2], ["zoom"], 0, 1, 18, 3]
+        }
+      });
+      map.addLayer({
+        id: 'unclustered-point',
+        type: 'circle',
+        source: 'sensors',
+        filter: ['!', ['has', 'point_count']],
+        paint: {
+          'circle-color': ['interpolate', ['linear'], ["get", "aqi_raw"], 0, '#8fec74', 50, '#77c853', 51, '#ffff00', 100, '#dfb743', 101, '#f5ba2a', 150, '#d3781c', 151, '#da5340', 200, '#bc2f26', 201, '#9c2424', 300, '#661414', 301, '#76205d', 400, '#521541'],
+          'circle-stroke-color': "rgba(255, 255, 255, 1)",
+          'circle-stroke-width': 1,
+          'circle-radius': ['interpolate', ['exponential', 1.2], ["zoom"], 0, 15, 18, 30]
+        }
+      }, 'water-point-label');
+      map.addLayer({
+        id: 'unclustered-point-label',
+        type: 'symbol',
+        source: 'sensors',
+        filter: ['!', ['has', 'point_count']],
+        layout: {
+          'text-field': ["number-format", ["get", "aqi_raw"], {
+            "max-fraction-digits": 1
+          }],
+          'text-font': ['DIN Offc Pro Medium', 'Arial Unicode MS Bold'],
+          'text-size': 12
+        },
+        paint: {
+          'text-halo-color': "rgba(255, 255, 255, 1)",
+          'text-halo-width': ['interpolate', ['exponential', 1.2], ["zoom"], 0, 1, 18, 3]
+        }
+      });
+      map.on('click', 'clusters', function (e) {
+        var features = map.queryRenderedFeatures(e.point, {
+          layers: ['clusters']
+        });
+        var clusterId = features[0].properties.cluster_id;
+        map.getSource('sensors').getClusterExpansionZoom(clusterId, function (err, zoom) {
+          if (err) return;
+          map.easeTo({
+            center: features[0].geometry.coordinates,
+            zoom: zoom
+          });
+        });
+      });
+      map.on('preclick', 'unclustered-point', function (e) {
+        var coordinates = e.features[0].geometry.coordinates.slice();
+        var label = e.features[0].properties.name;
+        var aqi_raw = e.features[0].properties.aqi_raw;
+        var conf = e.features[0].properties.conf;
+        var humidity = e.features[0].properties.humidity;
+        while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
+          coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
+        }
+        new mapboxgl.Popup().setLngLat(coordinates).setHTML("<div class='inline-flex flex--center-cross flex--column'>" + "<div class='px6 py6 bg-lighten75 color-black round txt-s'>" + "<li> <span class='txt-bold'> Name: </span>" + label + "</li>" + "<li> <span class='txt-bold'> AQI: </span>" + aqi_raw + '</li>' + "<li> <span class='txt-bold'> Conf: </span>" + conf + '</li>' + "<li> <span class='txt-bold'> Humidity: </span>" + humidity + '</li>' + "</div>" + "</div>").addTo(map);
+      });
+      map.on('mouseenter', 'clusters', function () {
+        map.getCanvas().style.cursor = 'pointer';
+      });
+      map.on('mouseleave', 'clusters', function () {
+        map.getCanvas().style.cursor = '';
+      });
+      document.getElementById("error_msg").innerHTML = "Map ready!";
     });
-    map.on('preclick', 'unclustered-point', function (e) {
-      var coordinates = e.features[0].geometry.coordinates.slice();
-      var label = e.features[0].properties.name;
-      var aqi_raw = e.features[0].properties.aqi_raw;
-      var conf = e.features[0].properties.conf;
-      var humidity = e.features[0].properties.humidity;
-      while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
-        coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
-      }
-      new mapboxgl.Popup().setLngLat(coordinates).setHTML("<div class='inline-flex flex--center-cross flex--column'>" + "<div class='px6 py6 bg-lighten75 color-black round txt-s'>" + "<li> <span class='txt-bold'> Name: </span>" + label + "</li>" + "<li> <span class='txt-bold'> AQI: </span>" + aqi_raw + '</li>' + "<li> <span class='txt-bold'> Conf: </span>" + conf + '</li>' + "<li> <span class='txt-bold'> Humidity: </span>" + humidity + '</li>' + "</div>" + "</div>").addTo(map);
-    });
-    map.on('mouseenter', 'clusters', function () {
-      map.getCanvas().style.cursor = 'pointer';
-    });
-    map.on('mouseleave', 'clusters', function () {
-      map.getCanvas().style.cursor = '';
-    });
-    document.getElementById("error_msg").innerHTML = "Map ready!";
   });
+}
+loadConfig().then(function (appConfig) {
+  initMap(appConfig);
+})["catch"](function (err) {
+  showError('Failed to load configuration.');
+  console.error('AQI map configuration error:', err);
 });
 
 },{"@mapbox/mapbox-gl-geocoder":6,"@turf/clean-coords":28,"@turf/helpers":29,"@turf/truncate":32,"d3-tricontour":179,"mapbox-gl":188}],2:[function(require,module,exports){

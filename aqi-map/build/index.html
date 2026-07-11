@@ -22,6 +22,9 @@
       bottom: 0;
       width: 100%;
     }
+
+    .home-link:hover { color: #2a6df4; }
+    .home-link:focus-visible { outline: 2px solid #2a6df4; outline-offset: 2px; }
   </style>
 </head>
 
@@ -33,6 +36,7 @@
       <div class='absolute top-ml left bottom z1 w-full w240-ml px12 py12-ml events-none'>
         <div class='flex flex--column h-viewport-1/3 h-auto-ml hmax-full bg-white round-ml shadow-darken10 events-all'>
           <div class='px12 py12 scroll-auto'>
+            <a href='/' class='home-link' aria-label='Back to trails.ninja home' style='display:inline-block;color:#556;text-decoration:none;font-size:12px;font-weight:600;margin-bottom:6px;'>&larr; trails.ninja</a>
             <h3 class='txt-m txt-bold mb6'>Hyerlocal air quality map</h3>
             <p>What's your hyperlocal, realtime, US EPA convered air quality?</p>
             <p id="error_msg" class="txt-m txt-bold mb6 py12 visibility:hidden align-center bg-darken10"></p>
@@ -55,10 +59,12 @@
     </div>
   </body>
   <script>
+    // Local dev fallback only: the gateway container serves this config from
+    // /api/config/aqi-map instead (see index.js `loadConfig`), so the
+    // PurpleAir key never needs to reach the browser.
     window.AQI_MAP_CONFIG = {
       mapboxAccessToken: "",
       mapboxStyleUrl: "",
-      purpleAirApiKey: "",
       maxSensorAgeSeconds: 604800
     };
   </script>

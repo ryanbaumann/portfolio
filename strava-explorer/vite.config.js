@@ -6,8 +6,9 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
 
   return {
-    // Set base to './' to ensure relative asset paths in the build output
-    base: './',
+    // BASE_PATH lets the gateway container mount this app at /strava-explorer/
+    // while local `npm run build`/`npm run preview` still default to '/'.
+    base: process.env.BASE_PATH || '/',
     build: {
       // Output directory is 'dist' by default, which is fine
       // outDir: 'dist',
