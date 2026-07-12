@@ -1,0 +1,133 @@
+:root {
+  color-scheme: dark;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: #050816;
+  color: #f8fafc;
+}
+
+* { box-sizing: border-box; }
+body { margin: 0; min-width: 320px; }
+button, input, select { font: inherit; }
+
+#app {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: minmax(320px, 400px) 1fr;
+  background: radial-gradient(circle at top left, rgba(52, 211, 153, 0.22), transparent 34rem), #050816;
+}
+
+.panel {
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: clamp(1rem, 3vw, 1.5rem);
+  overflow-y: auto;
+  max-height: 100vh;
+  border-right: 1px solid rgba(148, 163, 184, 0.2);
+  background: rgba(15, 23, 42, 0.88);
+  backdrop-filter: blur(18px);
+}
+
+.home-link {
+  display: inline-block;
+  color: #94a3b8;
+  text-decoration: none;
+  font-size: 0.78rem;
+  font-weight: 600;
+  border-radius: 0.4rem;
+}
+.home-link:hover { color: #34d399; }
+.home-link:focus-visible { outline: 2px solid #34d399; outline-offset: 2px; }
+
+.eyebrow { color: #34d399; text-transform: uppercase; letter-spacing: 0.18em; font-size: 0.75rem; margin: 0; font-weight: 800; }
+h1 { margin: 0; font-size: clamp(2.4rem, 7vw, 3.6rem); line-height: 0.95; letter-spacing: -0.06em; }
+h2 { font-size: 0.95rem; margin: 0 0 0.75rem; }
+.lede { margin: 0; color: #cbd5e1; line-height: 1.55; }
+
+.card {
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  border-radius: 1.25rem;
+  padding: 1rem;
+  background: linear-gradient(145deg, rgba(15, 23, 42, 0.92), rgba(30, 41, 59, 0.64));
+  box-shadow: 0 18px 60px rgba(2, 6, 23, 0.28);
+}
+
+label { display: grid; gap: 0.4rem; color: #cbd5e1; font-size: 0.88rem; margin-top: 0.9rem; }
+label:first-child { margin-top: 0; }
+input, select {
+  width: 100%;
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  border-radius: 0.75rem;
+  color: #f8fafc;
+  background: rgba(2, 6, 23, 0.68);
+  padding: 0.65rem 0.8rem;
+}
+input[type="range"] { padding-inline: 0; accent-color: #34d399; }
+
+#search-slot { margin-bottom: 0.25rem; }
+#search-slot gmp-place-autocomplete {
+  width: 100%;
+  --gmp-mat-color-surface: rgba(2, 6, 23, 0.85);
+  --gmp-mat-color-on-surface: #f8fafc;
+  --gmp-mat-color-on-surface-variant: #94a3b8;
+  color-scheme: dark;
+}
+
+.legend { margin-top: 1rem; }
+.legend-bar { height: 0.6rem; border-radius: 999px; }
+.legend-labels {
+  display: flex;
+  justify-content: space-between;
+  color: #94a3b8;
+  font-size: 0.75rem;
+  margin-top: 0.35rem;
+}
+
+#status { color: #94a3b8; font-size: 0.88rem; line-height: 1.45; margin: 0.9rem 0 0; }
+#status[data-tone="success"] { color: #86efac; }
+#status[data-tone="error"] { color: #fca5a5; }
+
+.conditions .aqi-headline { display: flex; align-items: center; gap: 0.9rem; }
+.aqi-value {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 3.4rem;
+  height: 3.4rem;
+  padding: 0 0.6rem;
+  border-radius: 0.9rem;
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #04121c;
+  background: #64748b;
+}
+.aqi-category { margin: 0; font-weight: 700; }
+.aqi-index-name { margin: 0.15rem 0 0; color: #94a3b8; font-size: 0.82rem; }
+.aqi-pollutant { color: #cbd5e1; font-size: 0.88rem; margin: 0.9rem 0 0; }
+
+.pollutant-list { list-style: none; margin: 0.75rem 0 0; padding: 0; display: grid; gap: 0.4rem; }
+.pollutant-list li {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  font-size: 0.85rem;
+  color: #cbd5e1;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+  padding-bottom: 0.35rem;
+}
+.pollutant-list span { color: #94a3b8; }
+.aqi-time { color: #7a90ad; font-size: 0.78rem; margin: 0.9rem 0 0; }
+
+.credits { color: #7a90ad; font-size: 0.78rem; margin-top: auto; }
+.credits a { color: #94a3b8; }
+.credits a:hover { color: #34d399; }
+
+.map-shell { position: relative; min-height: 100vh; }
+#map { position: absolute; inset: 0; min-height: 100%; }
+
+@media (max-width: 860px) {
+  #app { grid-template-columns: 1fr; }
+  .panel { max-height: none; border-right: 0; order: 2; }
+  .map-shell { min-height: 58vh; order: 1; }
+}

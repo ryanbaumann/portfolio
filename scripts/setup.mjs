@@ -27,12 +27,7 @@ async function main() {
   const STRAVA_CLIENT_SECRET = await ask('   Strava Client Secret');
   
   console.log('\\n2. Google Maps Platform');
-  const GMP_SERVER_API_KEY = await ask('   Google Maps API Key (Needs Maps JS & Elevation/Isochrones)');
-  
-  console.log('\\n3. AQI Map Demo (Optional)');
-  const PURPLEAIR_API_KEY = await ask('   PurpleAir Read API Key', 'optional-skip');
-  const MAPBOX_PUBLIC_TOKEN = await ask('   Mapbox Public Token', 'optional-skip');
-  const MAPBOX_STYLE_URL = await ask('   Mapbox Style URL', 'mapbox://styles/mapbox/dark-v11');
+  const GMP_SERVER_API_KEY = await ask('   Google Maps API Key (Needs Maps JS, Elevation/Isochrones, Air Quality & Places)');
 
   rl.close();
 
@@ -45,11 +40,6 @@ VITE_STRAVA_CLIENT_ID=${STRAVA_CLIENT_ID}
 # Google Maps Platform
 GMP_SERVER_API_KEY=${GMP_SERVER_API_KEY}
 VITE_GMP_API_KEY=${GMP_SERVER_API_KEY}
-
-# Mapbox & PurpleAir (for aqi-map demo)
-PURPLEAIR_API_KEY=${PURPLEAIR_API_KEY}
-MAPBOX_PUBLIC_TOKEN=${MAPBOX_PUBLIC_TOKEN}
-MAPBOX_STYLE_URL=${MAPBOX_STYLE_URL}
 `.trim();
 
   writeFileSync(ENV_PATH, envContent + '\\n');

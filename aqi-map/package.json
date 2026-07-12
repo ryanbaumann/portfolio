@@ -1,64 +1,18 @@
 {
-  "project": {
-    "authors": [
-      "rsbaumann"
-    ],
-    "title": "aqi-map-hyperlocal",
-    "description": "Hyperlocal, realtime, global air quality map from various AQI sensor data sources",
-    "tags": [
-      "aqi",
-      "map",
-      "wildfire",
-      "smoke"
-    ],
-    "created": "08-14-2021",
-    "published": "08-14-2021",
-    "thumbnail": "tbd",
-    "version": "0.1.0"
-  },
-  "main": "index.js",
-  "license": "MIT",
+  "name": "aqi-map",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Live air quality heatmap on a 2D Google map, powered by the Google Maps Platform Air Quality API.",
   "scripts": {
-    "build": "node scripts/build.js",
-    "start": "budo index.js:bundle.js --live",
-    "clean": "rm -rf build",
-    "test": "npm run build",
-    "deploy:static": "npm run build && printf \"Deploy the build/ directory with your static hosting provider.\\n\""
-  },
-  "browserify": {
-    "transform": [
-      [
-        "babelify",
-        {
-          "presets": [
-            "@babel/preset-env"
-          ]
-        }
-      ]
-    ]
-  },
-  "devDependencies": {
-    "@babel/preset-env": "^7.29.7",
-    "babel-eslint": "^10.1.0",
-    "babel-preset-env": "^1.7.0",
-    "babel-preset-es2015": "^6.24.1",
-    "babelify": "^10.0.0",
-    "esmify": "^2.1.1",
-    "esminify": "^4.0.1"
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "npm run build"
   },
   "dependencies": {
-    "@babel/core": "^7.29.7",
-    "@mapbox/mapbox-gl-geocoder": "^5.1.2",
-    "@turf/clean-coords": "^7.3.5",
-    "@turf/helpers": "^7.3.5",
-    "@turf/truncate": "^7.3.5",
-    "browserify": "^17.0.0",
-    "budo": "^11.8.4",
-    "d3": "^7.9.0",
-    "d3-delaunay": "^6.0.4",
-    "d3-scale": "^4.0.2",
-    "d3-tricontour": "^0.1.0",
-    "mapbox-gl": "3.25.0"
+    "@googlemaps/js-api-loader": "^2.1.1",
+    "vite": "^8.0.16"
   },
   "engines": {
     "node": ">=20"

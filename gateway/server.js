@@ -14,8 +14,6 @@ import { applySecurityHeaders, serveFromDir } from './lib/staticFiles.js';
 import { createRateLimiter, clientIp } from './lib/rateLimit.js';
 import { handleStravaApi } from './lib/strava.js';
 import { handleIsochronesApi } from './lib/isochrones.js';
-import { handlePurpleAirApi } from './lib/purpleair.js';
-import { getAqiMapConfig } from './lib/config.js';
 
 const PORT = Number(process.env.PORT || 8080);
 const PUBLIC_DIR = join(REPO_ROOT, 'gateway', 'public');
@@ -24,7 +22,7 @@ const JSON_BODY_LIMIT_BYTES = 16 * 1024;
 const { apps } = loadApps(process.env);
 const publicApps = apps.map(toPublicApp);
 
-// Token/refresh/deauthorize, isochrones, and purpleair are all low-volume,
+// Token/refresh/deauthorize and isochrones are all low-volume,
 // one-request-per-user-action calls, so a shared conservative bucket is
 // fine. The photo proxy is different: a single Strava tour can render
 // dozens of photo billboards, each firing its own GET, so it gets its own
@@ -92,19 +90,13 @@ async function handleApi(request, response, pathname, searchParams) {
     return;
   }
 
-  if (pathname === '/api/config/aqi-map') {
-    const result = getAqiMapConfig();
-    sendJson(response, result.statusCode, result.json);
-    return;
-  }
-
   // /api/photo-proxy is a compatibility alias for /api/strava/photo: the
   // strava-explorer client (and its standalone Cloud Run broker in
   // strava-explorer/server/) both speak /api/photo-proxy, so the gateway
   // accepts both without requiring a client change.
   const isPhotoRoute = pathname === '/api/strava/photo' || pathname === '/api/photo-proxy';
   const isStravaRoute = pathname.startsWith('/api/strava/') || isPhotoRoute;
-  const isProxyRoute = isStravaRoute || pathname === '/api/isochrones' || pathname === '/api/purpleair/sensors';
+  const isProxyRoute = isStravaRoute || pathname === '/api/isochrones';
   const limiter = isPhotoRoute ? photoRateLimiter : proxyRateLimiter;
   if (isProxyRoute && !limiter.check(ip)) {
     sendJson(response, 429, { error: 'Too many requests. Please try again later.' });
@@ -161,16 +153,6 @@ async function handleApi(request, response, pathname, searchParams) {
       sendRaw(response, result.statusCode, result.rawJson, result.contentType);
       return;
     }
-    sendJson(response, result.statusCode, result.json);
-    return;
-  }
-
-  if (pathname === '/api/purpleair/sensors') {
-    if (request.method !== 'GET') {
-      sendJson(response, 405, { error: 'Method not allowed' });
-      return;
-    }
-    const result = await handlePurpleAirApi(searchParams);
     sendJson(response, result.statusCode, result.json);
     return;
   }

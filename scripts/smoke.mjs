@@ -159,21 +159,7 @@ const SECRET_PATTERNS = [
   ['Google API key (AIza...)', /AIza[0-9A-Za-z_-]{35}/],
   ['Stripe-style live secret key', /sk_live_[0-9A-Za-z]+/],
   ['PEM private key block', /-----BEGIN [A-Z ]*PRIVATE KEY-----/],
-  // Mapbox *secret*-scoped tokens are prefixed `sk.`; the public token we
-  // intentionally ship client-side is prefixed `pk.` and is fine to expose.
-  ['Mapbox secret-scoped token (sk. prefix)', /\bsk\.[A-Za-z0-9]{20,}/],
 ];
-
-// PurpleAir read keys are bare 32-char hex strings with no distinguishing
-// prefix, so a plain regex over all files would false-positive constantly
-// (hashes, etc). Instead require both a 32-hex-char token AND the word
-// "purpleair" to appear in the same file.
-function checkPurpleAirLeak(filePath, content) {
-  if (!/purpleair/i.test(content)) return null;
-  const hexMatch = content.match(/\b[0-9a-f]{32}\b/i);
-  if (!hexMatch) return null;
-  return `Possible PurpleAir key (32-hex-char token near the word "purpleair") in ${filePath}: ${hexMatch[0]}`;
-}
 
 function scanForSecrets(rootDirs) {
   const hits = [];
@@ -194,8 +180,6 @@ function scanForSecrets(rootDirs) {
           hits.push(`${label} in ${relPath}: "${match[0].slice(0, 60)}"`);
         }
       }
-      const purpleAirHit = checkPurpleAirLeak(relPath, content);
-      if (purpleAirHit) hits.push(purpleAirHit);
     }
   }
   return hits;
@@ -331,16 +315,6 @@ async function main() {
       if (!data.error || typeof data.error !== 'string') throw new Error(`expected a validation message, got ${JSON.stringify(data)}`);
     });
 
-    await check('GET /api/purpleair/sensors returns 503 JSON when no key is configured', async () => {
-      const response = await fetch(`${baseUrl}/api/purpleair/sensors`);
-      if (process.env.PURPLEAIR_API_KEY) {
-        console.log('      (PURPLEAIR_API_KEY is set in this environment; skipping the 503 assertion)');
-        return;
-      }
-      if (response.status !== 503) throw new Error(`expected 503, got ${response.status}`);
-      const data = await response.json();
-      if (!data.error) throw new Error(`expected { error }, got ${JSON.stringify(data)}`);
-    });
   } finally {
     if (startedOwnGateway) stopGateway();
   }

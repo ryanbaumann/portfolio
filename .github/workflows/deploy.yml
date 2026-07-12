@@ -6,9 +6,8 @@ name: Deploy to Cloud Run
 # build now ship in one image, built with Cloud Build and deployed to one
 # Cloud Run service. There is no GCS step anymore.
 #
-# Runtime secrets (STRAVA_CLIENT_SECRET, GMP_SERVER_API_KEY,
-# PURPLEAIR_API_KEY, MAPBOX_PUBLIC_TOKEN) and public config
-# (STRAVA_CLIENT_ID, MAPBOX_STYLE_URL) are set once on the Cloud Run
+# Runtime secrets (STRAVA_CLIENT_SECRET, GMP_SERVER_API_KEY) and public
+# config (STRAVA_CLIENT_ID) are set once on the Cloud Run
 # service, not passed through this workflow on every deploy — see the
 # comment above the `gcloud run deploy` step for the one-time setup
 # command. This workflow deliberately never passes a `VITE_*SECRET*`
@@ -76,13 +75,9 @@ jobs:
           #     --project "$GCP_PROJECT_ID" --region "$GCP_REGION" \
           #     --update-secrets=STRAVA_CLIENT_SECRET=strava-client-secret:latest \
           #     --update-secrets=GMP_SERVER_API_KEY=gmp-server-api-key:latest \
-          #     --update-secrets=PURPLEAIR_API_KEY=purpleair-api-key:latest \
-          #     --update-secrets=MAPBOX_PUBLIC_TOKEN=mapbox-public-token:latest \
-          #     --set-env-vars=STRAVA_CLIENT_ID=<your Strava app's client id>,MAPBOX_STYLE_URL=<your Mapbox style URL>
+          #     --set-env-vars=STRAVA_CLIENT_ID=<your Strava app's client id>
           #
-          # STRAVA_CLIENT_ID and MAPBOX_STYLE_URL aren't secret on their own
-          # (the client ID is public in the OAuth authorize URL; the style
-          # URL is a referrer-restricted-token-gated Mapbox style id), so
-          # plain --set-env-vars is fine for them. Everything else should
-          # be a Secret Manager reference via --update-secrets, never a
-          # literal value in this workflow.
+          # STRAVA_CLIENT_ID isn't secret on its own (it's public in the
+          # OAuth authorize URL), so plain --set-env-vars is fine for it.
+          # Everything else should be a Secret Manager reference via
+          # --update-secrets, never a literal value in this workflow.

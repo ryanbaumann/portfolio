@@ -1,67 +1,37 @@
-# Hyperlocal AQI Map
+# Air Quality Map
 
-A browser-based hyperlocal air quality index (AQI) map that retrieves real-time PurpleAir sensor data and renders interpolated local AQI contours on a Mapbox GL map.
+Live air-quality heatmap on a 2D Google map, powered end-to-end by Google
+Maps Platform:
 
-## Features
+- **Heatmap tiles** from the [Air Quality API](https://developers.google.com/maps/documentation/air-quality)
+  (`mapTypes/{type}/heatmapTiles`) rendered as an `ImageMapType` overlay —
+  Universal AQI, US AQI (EPA), or PM2.5 layers with adjustable opacity.
+- **Point conditions**: click anywhere (or search a place) to call
+  `currentConditions:lookup` — AQI value and category, dominant pollutant,
+  and top pollutant concentrations.
+- **Place search** via the Places `PlaceAutocompleteElement`.
 
-*   **Real-time Sensor Data**: Fetches hyperlocal particulate matter data directly from PurpleAir sensors.
-*   **AQI Interpolation**: Uses Turf.js and D3 tricontours to compute and render air quality contours.
-*   **Interactive Search**: Includes a Mapbox Geocoder search box to quickly fly to different locations.
+Everything runs on a single referrer-restricted browser API key, the same
+pattern as the other demos in this repo — no server proxy required.
 
-## Prerequisites
+## Setup
 
-*   [Node.js](https://nodejs.org/) (version 20 or newer).
-*   A Mapbox Public Access Token (obtainable via [Mapbox Account](https://account.mapbox.com/)).
-*   A PurpleAir API Read Key (obtainable via [PurpleAir Developer Dashboard](https://develop.purpleair.com/)).
+Create an API key with these APIs enabled:
 
-## Getting Started
+- Maps JavaScript API
+- Air Quality API
+- Places API (for the search box; the app degrades gracefully without it)
 
-1.  **Clone the repo and install dependencies**:
-    ```bash
-    cd aqi-map
-    npm install
-    ```
+Restrict the key by HTTP referrer (e.g. `http://localhost:5173/*` and your
+production domain).
 
-2.  **Configure environment credentials**:
-    Open `index.html` (or create a custom config in your static host environment) and configure the `window.AQI_MAP_CONFIG` block:
-    ```html
-    <script>
-      window.AQI_MAP_CONFIG = {
-        mapboxAccessToken: "YOUR_MAPBOX_PUBLIC_TOKEN",
-        mapboxStyleUrl: "mapbox://styles/mapbox/streets-v11",
-        purpleAirApiKey: "YOUR_PURPLEAIR_READ_API_KEY",
-        maxSensorAgeSeconds: 604800
-      };
-    </script>
-    ```
+## Run
 
-3.  **Run the local development server**:
-    ```bash
-    npm start
-    ```
-    Open the address printed in the terminal (usually `http://localhost:9966`) to view the application with live reload enabled.
+```bash
+npm install
+VITE_GMP_API_KEY=your-browser-key npm run dev   # http://localhost:5173
+npm run build                                    # emits dist/
+```
 
-4.  **Build for production**:
-    ```bash
-    npm run build
-    ```
-    This bundles the JavaScript using Browserify into `build/bundle.js` and copies the static assets to `build/`.
-
-## Security Best Practices
-
-*   **Expose Only Restricted Tokens**: Use a public Mapbox token and restrict it to your specific production and local development referrers.
-*   **Do Not Commit Credentials**: Never commit active Mapbox access tokens or PurpleAir API keys to the repository. Keep credentials configuration local or injected at deploy time.
-
-## Terms of Service & Compliance
-
-By running this application, you must comply with:
-*   **Mapbox Terms**: Subject to the [Mapbox Terms of Service](https://www.mapbox.com/legal/tos).
-*   **PurpleAir API Terms**: Subject to the [PurpleAir Terms of Service](https://www.purpleair.com/terms-of-service). Ensure your API usage stays within the bounds of your PurpleAir plan limits.
-
-## Contributing
-
-Contributions are welcome! Please open a pull request or submit an issue. Keep changes focused and self-contained within this project directory.
-
-## License
-
-This project is licensed under the [MIT License](../LICENSE).
+Inside the trails.ninja container the app is mounted at `/aqi-map/`
+(`BASE_PATH=/aqi-map/` at build time); it has no `/api/*` dependencies.
