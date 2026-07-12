@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Unreleased] - 2026-07-12 — Ryan Baumann portfolio overhaul
+
+### Added — Planning
+- Added a detailed end-to-end portfolio overhaul plan covering Ryan-first branding, generic agent workflows, CMS hardening, copy/content enrichment, SEO/social sharing, responsive UX, gateway security/private demos/rate limits, Strava photo proxy fixes, CI/CD hardening, and final verification.
+
 ## [Unreleased] - 2026-07-12 — One site, one design
 
 ### Changed — The portfolio is now the site
