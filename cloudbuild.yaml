@@ -1,0 +1,33 @@
+# Cloud Build config for the trails.ninja single-container image.
+#
+# Used by .github/workflows/deploy.yml. `gcloud builds submit --tag` cannot
+# forward Docker `--build-arg` values, so the build args the Dockerfile needs
+# (VITE_GMP_API_KEY, VITE_STRAVA_CLIENT_ID) are threaded through this config
+# via substitutions instead.
+#
+# These VITE_ values are inlined into the browser bundle at build time, so they
+# are public client config, not secrets — passing them as substitutions is fine.
+# True runtime secrets (STRAVA_CLIENT_SECRET, GMP_SERVER_API_KEY) are never
+# built into the image; they live on the Cloud Run service (see deploy.yml).
+steps:
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '--build-arg'
+      - 'VITE_GMP_API_KEY=${_VITE_GMP_API_KEY}'
+      - '--build-arg'
+      - 'VITE_STRAVA_CLIENT_ID=${_VITE_STRAVA_CLIENT_ID}'
+      - '--tag'
+      - '${_IMAGE}'
+      - '.'
+
+images:
+  - '${_IMAGE}'
+
+substitutions:
+  _IMAGE: ''
+  _VITE_GMP_API_KEY: ''
+  _VITE_STRAVA_CLIENT_ID: ''
+
+options:
+  logging: CLOUD_LOGGING_ONLY

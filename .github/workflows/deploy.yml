@@ -53,9 +53,11 @@ jobs:
           set -euo pipefail
           IMAGE="${GCP_REGION}-docker.pkg.dev/${GCP_PROJECT_ID}/trails-ninja/app:${GITHUB_SHA}"
           echo "IMAGE=$IMAGE" >> "$GITHUB_ENV"
-          gcloud builds submit --project "$GCP_PROJECT_ID" --tag "$IMAGE" \
-            --build-arg VITE_GMP_API_KEY="${{ secrets.VITE_GMP_API_KEY }}" \
-            --build-arg VITE_STRAVA_CLIENT_ID="${{ secrets.VITE_STRAVA_CLIENT_ID }}" .
+          # `gcloud builds submit --tag` can't forward Docker --build-arg values,
+          # so the VITE_* build args are threaded through cloudbuild.yaml via
+          # substitutions instead (see that file's header comment).
+          gcloud builds submit --project "$GCP_PROJECT_ID" --config cloudbuild.yaml \
+            --substitutions=_IMAGE="$IMAGE",_VITE_GMP_API_KEY="${{ secrets.VITE_GMP_API_KEY }}",_VITE_STRAVA_CLIENT_ID="${{ secrets.VITE_STRAVA_CLIENT_ID }}" .
 
       - name: Deploy to Cloud Run
         run: |
