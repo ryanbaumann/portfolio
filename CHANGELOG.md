@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## 2026-07-12: UI/UX + copy refresh, CI hang fix, agentic loop
 
+- Fixed image aspect ratio and layout distortion for the homepage hero image (`/previews/strava-explorer.jpg`) by correcting its HTML template attributes to match its physical `1200x687` dimensions and adding `height: auto` in CSS.
+- Added a zero-dependency image dimension parser helper `getImageDimensions` in `build.mjs` that automatically reads and parses SVG (from viewBox/width/height) and JPEG (from SOF marker headers) image files at build time.
+- Integrated dynamic `width` and `height` attributes on page detail and standalone article hero images (`.article-hero`) to prevent Cumulative Layout Shift (CLS).
+- Added `height: auto` globally to `img`, `.hero-image`, and `.article-hero` in `style.css` to ensure responsive images scale proportionally.
 - Fixed the CI hang root cause: the build-and-smoke job ran raw `node --test` in `gateway/`, which imports `server.js` without `NODE_ENV=test`, so `server.listen()` ran and the process never exited. Every run hung until GitHub's 6-hour job timeout, and 10 stuck runs piled up. CI now uses `npm test` (sets `NODE_ENV=test`), `server.js` also guards `listen()` on `NODE_TEST_CONTEXT`, and every job has a 10-20 minute timeout plus cancel-in-progress concurrency.
 - Rewrote portfolio copy in Ryan's voice: first person, short sentences, no em-dashes, nothing overstated. Work entries now end with a "What I learned" section instead of "Why it matters."
 - Added a new Writing entry (Vibing with Maps on Substack) and two new Talks entries (GeoMob SF, April 2025; vis.gl Summit, Seattle, October 2025) with links to the real decks.

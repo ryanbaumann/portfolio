@@ -12,6 +12,7 @@ description: How Ryan designs. Use before changing style.css, page layouts in bu
 3. **Boring is deliberate.** One accent color, one column, generous whitespace. Novelty budget is spent on the writing, not the chrome.
 4. **Both color schemes, always.** Light and dark are first-class via `prefers-color-scheme` and the token block at the top of `style.css`. Never hardcode a color in a component: add or use a token.
 5. **Show, don't tell.** Every page carries at least one real image. Real screenshots first (previews, product shots). When no honest screenshot exists, generate an SVG artifact card with `scripts/artifact-cards.mjs`; cards state only facts already in the entry (real commands, real published stats). Never mock a product UI or fabricate a screenshot.
+6. **No aspect ratio distortion or Cumulative Layout Shift (CLS).** Every responsive image must have `height: auto;` in CSS and exact `width` and `height` attributes in the HTML matching the physical image dimensions. For dynamic detail pages, query image dimensions at build time to populate these attributes.
 
 ## Tokens (style.css `:root`)
 

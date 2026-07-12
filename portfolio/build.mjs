@@ -412,6 +412,57 @@ function linkChips(links = []) {
   return `<p class="chips">${chips}</p>`;
 }
 
+function getImageDimensions(imagePath) {
+  if (!imagePath) return { width: 960, height: 600 };
+  
+  if (imagePath.endsWith('.svg')) {
+    try {
+      const content = readFileSync(imagePath, 'utf8');
+      const viewBoxMatch = content.match(/viewBox=["']\d+\s+\d+\s+(\d+)\s+(\d+)["']/i);
+      if (viewBoxMatch) {
+        return { width: parseInt(viewBoxMatch[1], 10), height: parseInt(viewBoxMatch[2], 10) };
+      }
+      const widthMatch = content.match(/width=["'](\d+)["']/i);
+      const heightMatch = content.match(/height=["'](\d+)["']/i);
+      if (widthMatch && heightMatch) {
+        return { width: parseInt(widthMatch[1], 10), height: parseInt(heightMatch[2], 10) };
+      }
+    } catch (e) {
+      console.warn(`[build.mjs] failed to parse SVG dimensions for ${imagePath}:`, e.message);
+    }
+    return { width: 960, height: 600 };
+  }
+
+  if (imagePath.endsWith('.jpg') || imagePath.endsWith('.jpeg')) {
+    try {
+      const buffer = readFileSync(imagePath);
+      let offset = 2;
+      while (offset < buffer.length - 8) {
+        const markerType = buffer.readUInt16BE(offset);
+        if ((markerType & 0xFF00) !== 0xFF00 || markerType === 0xFFFF) {
+          offset += 1;
+          continue;
+        }
+        offset += 2;
+        if (markerType === 0xFFD9 || markerType === 0xFFDA) {
+          break;
+        }
+        const length = buffer.readUInt16BE(offset);
+        if (markerType === 0xFFC0 || markerType === 0xFFC2) {
+          const height = buffer.readUInt16BE(offset + 3);
+          const width = buffer.readUInt16BE(offset + 5);
+          return { width, height };
+        }
+        offset += length;
+      }
+    } catch (e) {
+      console.warn(`[build.mjs] failed to parse JPG dimensions for ${imagePath}:`, e.message);
+    }
+  }
+
+  return { width: 960, height: 600 };
+}
+
 function workCard(entry) {
   const { meta } = entry;
   const url = hasDetailPage(entry) ? entryUrl('work', entry) : rebase(meta.links?.[0]?.url || `${BASE}work/`);
@@ -589,7 +640,12 @@ function detailPage(collection, entry, activeKey) {
   <h1>${escapeHtml(meta.title)}</h1>
   <p class="article-meta">${metaLine([meta.org || meta.venue, meta.role, meta.period || meta.date])}</p>
   ${linkChips(meta.links)}
-  ${meta.image ? `<img class="article-hero" src="${rebase(meta.image)}" alt="${escapeHtml(meta.imageAlt || meta.title)}" loading="lazy" />` : ''}
+  ${(() => {
+    if (!meta.image) return '';
+    const imagePath = meta.image.startsWith('/') ? join(STATIC_DIR, meta.image.slice(1)) : join(CONTENT_DIR, collection.name, meta.image);
+    const { width, height } = getImageDimensions(imagePath);
+    return `<img class="article-hero" src="${rebase(meta.image)}" alt="${escapeHtml(meta.imageAlt || meta.title)}" loading="lazy" width="${width}" height="${height}" />`;
+  })()}
   ${markdownToHtml(entry.body)}
   ${shareLinks(pageUrl, meta.title)}
   <p class="back"><a href="${BASE}${collection.name}/">← All ${collection.label.toLowerCase()}</a></p>
@@ -648,7 +704,7 @@ function buildHome(collections) {
     .join('')}</p>
   </div>
   <figure class="hero-figure">
-    <img class="hero-image" src="${rebase('/previews/strava-explorer.jpg')}" alt="The Strava 3D Explorer flying a route in Photorealistic 3D, one of the live demos in the lab" width="960" height="600" loading="eager" />
+    <img class="hero-image" src="${rebase('/previews/strava-explorer.jpg')}" alt="The Strava 3D Explorer flying a route in Photorealistic 3D, one of the live demos in the lab" width="1200" height="687" loading="eager" />
     <p class="hero-image-caption">From the lab: <a href="${rebase('/strava-explorer/')}">Strava 3D Explorer</a></p>
   </figure>
 </section>
@@ -755,7 +811,12 @@ function buildStandalonePages() {
     const content = `<article class="prose">
   <p class="eyebrow">${escapeHtml(meta.eyebrow || site.name)}</p>
   <h1>${escapeHtml(meta.title)}</h1>
-  ${meta.image ? `<img class="article-hero" src="${rebase(meta.image)}" alt="${escapeHtml(meta.imageAlt || meta.title)}" loading="lazy" />` : ''}
+  ${(() => {
+    if (!meta.image) return '';
+    const imagePath = meta.image.startsWith('/') ? join(STATIC_DIR, meta.image.slice(1)) : join(CONTENT_DIR, 'pages', meta.image);
+    const { width, height } = getImageDimensions(imagePath);
+    return `<img class="article-hero" src="${rebase(meta.image)}" alt="${escapeHtml(meta.imageAlt || meta.title)}" loading="lazy" width="${width}" height="${height}" />`;
+  })()}
   ${markdownToHtml(body)}
 </article>`;
     writePage(join(slug, 'index.html'), layout({

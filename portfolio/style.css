@@ -100,7 +100,7 @@ blockquote {
   color: var(--muted);
 }
 hr { border: 0; border-top: 1px solid var(--line); margin: 2.5rem 0; }
-img { max-width: 100%; border-radius: 0.6rem; }
+img { max-width: 100%; height: auto; border-radius: 0.6rem; }
 
 /* ---- shell ---- */
 
@@ -327,6 +327,7 @@ main > section { margin-bottom: clamp(3rem, 7vw, 4.5rem); }
 .article-hero {
   display: block;
   width: 100%;
+  height: auto;
   border: 1px solid var(--line);
   border-radius: 0.8rem;
   margin: 0.5rem 0 1.5rem;
@@ -381,6 +382,7 @@ main > section { margin-bottom: clamp(3rem, 7vw, 4.5rem); }
 .hero-figure { margin: 0; }
 .hero-image {
   width: min(100%, 34rem);
+  height: auto;
   border-radius: 1.5rem;
   border: 1px solid var(--line);
   box-shadow: 0 1rem 3rem rgb(0 0 0 / 12%);

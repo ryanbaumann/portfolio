@@ -34,3 +34,11 @@ Context: The remote agent environment's network proxy blocks fetching external a
 Learning: There's no way to fetch an honest external screenshot in this environment when one doesn't already exist in the repo, so the fallback has to be something built from real facts, not a fabricated mockup.
 Evidence: Direct fetches for external thumbnails and site screenshots failed with 403 CONNECT denials from the proxy.
 Use next time: Use a real screenshot or preview shot where one exists. Where none exists, generate an SVG artifact card (`scripts/artifact-cards.mjs`) that states only facts already in the entry copy (real commands, real published stats). Never mock a product UI or fabricate a screenshot.
+
+## 2026-07-12: Missing height: auto in CSS causes aspect ratio distortion when HTML dimensions do not match the physical image
+
+Context: The front page hero image was rendering distorted (squished) because the HTML template had hardcoded `width="960" height="600"` (16:10 aspect ratio), while the physical image was actually `1200x687` (~16:9 aspect ratio). Additionally, CSS styled the width to `min(100%, 34rem)` but did not specify `height: auto;`.
+Learning: Without `height: auto;` in CSS, modern browsers fall back to the aspect ratio inferred from the HTML `width` and `height` attributes (default browser stylesheets assign `aspect-ratio: attr(width) / attr(height)`). If these attributes do not match the actual physical image's aspect ratio, the image stretches/squishes. Furthermore, omitting `width` and `height` attributes on other images (like `.article-hero` on detail pages) causes Cumulative Layout Shift (CLS) when pages load.
+Evidence: Changing the HTML attributes of `.hero-image` to `width="1200" height="687"` and adding `height: auto;` in CSS resolved the distortion. Adding a zero-dependency image dimension parser helper `getImageDimensions` in `build.mjs` to automatically extract dimensions from SVG and JPEG files at build time and inject them as HTML `width`/`height` attributes resolved CLS across all detail/standalone pages.
+Use next time: Always specify `height: auto` on responsive images in CSS, ensure HTML dimension attributes match the actual physical image size, and dynamically parse/inject image dimensions at build time for dynamic content images.
+
