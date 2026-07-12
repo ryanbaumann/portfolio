@@ -225,8 +225,18 @@ async function init() {
   }
 
   setOptions({ key: API_KEY, v: 'weekly', authReferrerPolicy: 'origin' });
-  const { Map } = await importLibrary('maps');
-  await importLibrary('marker');
+  let Map;
+  try {
+    ({ Map } = await importLibrary('maps'));
+    await importLibrary('marker');
+  } catch (error) {
+    // Never fail silently: a rejected loader (bad key, blocked referrer,
+    // network) should tell the visitor what happened, not strand them on
+    // an empty page.
+    console.error('Google Maps failed to load:', error);
+    setStatus('Google Maps failed to load — the API key may be invalid or restricted for this origin.', 'error');
+    return;
+  }
 
   state.map = new Map(elements.map, {
     center: DEFAULT_CENTER,
@@ -247,4 +257,7 @@ async function init() {
   setStatus('Click the map for local conditions.');
 }
 
-init();
+init().catch((error) => {
+  console.error('Initialization failed:', error);
+  setStatus(`Initialization failed: ${error.message}`, 'error');
+});

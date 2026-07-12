@@ -6,6 +6,8 @@ period: 2017 – 2019
 summary: Open-source libraries that opened the data science and business intelligence communities to Mapbox — new audiences the platform had never reached.
 tags: ["open source", "developer advocacy", "data science"]
 links: [{"label": "mapboxgl-jupyter", "url": "https://github.com/mapbox/mapboxgl-jupyter"}, {"label": "mapboxgl-powerbi", "url": "https://github.com/mapbox/mapboxgl-powerbi"}]
+image: /img/work/mapboxgl-jupyter.jpg
+imageAlt: A Jupyter notebook rendering a Mapbox circle visualization of US healthcare charges with mapboxgl-jupyter
 order: 10
 ---
 
@@ -15,7 +17,9 @@ Mapbox's developer base was web and mobile engineers. Two enormous adjacent audi
 
 ## What shipped
 
-I wrote and shipped both bridges: **mapboxgl-jupyter**, bringing full Mapbox GL visualization into Python notebooks, and **mapboxgl-powerbi**, a custom visual putting Mapbox maps inside Power BI dashboards. Both were built as developer advocacy with a product spine — real libraries solving real workflow gaps, not demos.
+I wrote and shipped both bridges: **mapboxgl-jupyter**, bringing full Mapbox GL visualization into Python notebooks in a few lines of pandas-native code, and **mapboxgl-powerbi**, a custom visual putting Mapbox maps inside Power BI dashboards. Both were built as developer advocacy with a product spine — real libraries solving real workflow gaps, not demos.
+
+![A Power BI dashboard analyzing NYC cyclist injuries on a Mapbox heatmap with the mapboxgl-powerbi custom visual](/img/work/mapboxgl-powerbi.jpg)
 
 ## Why it matters
 

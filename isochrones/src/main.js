@@ -329,8 +329,17 @@ async function initMap() {
   }
 
   setOptions({ key: API_KEY, v: 'weekly', authReferrerPolicy: 'origin' });
-  const { Map } = await importLibrary('maps');
-  const { AdvancedMarkerElement, PinElement } = await importLibrary('marker');
+  let Map, AdvancedMarkerElement, PinElement;
+  try {
+    ({ Map } = await importLibrary('maps'));
+    ({ AdvancedMarkerElement, PinElement } = await importLibrary('marker'));
+  } catch (error) {
+    // Never fail silently: a rejected loader (bad key, blocked referrer,
+    // network) should tell the visitor what happened.
+    console.error('Google Maps failed to load:', error);
+    setStatus('Google Maps failed to load — the API key may be invalid or restricted for this origin.', 'error');
+    return;
+  }
 
   state.map = new Map(elements.map, {
     center: state.origin,
@@ -343,14 +352,18 @@ async function initMap() {
     fullscreenControl: true,
   });
 
+  // On the 2D weekly channel PinElement is not a DOM node — pass its
+  // .element as marker content. (`marker.append(pin)` is the 3D
+  // Marker3DInteractiveElement pattern and throws here; it killed init
+  // before any interaction handlers were bound.)
   const pin = new PinElement({ background: '#38bdf8', borderColor: '#0c4a6e', glyphColor: '#0c4a6e' });
   state.marker = new AdvancedMarkerElement({
     map: state.map,
     position: state.origin,
     gmpDraggable: true,
     title: 'Isochrone origin (drag me)',
+    content: pin.element,
   });
-  state.marker.append(pin);
   state.marker.addListener('dragend', ({ latLng }) => {
     setOrigin({ lat: latLng.lat(), lng: latLng.lng() });
   });
@@ -366,4 +379,7 @@ async function initMap() {
 }
 
 bindUi();
-initMap();
+initMap().catch((error) => {
+  console.error('Initialization failed:', error);
+  setStatus(`Initialization failed: ${error.message}`, 'error');
+});

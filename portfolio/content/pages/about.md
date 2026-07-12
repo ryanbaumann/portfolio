@@ -4,7 +4,7 @@ eyebrow: Background
 summary: Ryan Baumann — product and engineering leader with 15+ years scaling developer platforms at Google, Mapbox, and Instabase.
 ---
 
-I'm a product and engineering leader who has spent 15+ years scaling developer platforms — at Google, Mapbox, and Instabase — as a builder first. I set strategy, and I stay in the work: I dogfood the products, review traces, write evals, ship reference apps, read the transcripts, and show up where developers are.
+Engineer, builder, tinkerer — and a product and engineering leader who has spent 15+ years scaling developer platforms at Google, Mapbox, and Instabase. I set strategy, and I stay in the work: I dogfood the products, review traces, write evals, ship reference apps, read the transcripts, and show up where developers are. The proof lives on this site — [the lab](/demos/) is a set of live apps I build and operate myself.
 
 My operating thesis: **developer experience is a growth discipline.** The platforms that win don't just document better — they work backwards from real adoption and revenue goals to the product, context, distribution, and ecosystem investments that move them. That's true whether the platform sells maps, document AI, or anything else.
 
@@ -32,7 +32,7 @@ Joined as the first customer-facing engineer at Series B; grew the team from 1 t
 
 - **Technical Solutions Engineer, Caterpillar** (2012 – 2016). Built a full-stack cloud, IoT, mobile, and analytics worksite productivity solution deployed on 50+ job sites. Co-inventor on **3 US patents** in video and audio analytics for fleet operations.
 - **Mechanical Design Engineer Intern, Trek Bicycle** (2011 – 2012).
-- **Professional cyclist**, Trek-Livestrong & Bahati Foundation (2009 – 2011). Racing taught me more about pacing, measurement, and marginal gains than any job since.
+- **Professional cyclist**, Trek-Livestrong & Bahati Foundation (2009 – 2011). Racing taught me more about pacing, measurement, and marginal gains than any job since. The site name is a leftover from that life — I still chase trails.
 
 ## Education
 

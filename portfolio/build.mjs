@@ -34,6 +34,26 @@ const COLLECTIONS = [
 
 const site = JSON.parse(readFileSync(join(CONTENT_DIR, 'site.json'), 'utf8'));
 
+// Live demo apps. The manifest is the repo-root apps.json (the same file the
+// gateway routes from), so a demo added there shows up here on the next
+// build with zero portfolio changes. When this site is extracted into its
+// own repo (no ../apps.json), the demos section and nav item simply
+// disappear — nothing else breaks.
+function loadDemos() {
+  const manifestPath = join(ROOT, '..', 'apps.json');
+  if (!existsSync(manifestPath)) return [];
+  try {
+    const entries = JSON.parse(readFileSync(manifestPath, 'utf8'));
+    // The portfolio itself is listed in the manifest (it's how the gateway
+    // mounts this site at "/"); everything else is a demo.
+    return entries.filter((entry) => entry.path !== '/' && entry.name !== 'portfolio');
+  } catch {
+    return [];
+  }
+}
+
+const demos = loadDemos();
+
 // ---------------------------------------------------------------------------
 // Front matter: a leading block delimited by --- lines, one `key: value` per
 // line. Values that parse as JSON (arrays, objects, booleans, numbers) are
@@ -217,6 +237,7 @@ function layout({ title, description, content, active = '' }) {
     { href: `${BASE}work/`, label: 'Work', key: 'work' },
     { href: `${BASE}writing/`, label: 'Writing', key: 'writing' },
     { href: `${BASE}talks/`, label: 'Talks', key: 'talks' },
+    ...(demos.length ? [{ href: `${BASE}demos/`, label: 'Demos', key: 'demos' }] : []),
     { href: `${BASE}about/`, label: 'About', key: 'about' },
   ];
   const nav = navItems
@@ -303,6 +324,23 @@ function listRow(collection, entry) {
 </li>`;
 }
 
+function demoCard(demo) {
+  const tags = (demo.tags || []).length
+    ? `<p class="card-tags">${demo.tags.map((tag) => `<span>${escapeHtml(tag)}</span>`).join('')}</p>`
+    : '';
+  const preview = demo.preview
+    ? `<img class="demo-preview" src="${rebase(demo.preview)}" alt="Screenshot of ${escapeHtml(demo.title)}" loading="lazy" width="960" height="600" />`
+    : '';
+  return `<a class="card demo-card" href="${rebase(demo.path)}">
+  ${preview}
+  <div class="demo-body">
+    <h3>${escapeHtml(demo.title)}</h3>
+    <p>${escapeHtml(demo.description || '')}</p>
+    ${tags}
+  </div>
+</a>`;
+}
+
 function sectionHeader(eyebrow, title, moreHref, moreLabel) {
   return `<div class="section-header">
   <div><p class="eyebrow">${escapeHtml(eyebrow)}</p>${title ? `<h2>${escapeHtml(title)}</h2>` : ''}</div>
@@ -327,6 +365,7 @@ function detailPage(collection, entry, activeKey) {
   <h1>${escapeHtml(meta.title)}</h1>
   <p class="article-meta">${metaLine([meta.org || meta.venue, meta.role, meta.period || meta.date])}</p>
   ${linkChips(meta.links)}
+  ${meta.image ? `<img class="article-hero" src="${rebase(meta.image)}" alt="${escapeHtml(meta.imageAlt || meta.title)}" loading="lazy" />` : ''}
   ${markdownToHtml(entry.body)}
   <p class="back"><a href="${BASE}${collection.name}/">← All ${collection.label.toLowerCase()}</a></p>
 </article>`;
@@ -343,27 +382,51 @@ function buildHome(collections) {
   const writingEntries = collections.writing.slice(0, 3);
   const talkEntries = collections.talks.slice(0, 3);
 
+  const heroLinks = [
+    { label: 'Work', href: `${BASE}work/` },
+    { label: 'Writing', href: `${BASE}writing/` },
+    ...(demos.length ? [{ label: 'Demos', href: `${BASE}demos/` }] : []),
+    { label: 'GitHub', href: site.links.github, external: true },
+    { label: 'LinkedIn', href: site.links.linkedin, external: true },
+    { label: 'Email', href: `mailto:${site.links.email}` },
+  ];
+
+  const demosSection = demos.length
+    ? `
+<section>
+  ${sectionHeader('The lab', '', `${BASE}demos/`, 'All demos')}
+  <p class="section-note">${escapeHtml(site.sectionIntros?.demos || '')}</p>
+  <div class="grid demo-grid">
+    ${demos.map(demoCard).join('\n')}
+  </div>
+</section>
+`
+    : '';
+
   const content = `
 <section class="hero">
   <p class="eyebrow">${escapeHtml(site.tagline)}</p>
-  <h1>${escapeHtml(site.headline)}</h1>
-  <p class="lede">${escapeHtml(site.thesis)}</p>
+  <h1>${escapeHtml(site.name)}</h1>
+  <p class="lede">${escapeHtml(site.intro)}</p>
   <p class="hero-meta">${escapeHtml(site.role)} · ${escapeHtml(site.location)}</p>
+  <p class="chips hero-links">${heroLinks
+    .map((link) => `<a class="chip" href="${link.href}"${link.external ? ' rel="noopener"' : ''}>${escapeHtml(link.label)}${link.external ? ' ↗' : ''}</a>`)
+    .join('')}</p>
 </section>
 
 <section>
   ${sectionHeader('Selected work', '', `${BASE}work/`, 'All work')}
+  <p class="section-note">${escapeHtml(site.headline)}</p>
   <div class="grid">
     ${featuredWork.map(workCard).join('\n')}
   </div>
 </section>
-
+${demosSection}
 <section>
   ${sectionHeader('Writing', '', `${BASE}writing/`, 'All writing')}
   <ul class="rows">
     ${writingEntries.map((entry) => listRow('writing', entry)).join('\n')}
   </ul>
-  <p class="placeholder-note">Long-form writing lands here soon — the blog section of this site is built and waiting for posts.</p>
 </section>
 
 <section>
@@ -384,6 +447,26 @@ function buildHome(collections) {
     title: `${site.name} — ${site.role}`,
     description: site.description,
     content,
+  }));
+}
+
+function buildDemosPage() {
+  if (!demos.length) return;
+  const content = `<section>
+  <p class="eyebrow">Demos</p>
+  <h1>The lab</h1>
+  <p class="lede">${escapeHtml(site.sectionIntros?.demos || '')}</p>
+  <div class="grid demo-grid">
+    ${demos.map(demoCard).join('\n')}
+  </div>
+  <p class="section-note">Every demo is open source — <a href="${site.links.github}/trails.ninja" rel="noopener">read the code</a>. One container, one Cloud Run service, no secrets in the browser.</p>
+</section>`;
+
+  writePage(join('demos', 'index.html'), layout({
+    title: `Demos — ${site.name}`,
+    description: site.sectionIntros?.demos || site.description,
+    content,
+    active: 'demos',
   }));
 }
 
@@ -458,6 +541,7 @@ for (const collection of COLLECTIONS) {
 }
 
 buildHome(collections);
+buildDemosPage();
 buildStandalonePages();
 
 if (existsSync(STATIC_DIR)) {

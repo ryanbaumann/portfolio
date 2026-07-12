@@ -1,16 +1,17 @@
 {
   "name": "Ryan Baumann",
   "role": "Head of Developer Experience, Google Maps Platform",
-  "tagline": "DevX · Applied AI · Product Growth",
+  "tagline": "Engineer · Builder · Tinkerer",
   "location": "San Francisco, CA",
-  "headline": "Developer experience is a growth engine, not a support function.",
-  "thesis": "I build developer platforms backwards from growth: start with real adoption and revenue goals, then ship the product, context, and ecosystem work that moves them. That goes well beyond docs, code samples, and DevRel — it's platform engineering, product, and business development working as one system. Today that means making AI agents first-class users of Google Maps Platform.",
-  "description": "Ryan Baumann — Head of Developer Experience at Google Maps Platform. Product and engineering leader building developer platforms backwards from growth, with 15+ years across Google, Mapbox, and Instabase.",
-  "aboutTeaser": "15+ years scaling developer platforms at Google, Mapbox, and Instabase — as a builder, platform engineering leader, and product leader. Before that: launching industrial IoT at Caterpillar (3 patents) and racing bikes professionally.",
+  "intro": "I run Developer Experience for Google Maps Platform — and I still ship. 15+ years building developer platforms at Google, Mapbox, and Instabase, across engineering, product, and go-to-market. This is my home page: the work, the writing, and a lab of live apps I build and operate myself.",
+  "headline": "Developer experience is a growth engine, not a support function. Every entry here starts from the number it moved.",
+  "description": "Ryan Baumann — Head of Developer Experience at Google Maps Platform. Engineer, builder, and product leader with 15+ years scaling developer platforms at Google, Mapbox, and Instabase.",
+  "aboutTeaser": "First customer-facing engineer at Mapbox (grew the team 1→15 as the company passed $100M ARR), Director at Series-B Instabase, industrial IoT at Caterpillar (3 patents), and before all of it, two years as a professional cyclist. Racing taught me pacing, measurement, and marginal gains — every job since has been applying them.",
   "sectionIntros": {
     "work": "Selected platform, product, and growth work. Each entry starts from the goal it served — adoption, revenue, reach — and shows what shipped.",
-    "writing": "Notes on developer experience as a growth discipline, applied AI, and building platforms agents can use. Long-form posts live here; the weekly cadence lives on LinkedIn.",
-    "talks": "Talks, videos, and decks. I present demo-first: working product over slides, then how it's built, then why it matters to the business."
+    "writing": "Long-form notes on developer experience as a growth discipline, applied AI, and building platforms agents can use. The weekly cadence — #ThisWeeksLearnings — lives on LinkedIn.",
+    "talks": "Talks, videos, and decks. I present demo-first: working product over slides, then how it's built, then why it matters to the business.",
+    "demos": "Live apps I build and operate to stay in the work — real OAuth, real quotas, real cold starts. One container, one Cloud Run service, no secrets in the browser."
   },
   "links": {
     "github": "https://github.com/ryanbaumann",

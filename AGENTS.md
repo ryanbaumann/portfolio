@@ -8,17 +8,33 @@ container. See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the full
 picture.
 
 - `portfolio/`: zero-dependency static site generator over a flat-file
-  markdown CMS (`content/`). Staged for extraction into its own repo; it has
-  its own `.claude/skills/` for content, writing, design, and presenting.
+  markdown CMS (`content/`). This is the site at the root path — home, work,
+  writing (the blog), talks, demos, about. Staged for extraction into its own
+  repo; it has its own `.claude/skills/` for content, writing, design, and
+  presenting. Its build reads the root `apps.json` (when present) to render
+  the homepage Demos section and nav.
 - `strava-explorer/`: Vite app for exploring Strava activities on Google Maps Platform 3D Maps.
 - `aqi-map/`: Vite app rendering Air Quality API heatmap tiles and point conditions on a 2D Google map.
 - `isochrones/`: Vite + Node app for reachability analysis using Google Maps Platform Isochrones.
-- `gateway/`: zero-npm-dependency Node server that serves the landing page
-  (`gateway/public/`), every app's static build (routed via the root
-  `apps.json` manifest), and same-origin `/api/*` proxies for every
-  secret-bearing call (Strava OAuth, Isochrones). This is what actually
-  runs in production; the per-app dev servers above are for local
-  development only.
+- `gateway/`: zero-npm-dependency Node server that serves the portfolio at
+  the root path, every demo app's static build (both routed via the root
+  `apps.json` manifest, most-specific path first), and same-origin `/api/*`
+  proxies for every secret-bearing call (Strava OAuth, Isochrones). This is
+  what actually runs in production; the per-app dev servers above are for
+  local development only.
+
+## Paved paths (use these before doing it by hand)
+
+- **Add a demo app:** `npm run new:demo -- my-demo --title "My Demo"` —
+  scaffolds the folder and wires apps.json, the Dockerfile, and dependabot.
+  The homepage card, nav item, gateway route, container build, and smoke
+  coverage all follow from the apps.json entry.
+- **Add a blog post:** `npm run new:post -- "Post title"` (add
+  `--external <url>` for a link-out entry). Voice guidance:
+  `portfolio/.claude/skills/writing/SKILL.md`.
+- **Regenerate demo screenshots:** `npm run previews` (uses
+  strava-explorer's Playwright; `BASE_URL=https://trails.ninja` to shoot
+  production).
 
 Prefer small, reviewable changes. Keep app-specific code, commands, and dependencies inside the app directory you are modifying. Only use npm for dependency management (do not use yarn or other package managers).
 
@@ -52,8 +68,10 @@ Run commands from the app directory unless noted.
 ### `portfolio/`
 
 - No install needed (zero dependencies).
-- Build: `node build.mjs` (or `npm run build`); `BASE_PATH=/portfolio/` for the container mount.
+- Build: `node build.mjs` (or `npm run build`). It is mounted at the site
+  root, so the default `BASE_PATH=/` is also the production value.
 - Preview: `node serve.mjs` (after building).
+- New blog post: `npm run new:post -- "Title"` from the repo root.
 - Content, voice, design, and presentation standards live in `portfolio/.claude/skills/`.
 
 ### `isochrones/`
@@ -122,6 +140,10 @@ Run commands from the app directory unless noted.
 - If a perceptible web UI change is made, run or document a browser/screenshot check when the environment allows it.
 
 ## Adding a new demo app
+
+**Fast path:** `npm run new:demo -- my-demo --title "My Demo"` does all of
+the below in one command. The manual steps, for when the scaffold doesn't
+fit:
 
 Apps are folders (`docs/ARCHITECTURE.md` design rule 1): the gateway
 discovers whatever is listed in the root `apps.json`, so adding a demo is

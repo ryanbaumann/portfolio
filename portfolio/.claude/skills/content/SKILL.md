@@ -28,7 +28,7 @@ string. Common keys:
 ## Where things go
 
 - **Work case study** → `content/work/<slug>.md`. Body renders at `/work/<slug>/`; no body = card links out to the first `links` URL.
-- **Blog post** → `content/writing/<slug>.md`. This is the blog: the section is already designed and routed; posts appear at `/writing/<slug>/` the moment the first file lands. Use the writing skill for voice.
+- **Blog post** → `content/writing/<slug>.md` (or `npm run new:post -- "Title"` from the repo root). This is the blog: the section is already designed and routed; posts appear at `/writing/<slug>/` the moment the first file lands. Use the writing skill for voice.
 - **Talk / presentation** → `content/talks/<slug>.md`, decks in `static/decks/` (see the presenting skill).
 - **Standalone page** → `content/pages/<slug>.md` → `/<slug>/`. Add it to the nav in `build.mjs` `layout()` if it should be globally reachable.
 - **Any static asset** (images, PDFs, files) → `static/`, copied verbatim into the site root.

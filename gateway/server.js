@@ -2,25 +2,28 @@
 // gateway/server.js
 //
 // Zero-npm-dependency Node ES-module server that is the single entry point
-// for the trails.ninja container: it serves the portfolio landing page,
-// every demo app's static build, and brokers all secret-bearing API calls
-// same-origin under /api/*. See docs/ARCHITECTURE.md for the full picture.
+// for the trails.ninja container: it serves the portfolio site at the root
+// path, every demo app's static build under its own path, and brokers all
+// secret-bearing API calls same-origin under /api/*. See
+// docs/ARCHITECTURE.md for the full picture.
 
 import { createServer } from 'node:http';
-import { join } from 'node:path';
 
-import { loadApps, toPublicApp, REPO_ROOT } from './lib/apps.js';
+import { loadApps, toPublicApp } from './lib/apps.js';
 import { applySecurityHeaders, serveFromDir } from './lib/staticFiles.js';
 import { createRateLimiter, clientIp } from './lib/rateLimit.js';
 import { handleStravaApi } from './lib/strava.js';
 import { handleIsochronesApi } from './lib/isochrones.js';
 
 const PORT = Number(process.env.PORT || 8080);
-const PUBLIC_DIR = join(REPO_ROOT, 'gateway', 'public');
 const JSON_BODY_LIMIT_BYTES = 16 * 1024;
 
 const { apps } = loadApps(process.env);
 const publicApps = apps.map(toPublicApp);
+
+// Most-specific path first, so the root-mounted portfolio ("/") acts as the
+// catch-all only after every demo app path has had its chance to match.
+const appsByPathLength = [...apps].sort((a, b) => b.path.length - a.path.length);
 
 // Token/refresh/deauthorize and isochrones are all low-volume,
 // one-request-per-user-action calls, so a shared conservative bucket is
@@ -74,7 +77,7 @@ function readJsonBody(request) {
 }
 
 function findAppForPath(pathname) {
-  return apps.find((app) => pathname === app.path.slice(0, -1) || pathname.startsWith(app.path));
+  return appsByPathLength.find((app) => pathname === app.path.slice(0, -1) || pathname.startsWith(app.path));
 }
 
 async function handleApi(request, response, pathname, searchParams) {
@@ -182,6 +185,19 @@ const server = createServer(async (request, response) => {
       return;
     }
 
+    // The portfolio used to be mounted at /portfolio/; it now lives at the
+    // root. Permanently redirect old links (search results, LinkedIn posts)
+    // to the same page at the root path.
+    if (pathname === '/portfolio' || pathname.startsWith('/portfolio/')) {
+      applySecurityHeaders(response);
+      // Collapse leading slashes so /portfolio//host can't become a
+      // protocol-relative ("//host") open redirect.
+      const target = pathname.slice('/portfolio'.length).replace(/^\/+/, '/') || '/';
+      response.writeHead(308, { Location: target + requestUrl.search });
+      response.end();
+      return;
+    }
+
     const app = findAppForPath(pathname);
     if (app) {
       // Redirect the trailing-slash-less form (`/aqi-map`) to the canonical
@@ -209,8 +225,6 @@ const server = createServer(async (request, response) => {
       response.end('Not found.');
       return;
     }
-
-    if (serveFromDir(PUBLIC_DIR, pathname, response)) return;
 
     applySecurityHeaders(response);
     response.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });

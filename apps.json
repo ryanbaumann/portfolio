@@ -1,17 +1,17 @@
 [
   {
     "name": "portfolio",
-    "title": "Portfolio",
-    "description": "Ryan Baumann — work, writing, and talks. Developer experience as a growth engine.",
-    "path": "/portfolio/",
+    "title": "Ryan Baumann",
+    "description": "Home — work, writing, talks, and the demo lab.",
+    "path": "/",
     "dev_build_dir": "portfolio/dist",
-    "tags": ["portfolio", "writing", "talks"],
-    "preview": "/previews/portfolio.jpg"
+    "tags": [],
+    "preview": null
   },
   {
     "name": "strava-explorer",
     "title": "Strava 3D Explorer",
-    "description": "Fly through Strava routes and photos in Google Maps Platform Photorealistic 3D.",
+    "description": "Fly through your Strava routes and ride photos in Photorealistic 3D — follow-camera animation, elevation profile, shareable tours.",
     "path": "/strava-explorer/",
     "dev_build_dir": "strava-explorer/dist",
     "tags": ["strava", "3d-maps", "google-maps-platform"],
@@ -20,7 +20,7 @@
   {
     "name": "aqi-map",
     "title": "Air Quality Map",
-    "description": "Live air-quality heatmap and click-to-inspect conditions from the Air Quality API on a 2D Google map.",
+    "description": "Live air-quality heatmap with click-to-inspect pollutant detail, straight from the Air Quality API.",
     "path": "/aqi-map/",
     "dev_build_dir": "aqi-map/dist",
     "tags": ["air-quality", "google-maps-platform"],
@@ -29,7 +29,7 @@
   {
     "name": "isochrones",
     "title": "Isochrones",
-    "description": "Delivery, commute, and response-coverage reachability rings via Google Maps Platform.",
+    "description": "How far can you get in 10, 20, 30 minutes? Live-regenerating reachability bands for delivery, commute, and response planning.",
     "path": "/isochrones/",
     "dev_build_dir": "isochrones/dist",
     "tags": ["isochrones", "routing", "google-maps-platform"],

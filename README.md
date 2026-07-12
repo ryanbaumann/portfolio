@@ -1,16 +1,29 @@
-# trails.ninja — Ryan Baumann's Lab
+# trails.ninja — Ryan Baumann's site and lab
 
-Live apps Ryan Baumann builds and operates to stay in the work — plus his
-portfolio of work, writing, and talks — served together behind one
-zero-dependency Node gateway as a single Cloud Run container. See
+Ryan Baumann's home page — work, writing, talks — with a lab of live demo
+apps, served together behind one zero-dependency Node gateway as a single
+Cloud Run container. The site lives at the root; every demo mounts under its
+own path; navigation works in every direction. See
 [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the full design.
 
 ## Apps
 
-*   **[Portfolio](portfolio/README.md)**: Ryan's portfolio — work, writing, and talks — built as a zero-dependency static site over a flat-file markdown CMS. Staged here for extraction into its own `portfolio` repo.
+*   **[Site / Portfolio](portfolio/README.md)** (served at `/`): Ryan's home page — work, writing (the blog), talks, and the demo lab — built as a zero-dependency static site over a flat-file markdown CMS. Staged here for extraction into its own `portfolio` repo.
 *   **[Strava 3D Explorer](strava-explorer/README.md)**: A Vite-powered web application to visualize Strava routes, endpoints, and photos in Google Maps Platform Photorealistic 3D with follow-camera animations.
 *   **[Air Quality Map](aqi-map/README.md)**: A live air-quality heatmap and click-to-inspect conditions from the Google Maps Platform Air Quality API on a 2D Google map.
 *   **[Isochrones](isochrones/README.md)**: A Vite + Node Google Maps Platform demo for analyzing delivery, commute, and response reachability with live-regenerating isochrone bands.
+
+## Adding things (paved paths)
+
+```bash
+npm run new:demo -- my-demo --title "My Demo"   # scaffold + wire a new demo app
+npm run new:post -- "Post title"                # scaffold a blog post
+npm run previews                                # regenerate demo screenshots
+```
+
+A new demo shows up on the homepage, in the nav, in the container build, and
+in CI's smoke test purely from its `apps.json` entry. A new post is live at
+`/writing/<slug>/` on the next build.
 
 ## Quickstart: run the whole container locally
 

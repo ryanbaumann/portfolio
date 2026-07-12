@@ -2,6 +2,45 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Unreleased] - 2026-07-12 — One site, one design
+
+### Changed — The portfolio is now the site
+- The portfolio serves at the root path: `apps.json` mounts it at `/`, the
+  gateway matches the most specific app path first, and `/portfolio/*`
+  308-redirects to `/*`. The separate dark landing page in `gateway/public/`
+  is deleted — one design language everywhere.
+- Homepage rebuilt: name-first hero (Engineer · Builder · Tinkerer), quick
+  links, featured work, a Demos section with real screenshots generated
+  straight from `apps.json`, writing, talks, background. Nav gains Demos
+  (`/demos/` index page); every demo already links home, and smoke now
+  enforces navigation in every direction.
+- Copy pass across `site.json`, about, work, and writing in Ryan's voice;
+  work entries gained verified project links and real images
+  (kepler.gl-on-Mapbox, mapboxgl-jupyter notebook, mapboxgl-powerbi visual)
+  rendered as case-study heroes via new `image`/`imageAlt` front matter.
+
+### Fixed — Demos
+- **isochrones**: 2D `AdvancedMarkerElement` was given a `PinElement` via
+  `marker.append(pin)` — that's the 3D `Marker3DInteractiveElement` pattern;
+  on 2D it throws mid-init and kills every interaction (click, drag, search,
+  ring generation) even with a valid key. Now passes `content: pin.element`.
+- **All three demos**: a failed Maps JS loader (bad key, blocked referrer)
+  no longer fails silently — each app surfaces a visible, actionable error.
+  strava-explorer previously left its Connect/Demo buttons permanently
+  disabled with no message.
+- **aqi-map, isochrones**: added favicons (killed a 404 per page load).
+
+### Added — Paved paths
+- `npm run new:demo -- <name>`: scaffolds a Vite demo app and wires
+  `apps.json`, the Dockerfile builder+COPY stages, and dependabot in one
+  command. Verified end-to-end: scaffold → build → smoke green.
+- `npm run new:post -- "Title"`: scaffolds a blog post (`--external <url>`
+  for link-outs).
+- `npm run previews`: regenerates honest demo screenshots with Playwright
+  (local staged build or `BASE_URL=https://trails.ninja`).
+- `docs/ARCHITECTURE.md`: written — it was referenced by README, AGENTS.md,
+  and code comments (including numbered design rules) but never existed.
+
 ## [Unreleased] - 2026-07-12
 
 ### Added — Portfolio app (staged for its own `portfolio` repo)

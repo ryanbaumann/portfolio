@@ -33,10 +33,13 @@ ENV BASE_PATH=/aqi-map/
 RUN npm run build
 
 # The portfolio's build is dependency-free (node build.mjs), so no npm ci.
+# It is mounted at the site root ("/") and reads ../apps.json to render the
+# demos section + nav, so the manifest is copied in alongside it.
 FROM node:20-slim AS portfolio-builder
 WORKDIR /src/portfolio
 COPY portfolio/ ./
-ENV BASE_PATH=/portfolio/
+COPY apps.json /src/apps.json
+ENV BASE_PATH=/
 RUN node build.mjs
 
 FROM node:20-slim AS isochrones-builder

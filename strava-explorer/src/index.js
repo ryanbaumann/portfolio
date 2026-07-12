@@ -989,6 +989,13 @@ async function initApp() {
     } catch (err) {
         error("Initialization failed:", err);
         showLoading(false);
+        // Never fail silently: without this, a bad/missing Maps key leaves
+        // the connect + demo buttons permanently disabled with no explanation.
+        showError(
+            /API Key/i.test(err?.message || '')
+                ? "The 3D map couldn't load: Google Maps API key is missing or invalid for this deployment."
+                : `The 3D map couldn't load: ${err?.message || 'unknown error'}. Reload to retry.`
+        );
     }
 
     fitRouteButton.addEventListener('click', () => runCameraAction('Framing route...', () => gmp.frameRoute(currentRouteCoords)));

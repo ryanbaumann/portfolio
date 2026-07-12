@@ -3,22 +3,24 @@ title: trails.ninja — The Lab
 org: Personal
 role: Builder
 period: ongoing
-summary: A self-hosted lab of live demo apps — a Strava 3D route explorer, a live air-quality map, and reachability analysis — one container, zero secrets in the browser.
+summary: This site — the homepage you're on plus live demo apps, one container, zero secrets in the browser, agent-maintainable by design.
 tags: ["side project", "self-hosted", "reference apps"]
-links: [{"label": "Live site", "url": "https://trails.ninja"}, {"label": "Source", "url": "https://github.com/ryanbaumann/trails.ninja"}]
+links: [{"label": "The demos", "url": "/demos/"}, {"label": "Source", "url": "https://github.com/ryanbaumann/trails.ninja"}]
+image: /previews/strava-explorer.jpg
+imageAlt: The Strava 3D Explorer flying a route through Chamonix in Photorealistic 3D, with photos anchored along the path
 order: 11
 ---
 
 ## What it is
 
-trails.ninja is where I stay in the work: a self-hosted collection of live demo apps served from a single Cloud Run container behind a zero-dependency Node gateway. Current apps:
+trails.ninja is where I stay in the work — and you're on it. This site and a set of [live demo apps](/demos/) ship from a single Cloud Run container behind a zero-dependency Node gateway:
 
-- **Strava 3D Explorer** — fly through ride and run routes in Photorealistic 3D with photos anchored along the way.
-- **Air Quality Map** — live air-quality heatmap on a 2D map, driven by the Air Quality API.
-- **Isochrones** — reachability analysis for delivery, commute, and response planning.
+- **[Strava 3D Explorer](/strava-explorer/)** — fly your rides and runs in Photorealistic 3D with photos anchored along the route.
+- **[Air Quality Map](/aqi-map/)** — live air-quality heatmap with click-to-inspect pollutant detail.
+- **[Isochrones](/isochrones/)** — how far can you get in 10, 20, 30 minutes? Live-regenerating reachability bands.
 
 ## Why it exists
 
 I don't believe you can lead developer experience from a slide deck. Building and operating real apps — OAuth flows, API quotas, key restrictions, cold starts, CI/CD — keeps my judgment calibrated to what developers actually hit. Most of the platform opinions I bring to work were earned debugging something here first.
 
-The whole stack is intentionally boring: no framework, no secrets in the browser, one container, fast deploys. Boring is a feature.
+The repo is also a working example of what I ship at work: agent-ready by design. Skills encode the voice and design system, `npm run new:demo` scaffolds and wires a new demo in one command, `npm run new:post` does the same for a blog post, and CI smoke-tests every route keyless. The whole stack is intentionally boring: no framework, no client JS on this site, one container, fast deploys. Boring is a feature.

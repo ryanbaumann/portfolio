@@ -22,7 +22,6 @@ import { fileURLToPath } from 'node:url';
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const APPS_JSON_PATH = join(REPO_ROOT, 'apps.json');
 const APPS_STAGING_DIR = join(REPO_ROOT, 'apps');
-const GATEWAY_PUBLIC_DIR = join(REPO_ROOT, 'gateway', 'public');
 
 const failures = [];
 const passes = [];
@@ -234,7 +233,8 @@ async function main() {
     });
 
     await check('/<app> (no trailing slash) redirects to /<app>/', async () => {
-      const app = apps[0];
+      const app = apps.find((a) => a.path !== '/');
+      if (!app) throw new Error('no demo app (non-root path) in apps.json');
       const bare = app.path.slice(0, -1);
       const response = await fetch(`${baseUrl}${bare}`, { redirect: 'manual' });
       if (response.status !== 308) throw new Error(`expected 308 redirect for ${bare}, got ${response.status}`);
@@ -280,13 +280,46 @@ async function main() {
     });
 
     await check('no client_secret string in any served asset', () => {
-      const hits = scanForSecrets([APPS_STAGING_DIR, GATEWAY_PUBLIC_DIR]).filter((h) => /client_secret/i.test(h));
+      const hits = scanForSecrets([APPS_STAGING_DIR]).filter((h) => /client_secret/i.test(h));
       if (hits.length > 0) throw new Error(hits.join('\n'));
     });
 
-    await check('secret-leak scan over staged apps + gateway/public', () => {
-      const hits = scanForSecrets([APPS_STAGING_DIR, GATEWAY_PUBLIC_DIR]);
+    await check('secret-leak scan over staged apps', () => {
+      const hits = scanForSecrets([APPS_STAGING_DIR]);
       if (hits.length > 0) throw new Error(hits.join('\n'));
+    });
+
+    await check('/portfolio/ permanently redirects to the root site', async () => {
+      const response = await fetch(`${baseUrl}/portfolio/`, { redirect: 'manual' });
+      if (response.status !== 308) throw new Error(`expected 308, got ${response.status}`);
+      const location = response.headers.get('location');
+      if (location !== '/') throw new Error(`expected Location "/", got "${location}"`);
+      const deep = await fetch(`${baseUrl}/portfolio/work/`, { redirect: 'manual' });
+      if (deep.status !== 308 || deep.headers.get('location') !== '/work/') {
+        throw new Error(`expected /portfolio/work/ -> 308 /work/, got ${deep.status} ${deep.headers.get('location')}`);
+      }
+    });
+
+    await check('site sections (/work/, /writing/, /talks/, /demos/, /about/) return 200', async () => {
+      for (const path of ['/work/', '/writing/', '/talks/', '/demos/', '/about/']) {
+        const response = await fetch(`${baseUrl}${path}`);
+        if (response.status !== 200) throw new Error(`${path} returned ${response.status}`);
+      }
+    });
+
+    await check('every page of the root site links back to home and demos', async () => {
+      const { text } = await fetchText(`${baseUrl}/writing/`);
+      if (!/href="\/"/.test(text)) throw new Error('/writing/ has no link back to the home page');
+      if (!/href="\/demos\/"/.test(text)) throw new Error('/writing/ has no nav link to /demos/');
+    });
+
+    await check('every demo app links back to the home page', async () => {
+      for (const app of apps.filter((a) => a.path !== '/')) {
+        const { text } = await fetchText(`${baseUrl}${app.path}`);
+        if (!/href=["']\/["']/.test(text)) {
+          throw new Error(`${app.path} HTML has no href="/" link back to the home page`);
+        }
+      }
     });
 
     await check('POST /api/strava/token without code returns 4xx JSON', async () => {
