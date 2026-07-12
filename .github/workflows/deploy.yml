@@ -25,6 +25,9 @@ jobs:
     name: Build and deploy trails-ninja
     runs-on: ubuntu-latest
     if: github.repository == 'ryanbaumann/trails.ninja'
+    concurrency:
+      group: "deploy"
+      cancel-in-progress: false
 
     permissions:
       contents: 'read'
@@ -37,6 +40,38 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v7
+
+      - name: Preflight config check
+        run: |
+          MISSING=0
+          if [ -z "${{ vars.GCP_PROJECT_ID }}" ]; then
+            echo "::error::Missing required repository variable: GCP_PROJECT_ID"
+            MISSING=1
+          fi
+          if [ -z "${{ secrets.GCP_WIF_PROVIDER }}" ]; then
+            echo "::error::Missing required repository secret: GCP_WIF_PROVIDER"
+            MISSING=1
+          fi
+          if [ -z "${{ secrets.GCP_SA_EMAIL }}" ]; then
+            echo "::error::Missing required repository secret: GCP_SA_EMAIL"
+            MISSING=1
+          fi
+          if [ -z "${{ secrets.VITE_GMP_API_KEY }}" ]; then
+            echo "::error::Missing required repository secret: VITE_GMP_API_KEY"
+            MISSING=1
+          fi
+          if [ -z "${{ secrets.VITE_STRAVA_CLIENT_ID }}" ]; then
+            echo "::error::Missing required repository secret: VITE_STRAVA_CLIENT_ID"
+            MISSING=1
+          fi
+          if [ "$MISSING" -eq 1 ]; then
+            echo "Preflight check failed: Missing required configuration."
+            echo ""
+            echo "Ensure the following runtime secrets are also configured directly on the Cloud Run service:"
+            echo "- STRAVA_CLIENT_SECRET"
+            echo "- GMP_SERVER_API_KEY"
+            exit 1
+          fi
 
       - name: Authenticate to Google Cloud
         id: auth
@@ -83,3 +118,10 @@ jobs:
           # OAuth authorize URL), so plain --set-env-vars is fine for it.
           # Everything else should be a Secret Manager reference via
           # --update-secrets, never a literal value in this workflow.
+
+      - name: Post-deploy smoke test
+        run: |
+          echo "Waiting for Cloud Run to route traffic..."
+          sleep 5
+          curl -sSf https://www.ryanbaumann-portfolio.com/ > /dev/null
+          echo "Production smoke test passed!"

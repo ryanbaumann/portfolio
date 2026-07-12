@@ -7,9 +7,13 @@ on:
     branches: [ main ]
 
 jobs:
-  strava-explorer:
-    name: strava-explorer lint + test
+  package-checks:
+    name: ${{ matrix.package }} checks
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        package: [portfolio, aqi-map, isochrones, gateway, strava-explorer]
     steps:
       - name: Checkout Code
         uses: actions/checkout@v7
@@ -18,24 +22,27 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: 20
-          cache: 'npm'
-          cache-dependency-path: 'strava-explorer/package-lock.json'
 
       - name: Install Dependencies
-        working-directory: strava-explorer
-        run: npm ci
+        working-directory: ${{ matrix.package }}
+        run: |
+          if [ -f "package-lock.json" ]; then
+            npm ci
+          else
+            npm install
+          fi
 
       - name: Run Linter
-        working-directory: strava-explorer
-        run: npm run lint
+        working-directory: ${{ matrix.package }}
+        run: npm run lint --if-present
 
-      - name: Run Unit & Broker Tests
-        working-directory: strava-explorer
-        run: npm test
+      - name: Run Tests
+        working-directory: ${{ matrix.package }}
+        run: npm test --if-present
 
       - name: Build Application
-        working-directory: strava-explorer
-        run: npm run build
+        working-directory: ${{ matrix.package }}
+        run: npm run build --if-present
 
   build-and-smoke:
     name: Build all apps + gateway smoke test
@@ -61,3 +68,27 @@ jobs:
 
       - name: Smoke test the gateway against the staged apps
         run: node scripts/smoke.mjs
+
+  docker-build:
+    name: Docker Build Verification
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v7
+      
+      - name: Build Docker Image
+        run: docker build -t ryan-baumann-portfolio .
+
+  secret-scan:
+    name: Secret Scanner
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      
+      - name: Secret Scanner (Gitleaks)
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
