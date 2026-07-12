@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
+## 2026-07-12: Sticky nav, profile/social sync
+
+- Made the portfolio nav sticky and horizontally resilient on small screens so the site sections stay available while scrolling.
+- Added LinkedIn, X, and Substack as explicit social/content sources in homepage chips, footer links, and Person JSON-LD `sameAs`.
+- Added a local profile image slot with dimensions and alt text so Ryan's LinkedIn headshot can be dropped in without layout shift; the current checked-in asset is an honest placeholder because LinkedIn image fetches are blocked in this environment.
+
+## 2026-07-12: Copy, trust, and answer-engine pass
+
+- Tightened homepage, about, writing, and demos copy so claims point back to visible work, live demos, decks, or durable career facts.
+- Added homepage proof points for Google Maps Platform reach, Mapbox growth-stage work, and Caterpillar patents.
+- Improved answer-engine structured data with a ProfilePage summary and Person knowsAbout topics for maps, developer experience, MCP, agent skills, evals, and AI-native tools.
+- Kept the portfolio performance posture intact: no new client-side JavaScript, no new dependencies, and no fabricated visuals.
+
 ## 2026-07-12: UI/UX + copy refresh, CI hang fix, agentic loop
 
 - Fixed Cloud Run auto-deployment workflow (skipped status) by correcting the repository filter in `.github/workflows/deploy.yml` to check for `ryanbaumann/Portfolio` instead of the legacy `ryanbaumann/trails.ninja` repository.

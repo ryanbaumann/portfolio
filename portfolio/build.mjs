@@ -376,6 +376,7 @@ ${articleTags ? articleTags + '\n' : ''}<link rel="icon" href="${BASE}favicon.sv
 ${robotsTag ? robotsTag + '\n' : ''}${jsonLdTag ? jsonLdTag + '\n' : ''}<style>${CSS}</style>
 </head>
 <body>
+<a class="skip-link" href="#main">Skip to content</a>
 <header class="site-header">
   <a class="site-name" href="${BASE}">${escapeHtml(site.name)}</a>
   <nav aria-label="Site">${nav}</nav>
@@ -388,6 +389,8 @@ ${content}
   <p class="footer-links">
     <a href="${site.links.github}" rel="noopener">GitHub</a>
     <a href="${site.links.linkedin}" rel="noopener">LinkedIn</a>
+    ${site.links.x ? `<a href="${site.links.x}" rel="noopener">X</a>` : ''}
+    ${site.links.substack ? `<a href="${site.links.substack}" rel="noopener">Substack</a>` : ''}
     <a href="mailto:${site.links.email}">Email</a>
   </p>
 </footer>
@@ -549,11 +552,23 @@ function jsonLdPerson() {
     name: site.name,
     jobTitle: site.role,
     url: absoluteUrl('/'),
+    description: site.answerEngineSummary || site.description,
+    knowsAbout: [
+      'Google Maps Platform',
+      'developer experience',
+      'agent-ready documentation',
+      'model context protocol',
+      'agentic evals',
+      'AI-native developer tools',
+      'geospatial applications',
+    ],
     sameAs: [
       site.links.github,
       site.links.linkedin,
+      site.links.x,
+      site.links.substack,
     ].filter(Boolean),
-    image: absoluteUrl(site.defaultShareImage),
+    image: absoluteUrl(site.profileImage || site.defaultShareImage),
   };
 }
 
@@ -563,8 +578,20 @@ function jsonLdWebSite() {
     '@type': 'WebSite',
     name: site.name,
     url: absoluteUrl('/'),
-    description: site.description,
+    description: site.answerEngineSummary || site.description,
     author: { '@type': 'Person', name: site.name },
+  };
+}
+
+function jsonLdHomePage() {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'ProfilePage',
+    name: `${site.name} portfolio`,
+    url: absoluteUrl('/'),
+    description: site.answerEngineSummary || site.description,
+    about: { '@type': 'Person', name: site.name, url: absoluteUrl('/') },
+    mainEntity: jsonLdPerson(),
   };
 }
 
@@ -677,6 +704,8 @@ function buildHome(collections) {
     ...(demos.length ? [{ label: 'Demos', href: `${BASE}demos/` }] : []),
     { label: 'GitHub', href: site.links.github, external: true },
     { label: 'LinkedIn', href: site.links.linkedin, external: true },
+    ...(site.links.x ? [{ label: 'X', href: site.links.x, external: true }] : []),
+    ...(site.links.substack ? [{ label: 'Substack', href: site.links.substack, external: true }] : []),
     { label: 'Email', href: `mailto:${site.links.email}` },
   ];
 
@@ -692,9 +721,24 @@ function buildHome(collections) {
 `
     : '';
 
+  const proofPoints = Array.isArray(site.proofPoints) && site.proofPoints.length
+    ? `<dl class="proof-grid" aria-label="Proof points">
+      ${site.proofPoints.map((point) => `<div>
+        <dt>${escapeHtml(point.label)}</dt>
+        <dd>${escapeHtml(point.text)}</dd>
+      </div>`).join('\n')}
+    </dl>`
+    : '';
+  const profileImagePath = site.profileImage?.startsWith('/') ? join(STATIC_DIR, site.profileImage.slice(1)) : null;
+  const profileImageDims = profileImagePath && existsSync(profileImagePath) ? getImageDimensions(profileImagePath) : { width: 800, height: 800 };
+  const profileImage = site.profileImage
+    ? `<img class="profile-image" src="${rebase(site.profileImage)}" alt="${escapeHtml(site.profileImageAlt || `${site.name} profile image`)}" width="${profileImageDims.width}" height="${profileImageDims.height}" loading="eager" />`
+    : '';
+
   const content = `
 <section class="hero hero-split">
   <div>
+  ${profileImage}
   <p class="eyebrow">${escapeHtml(site.tagline)}</p>
   <h1>${escapeHtml(site.name)}</h1>
   <p class="lede">${escapeHtml(site.intro)}</p>
@@ -708,6 +752,7 @@ function buildHome(collections) {
     <p class="hero-image-caption">From the lab: <a href="${rebase('/strava-explorer/')}">Strava 3D Explorer</a></p>
   </figure>
 </section>
+${proofPoints}
 
 <section>
   ${sectionHeader('Selected work', '', `${BASE}work/`, 'All work')}
@@ -745,7 +790,7 @@ ${demosSection}
     canonical: absoluteUrl('/'),
     ogImage: site.defaultShareImage,
     ogImageAlt: `${site.name} — ${site.role}`,
-    jsonLd: [jsonLdPerson(), jsonLdWebSite()],
+    jsonLd: [jsonLdHomePage(), jsonLdWebSite()],
   }));
 }
 

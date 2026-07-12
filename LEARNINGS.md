@@ -1,5 +1,12 @@
 # Learnings
 
+## 2026-07-12: AEO works best when the page and schema say the same thing
+
+Context: A repo-wide copy pass needed to improve search and answer-engine clarity without adding vague keyword stuffing.
+Learning: For a personal portfolio, the strongest answer-engine optimization is a tight visible summary plus matching structured data. The homepage should say who Ryan is, what he works on, and what proof exists; JSON-LD should reinforce that same claim with `ProfilePage`, `Person`, and concrete `knowsAbout` topics.
+Evidence: Today's pass added visible proof points in `site.json` and rendered them on the homepage, then aligned `ProfilePage` and `Person` JSON-LD around the same answer-engine summary instead of adding hidden claims.
+Use next time: Do not hide AEO in metadata only. Put the answer on the page first, keep it verifiable, then mirror it in schema.
+
 ## 2026-07-11 — Vite environment variables overriding dynamic behavior
 
 Context: We were trying to configure the Strava OAuth app to use a dynamic redirect URI `new URL(..., window.location.origin).href` so that it would work seamlessly on both `localhost:8080` and the production domain `ryanbaumann-portfolio.com`.

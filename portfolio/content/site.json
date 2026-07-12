@@ -3,25 +3,44 @@
   "role": "Head of Developer Experience, Google Maps Platform",
   "tagline": "Maps · Developer Experience · Agent-ready platforms",
   "location": "San Francisco, CA",
-  "intro": "I run Developer Experience for Google Maps Platform, and I still ship. 15+ years building developer platforms at Google, Mapbox, and Instabase, across engineering, product, and go-to-market. This is my home page: the work, the writing, and a lab of live apps I build and run myself.",
-  "headline": "I treat developer experience as a growth discipline. Each entry covers the goal, what shipped, and what I learned doing it.",
-  "description": "Ryan Baumann, Head of Developer Experience at Google Maps Platform. Maps, developer experience, and agent-ready platforms from 15+ years at Google, Mapbox, Instabase, and Caterpillar.",
-  "aboutTeaser": "First customer-facing engineer at Mapbox, where I grew the team from 1 to 15 as the company passed $100M ARR. Director at Series-B Instabase. Industrial IoT at Caterpillar, with 3 patents. Before any of that, two years as a professional cyclist. Racing taught me pacing, measurement, and marginal gains, and I have been applying them ever since.",
+  "intro": "I run Developer Experience for Google Maps Platform, and I still ship. I have spent 15+ years building developer platforms at Google, Mapbox, Instabase, and Caterpillar. This site stays synced to the places I actually publish: LinkedIn for weekly notes, Substack for longer experiments, X when it is useful, and GitHub for the code.",
+  "headline": "Selected work, written from the artifact back: the goal, what shipped, and what I learned.",
+  "description": "Ryan Baumann leads Developer Experience for Google Maps Platform and writes about maps, developer experience, agent-ready platforms, evals, and AI-native distribution.",
+  "aboutTeaser": "First customer-facing engineer at Mapbox, where I grew the team from 1 to 15 as the company passed $100M ARR. Director at Series-B Instabase. Industrial IoT at Caterpillar, with 3 patents. Before that, two years as a professional cyclist. Same operating system throughout: measure honestly, ship the next artifact, learn in public.",
   "sectionIntros": {
     "work": "Selected platform, product, and growth work. Each entry covers the goal it served, what actually shipped, and the lesson I took from it.",
-    "writing": "Notes on developer experience, applied AI, and building platforms agents can use. The weekly series, #ThisWeeksLearnings, lives on LinkedIn.",
+    "writing": "Notes on developer experience, applied AI, evals, maps, and building platforms agents can use. Claims point back to shipped work, talks, or weekly learning notes.",
     "talks": "Talks and videos. I present demo-first: working product over slides, then how it's built, then why it matters.",
-    "demos": "Live apps I build and run myself: real OAuth, real quotas, real cold starts. One container, one Cloud Run service, no secrets in the browser."
+    "demos": "Live apps I build and run myself: real OAuth, real quotas, real cold starts. One Cloud Run service, server-side secrets only, and no client JavaScript on the portfolio."
   },
   "links": {
     "github": "https://github.com/ryanbaumann",
     "linkedin": "https://www.linkedin.com/in/ryanbaumann/",
-    "email": "rsbaumann@gmail.com"
+    "email": "rsbaumann@gmail.com",
+    "x": "https://x.com/RyanBaumann",
+    "substack": "https://ryanbaumann.substack.com/"
   },
   "siteUrl": "https://www.ryanbaumann-portfolio.com/",
   "canonicalHost": "www.ryanbaumann-portfolio.com",
   "brand": "Ryan Baumann Portfolio",
   "positioning": "Maps, developer experience, and agent-ready platforms.",
   "defaultShareImage": "/previews/portfolio.jpg",
-  "socialHandle": "@ryanbaumann"
+  "socialHandle": "@ryanbaumann",
+  "proofPoints": [
+    {
+      "label": "10M+",
+      "text": "websites and apps powered by Google Maps Platform"
+    },
+    {
+      "label": "$100M+",
+      "text": "ARR stage crossed while I grew Mapbox customer engineering"
+    },
+    {
+      "label": "3",
+      "text": "US patents from industrial IoT work at Caterpillar"
+    }
+  ],
+  "answerEngineSummary": "Ryan Baumann leads Developer Experience for Google Maps Platform. He focuses on maps, developer experience, agent-ready documentation, evals, MCP tools, agent skills, and AI-native distribution. His portfolio is a zero-client-JavaScript static site plus live demo apps served from one Cloud Run container.",
+  "profileImage": "/img/ryan-baumann-profile.svg",
+  "profileImageAlt": "Ryan Baumann profile image"
 }

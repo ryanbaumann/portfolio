@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" role="img" aria-labelledby="title desc">
+  <title id="title">Ryan Baumann profile image</title>
+  <desc id="desc">Ryan Baumann profile card.</desc>
+  <rect width="800" height="800" rx="96" fill="#111827"/>
+  <circle cx="400" cy="315" r="118" fill="#3b82f6"/>
+  <path d="M190 655c24-116 106-182 210-182s186 66 210 182" fill="#3b82f6"/>
+  <text x="400" y="720" text-anchor="middle" font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif" font-size="54" font-weight="700" fill="#f9fafb">Ryan Baumann</text>
+</svg>
