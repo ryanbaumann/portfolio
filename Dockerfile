@@ -16,9 +16,9 @@ ARG VITE_STRAVA_CLIENT_ID
 ENV VITE_GMP_API_KEY=$VITE_GMP_API_KEY
 ENV VITE_STRAVA_CLIENT_ID=$VITE_STRAVA_CLIENT_ID
 WORKDIR /src/strava-explorer
-COPY strava-explorer/package.json strava-explorer/package-lock.json ./
+COPY demos/strava-explorer/package.json demos/strava-explorer/package-lock.json ./
 RUN npm ci --no-audit --no-fund
-COPY strava-explorer/ ./
+COPY demos/strava-explorer/ ./
 ENV BASE_PATH=/strava-explorer/
 RUN npm run build
 
@@ -26,9 +26,9 @@ FROM node:20-slim AS aqi-map-builder
 ARG VITE_GMP_API_KEY
 ENV VITE_GMP_API_KEY=$VITE_GMP_API_KEY
 WORKDIR /src/aqi-map
-COPY aqi-map/package.json aqi-map/package-lock.json ./
+COPY demos/aqi-map/package.json demos/aqi-map/package-lock.json ./
 RUN npm ci --no-audit --no-fund
-COPY aqi-map/ ./
+COPY demos/aqi-map/ ./
 ENV BASE_PATH=/aqi-map/
 RUN npm run build
 
@@ -46,9 +46,9 @@ FROM node:20-slim AS isochrones-builder
 ARG VITE_ISOCHRONES_GMP_API_KEY
 ENV VITE_GMP_API_KEY=$VITE_ISOCHRONES_GMP_API_KEY
 WORKDIR /src/isochrones
-COPY isochrones/package.json isochrones/package-lock.json ./
+COPY demos/isochrones/package.json demos/isochrones/package-lock.json ./
 RUN npm ci --no-audit --no-fund
-COPY isochrones/ ./
+COPY demos/isochrones/ ./
 ENV BASE_PATH=/isochrones/
 RUN npm run build
 

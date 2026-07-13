@@ -212,7 +212,7 @@ async function handleApi(request, response, pathname, searchParams) {
 
   // /api/photo-proxy is a compatibility alias for /api/strava/photo: the
   // strava-explorer client (and its standalone Cloud Run broker in
-  // strava-explorer/server/) both speak /api/photo-proxy, so the gateway
+  // demos/strava-explorer/server/) both speak /api/photo-proxy, so the gateway
   // accepts both without requiring a client change.
   const isPhotoRoute = pathname === '/api/strava/photo' || pathname === '/api/photo-proxy';
   const isStravaRoute = pathname.startsWith('/api/strava/') || isPhotoRoute;

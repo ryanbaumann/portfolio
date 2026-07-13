@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-07-13: Demo source organization
+
+- Moved the Strava, Air Quality, and Isochrones source packages under `demos/` while preserving their public routes and container staging paths.
+- Updated local builds, Docker, CI, Dependabot, preview tooling, demo scaffolding, repository guidance, and Maps skills for the nested source layout.
+- Added a regression test that derives each source package from its manifest `dev_build_dir`, so future demo folders can stay nested without name-based path assumptions.
+
 ## 2026-07-13: Portfolio overhaul acceptance hardening
 
 - Closed the remaining private-demo gaps with strict manifest/provider validation, fail-closed static routing, expiring signed access cookies, public-only discovery, route-specific limits, and direct-access integration tests.

@@ -34,7 +34,7 @@ Make sure the Google Maps Platform products are enabled on the project(s) corres
 ## Run locally
 
 ```bash
-cd isochrones
+cd demos/isochrones
 npm install
 npm run dev
 ```
@@ -47,7 +47,7 @@ Open `http://localhost:5174`.
 > Vite replaces `import.meta.env` variables statically at build time. Therefore, the `.env` file must be present before running the build command, or you must specify `VITE_GMP_API_KEY` inline during the build.
 
 ```bash
-cd isochrones
+cd demos/isochrones
 # Build compiles static assets with the browser key
 npm run build
 

@@ -13,9 +13,9 @@ picture.
   repo; portable portfolio workflows live under `.agents/skills/portfolio-*`
   for content, writing, design, and presenting. Its build reads the root `apps.json` (when present) to render
   the homepage Demos section and nav.
-- `strava-explorer/`: Vite app for exploring Strava activities on Google Maps Platform 3D Maps.
-- `aqi-map/`: Vite app rendering Air Quality API heatmap tiles and point conditions on a 2D Google map.
-- `isochrones/`: Vite + Node app for reachability analysis using Google Maps Platform Isochrones.
+- `demos/strava-explorer/`: Vite app for exploring Strava activities on Google Maps Platform 3D Maps.
+- `demos/aqi-map/`: Vite app rendering Air Quality API heatmap tiles and point conditions on a 2D Google map.
+- `demos/isochrones/`: Vite + Node app for reachability analysis using Google Maps Platform Isochrones.
 - `gateway/`: zero-npm-dependency Node server that serves the portfolio at
   the root path, every demo app's static build (both routed via the root
   `apps.json` manifest, most-specific path first), and same-origin `/api/*`
@@ -55,7 +55,7 @@ Prefer small, reviewable changes. Keep app-specific code, commands, and dependen
 
 Run commands from the app directory unless noted.
 
-### `strava-explorer/`
+### `demos/strava-explorer/`
 
 - Install: `npm install` (Only use npm, never yarn).
 - Dev server: `npm run dev`.
@@ -64,7 +64,7 @@ Run commands from the app directory unless noted.
 - Run unit/integration tests: `npm run test` (runs vitest).
 - Run linter: `npm run lint` (runs eslint).
 
-### `aqi-map/`
+### `demos/aqi-map/`
 
 - Install: `npm install`.
 - Dev server: `npm run dev`.
@@ -79,7 +79,7 @@ Run commands from the app directory unless noted.
 - New blog post: `npm run new:post -- "Title"` from the repo root.
 - Content, voice, design, and presentation standards live in `.agents/skills/portfolio-*`.
 
-### `isochrones/`
+### `demos/isochrones/`
 
 - Install: `npm install`.
 - Dev server: `npm run dev`.
@@ -113,7 +113,7 @@ Run commands from the app directory unless noted.
 ## Environment Variables and Secrets
 
 - Never commit real API keys, OAuth client secrets, access tokens, refresh tokens, or generated `.env.*` files.
-- `strava-explorer` expects Google Maps Platform and Strava configuration through Vite `import.meta.env` variables. Preserve the `VITE_` prefix for browser-exposed variables. Anything with `VITE_` is inlined into the browser bundle by Vite — never put a real secret in a `VITE_`-prefixed variable (see `docs/ARCHITECTURE.md` rule 2).
+- `demos/strava-explorer` expects Google Maps Platform and Strava configuration through Vite `import.meta.env` variables. Preserve the `VITE_` prefix for browser-exposed variables. Anything with `VITE_` is inlined into the browser bundle by Vite — never put a real secret in a `VITE_`-prefixed variable (see `docs/ARCHITECTURE.md` rule 2).
 - If you encounter hard-coded credentials or tokens, prefer moving them to documented environment variables and note required API restrictions in the PR.
 - For Google Maps Platform browser keys, document required API restrictions, HTTP referrer restrictions, billing/quota expectations, and local development origins.
 - The gateway's server-side secrets are non-`VITE_` env vars read directly
@@ -124,7 +124,7 @@ Run commands from the app directory unless noted.
 
 ## Code Style
 
-- Use modern JavaScript modules in `strava-explorer/src/`, `aqi-map/src/`, and `isochrones/src/`; preserve the existing no-framework Vite architecture unless explicitly asked to migrate.
+- Use modern JavaScript modules in `demos/strava-explorer/src/`, `demos/aqi-map/src/`, and `demos/isochrones/src/`; preserve the existing no-framework Vite architecture unless explicitly asked to migrate.
 - Keep `portfolio/` dependency-free: its build is `node build.mjs` and its pages ship zero client-side JavaScript (see `.agents/skills/portfolio-design/SKILL.md`).
 - Use descriptive names for geospatial values: `lat`, `lng`, `altitude`, `bounds`, `coordinates`, `polyline`, `featureCollection`.
 - Avoid broad rewrites, hidden formatting churn, and unrelated dependency upgrades.
@@ -154,11 +154,11 @@ Run commands from the app directory unless noted.
 the below in one command. The manual steps, for when the scaffold doesn't
 fit:
 
-Apps are folders (`docs/ARCHITECTURE.md` design rule 1): the gateway
+Apps are folders under `demos/` (`docs/ARCHITECTURE.md` design rule 1): the gateway
 discovers whatever is listed in the root `apps.json`, so adding a demo is
 just adding a folder plus a manifest entry. No gateway code changes needed.
 
-1. `mkdir my-demo` at the repo root and build it like the existing apps: a
+1. `mkdir demos/my-demo` at the repo root and build it like the existing apps: a
    `package.json` with a `build` script that emits static output (`dist/`
    or `build/`) and an `engines.node >= 20` field. Keep its dependencies and
    config inside `my-demo/` only.
@@ -174,7 +174,7 @@ just adding a folder plus a manifest entry. No gateway code changes needed.
      "title": "My Demo",
      "description": "One line, shown on the landing page card.",
      "path": "/my-demo/",
-     "dev_build_dir": "my-demo/dist",
+    "dev_build_dir": "demos/my-demo/dist",
      "tags": ["..."],
      "preview": null
    }

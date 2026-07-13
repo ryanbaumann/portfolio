@@ -42,7 +42,7 @@ Static-only local development still supports `VITE_STRAVA_CLIENT_SECRET`, but do
 
 ### Deploy the full GCP architecture
 
-The repo includes an opinionated deploy command for your GCP project and Google account, creating a GCS frontend bucket, Secret Manager, and a Cloud Run OAuth broker. Run it from `strava-explorer/` after installing/authenticating the Google Cloud CLI and creating a Strava app:
+The repo includes an opinionated deploy command for your GCP project and Google account, creating a GCS frontend bucket, Secret Manager, and a Cloud Run OAuth broker. Run it from `demos/strava-explorer/` after installing/authenticating the Google Cloud CLI and creating a Strava app:
 
 ```bash
 export VITE_STRAVA_CLIENT_ID=12345
@@ -56,7 +56,7 @@ Override defaults with flags such as `--project`, `--account`, `--bucket`, `--re
 
 ### Deploy only the public GCS frontend
 
-Authenticate the Google Cloud CLI first, then run from `strava-explorer/`:
+Authenticate the Google Cloud CLI first, then run from `demos/strava-explorer/`:
 
 ```bash
 export VITE_STRAVA_CLIENT_ID=12345
@@ -78,4 +78,3 @@ Choose **App Engine** only if you prefer its operational model. It is simple, bu
 - Before September 1, 2026, verify the app still avoids the deprecated Club Activities, Club Administrators, Club Members, and restricted Explore Segments endpoints.
 - Before January 4, 2027 / June 1, 2027, test `VITE_STRAVA_API_BASE_URL` against Strava's new API host as it becomes available, then update production config without changing source code.
 - Before scaling beyond 10 athletes, request or qualify for the appropriate Strava access tier in the API Settings Dashboard.
-

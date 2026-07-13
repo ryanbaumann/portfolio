@@ -28,9 +28,9 @@ The portfolio narrative is intentionally grounded: solution architecture, develo
 ## Apps
 
 * **[Site / Portfolio](portfolio/README.md)**, served at `/`: Ryan's home page, work, writing, talks, and demo index.
-* **[Strava 3D Explorer](strava-explorer/README.md)**: visualize Strava routes, endpoints, and photos in Google Maps Platform Photorealistic 3D.
-* **[Air Quality Map](aqi-map/README.md)**: inspect live Air Quality API heatmap tiles and point conditions on a 2D Google map.
-* **[Isochrones](isochrones/README.md)**: analyze delivery, commute, and response reachability with live-regenerating isochrone bands.
+* **[Strava 3D Explorer](demos/strava-explorer/README.md)**: visualize Strava routes, endpoints, and photos in Google Maps Platform Photorealistic 3D.
+* **[Air Quality Map](demos/aqi-map/README.md)**: inspect live Air Quality API heatmap tiles and point conditions on a 2D Google map.
+* **[Isochrones](demos/isochrones/README.md)**: analyze delivery, commute, and response reachability with live-regenerating isochrone bands.
 
 ## Local development
 
@@ -49,9 +49,9 @@ npm run smoke
 Each app can also run on its own dev server:
 
 ```bash
-cd strava-explorer && npm install && npm run dev
-cd aqi-map && npm install && npm run dev
-cd isochrones && npm install && npm run dev
+cd demos/strava-explorer && npm install && npm run dev
+cd demos/aqi-map && npm install && npm run dev
+cd demos/isochrones && npm install && npm run dev
 cd portfolio && node build.mjs && node serve.mjs
 ```
 

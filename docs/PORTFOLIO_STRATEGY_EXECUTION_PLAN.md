@@ -1065,9 +1065,9 @@ Run the narrowest check after each task, then the relevant broader checks.
 ```bash
 cd portfolio && npm run build
 cd gateway && npm test
-cd strava-explorer && npm run lint && npm test && npm run build
-cd aqi-map && npm run build
-cd isochrones && npm run build
+cd demos/strava-explorer && npm run lint && npm test && npm run build
+cd demos/aqi-map && npm run build
+cd demos/isochrones && npm run build
 node scripts/build-local.mjs
 node scripts/smoke.mjs
 ```

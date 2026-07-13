@@ -43,7 +43,7 @@ Places on 3D maps:
 
 ## Loading and release channels
 
-- `strava-explorer/src/gmp.js` currently uses `@googlemaps/js-api-loader`. Keep that single loading path unless the task is explicitly a loader migration.
+- `demos/strava-explorer/src/gmp.js` currently uses `@googlemaps/js-api-loader`. Keep that single loading path unless the task is explicitly a loader migration.
 - The 3D library is imported with `await google.maps.importLibrary("maps3d")` after the API loader resolves.
 - Some 3D features are release-channel-dependent. Verify whether the repo's `version` setting (`alpha`, `beta`, `weekly`, or `quarterly`) is required before relying on a property or custom element.
 - Do not mix a dynamic loader with a raw `<script src="https://maps.googleapis.com/maps/api/js?...">` tag in the same app.

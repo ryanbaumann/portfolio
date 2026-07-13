@@ -5,7 +5,7 @@ description: Use for Google Maps Platform Environment APIs work, including Air Q
 
 # Google Maps Platform Environment APIs
 
-Use this repo-local skill when a task touches Google Maps Platform environmental data, environmental tile overlays, or an environmental-data migration strategy in `aqi-map/` or `strava-explorer/`.
+Use this repo-local skill when a task touches Google Maps Platform environmental data, environmental tile overlays, or an environmental-data migration strategy in `demos/aqi-map/` or `demos/strava-explorer/`.
 
 ## What Google currently offers
 

@@ -8,9 +8,9 @@
 // previews only: this replaces hand-made mockups with what the app actually
 // looks like.
 //
-// Browser automation comes from strava-explorer's Playwright dev dependency
+// Browser automation comes from demos/strava-explorer's Playwright dev dependency
 // (no new root dependencies). One-time setup if the browser is missing:
-//   cd strava-explorer && npm install && npx playwright install chromium
+//   cd demos/strava-explorer && npm install && npx playwright install chromium
 //
 // Usage:
 //   node scripts/previews.mjs                       # boot local gateway from ./apps
@@ -27,10 +27,10 @@ const PREVIEWS_DIR = join(REPO_ROOT, 'portfolio', 'static', 'previews');
 
 let chromium;
 try {
-  const requireFromStrava = createRequire(join(REPO_ROOT, 'strava-explorer', 'package.json'));
+  const requireFromStrava = createRequire(join(REPO_ROOT, 'demos', 'strava-explorer', 'package.json'));
   ({ chromium } = requireFromStrava('playwright-core'));
 } catch {
-  console.error('[previews] Playwright not found. Run: cd strava-explorer && npm install');
+  console.error('[previews] Playwright not found. Run: cd demos/strava-explorer && npm install');
   process.exit(1);
 }
 

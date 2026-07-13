@@ -1,17 +1,17 @@
 version: 2
 updates:
   - package-ecosystem: "npm"
-    directory: "/strava-explorer"
+    directory: "/demos/strava-explorer"
     schedule:
       interval: "weekly"
 
   - package-ecosystem: "npm"
-    directory: "/aqi-map"
+    directory: "/demos/aqi-map"
     schedule:
       interval: "weekly"
 
   - package-ecosystem: "npm"
-    directory: "/isochrones"
+    directory: "/demos/isochrones"
     schedule:
       interval: "weekly"
 

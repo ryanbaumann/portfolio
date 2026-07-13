@@ -8,11 +8,11 @@ docs
 **/.env.*
 !**/.env.example
 
-strava-explorer/dist
-strava-explorer/test-results
-strava-explorer/playwright-report
-isochrones/dist
-aqi-map/build
+demos/strava-explorer/dist
+demos/strava-explorer/test-results
+demos/strava-explorer/playwright-report
+demos/isochrones/dist
+demos/aqi-map/dist
 apps
 
 **/*.log

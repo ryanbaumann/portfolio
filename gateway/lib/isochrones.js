@@ -1,8 +1,8 @@
 // gateway/lib/isochrones.js
 //
-// Ports the validation + upstream call from isochrones/server.js so the
+// Ports the validation + upstream call from demos/isochrones/server.js so the
 // gateway can serve POST /api/isochrones same-origin. Env var name matches
-// isochrones/server.js: GMP_SERVER_API_KEY. VITE_* values are deliberately
+// demos/isochrones/server.js: GMP_SERVER_API_KEY. VITE_* values are deliberately
 // excluded because they are browser-public build configuration.
 
 import { resolveProvider } from './config.js';

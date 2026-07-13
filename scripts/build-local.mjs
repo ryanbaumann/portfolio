@@ -94,11 +94,12 @@ function run(command, cmdArgs, options) {
 
 function loadApps() {
   const raw = JSON.parse(readFileSync(APPS_JSON_PATH, 'utf8'));
-  return raw.map((entry) => ({
-    ...entry,
-    dir: join(REPO_ROOT, entry.name),
-    outDir: join(REPO_ROOT, entry.dev_build_dir),
-  }));
+  return raw.map((entry) => ({ ...entry, ...resolveAppPaths(entry) }));
+}
+
+export function resolveAppPaths(entry, repoRoot = REPO_ROOT) {
+  const outDir = join(repoRoot, entry.dev_build_dir);
+  return { dir: dirname(outDir), outDir };
 }
 
 // Vite/esbuild statically replace `import.meta.env.VITE_*` at build time and

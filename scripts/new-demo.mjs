@@ -14,7 +14,7 @@
 //   node scripts/new-demo.mjs my-demo
 //
 // After scaffolding:
-//   cd my-demo && npm install && npm run dev        # build the thing
+//   cd demos/my-demo && npm install && npm run dev  # build the thing
 //   node scripts/build-local.mjs && npm run smoke   # verify the wiring
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
@@ -22,6 +22,7 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+const DEMOS_DIR = join(REPO_ROOT, 'demos');
 
 function fail(message) {
   console.error(`[new-demo] ERROR: ${message}`);
@@ -50,8 +51,8 @@ if (providers.some((provider) => !knownProviders.has(provider))) fail(`providers
 const authEnv = flag('auth-env', `${name.replace(/-/g, '_').toUpperCase()}_PASSWORD`);
 if (visibility === 'private' && !/^[A-Z][A-Z0-9_]*$/.test(authEnv)) fail(`auth-env must be an uppercase environment variable name (got "${authEnv}")`);
 
-const appDir = join(REPO_ROOT, name);
-if (existsSync(appDir)) fail(`${name}/ already exists`);
+const appDir = join(DEMOS_DIR, name);
+if (existsSync(appDir)) fail(`demos/${name}/ already exists`);
 
 // --- 1. app folder ----------------------------------------------------------
 
@@ -215,7 +216,7 @@ API from the browser — add a proxy module under \`gateway/lib/\` (see
 \`gateway/server.js\`.
 `);
 
-console.log(`[new-demo] created ${name}/ (package.json, vite.config.js, index.html, src/)`);
+console.log(`[new-demo] created demos/${name}/ (package.json, vite.config.js, index.html, src/)`);
 
 // --- 2. apps.json -----------------------------------------------------------
 
@@ -227,7 +228,7 @@ apps.push({
   title,
   description,
   path: `/${name}/`,
-  dev_build_dir: `${name}/dist`,
+  dev_build_dir: `demos/${name}/dist`,
   ...(providers.length ? { providers } : {}),
   ...(visibility !== 'public' ? { visibility } : {}),
   ...(visibility === 'private' ? { auth: { type: 'password', envVar: authEnv } } : {}),
@@ -248,9 +249,9 @@ const builderStage = `FROM node:20-slim AS ${name}-builder
 ARG VITE_GMP_API_KEY
 ENV VITE_GMP_API_KEY=$VITE_GMP_API_KEY
 WORKDIR /src/${name}
-COPY ${name}/package.json ${name}/package-lock.json ./
+COPY demos/${name}/package.json demos/${name}/package-lock.json ./
 RUN npm ci --no-audit --no-fund
-COPY ${name}/ ./
+COPY demos/${name}/ ./
 ENV BASE_PATH=/${name}/
 RUN npm run build
 
@@ -273,7 +274,7 @@ if (existsSync(dependabotPath)) {
   let dependabot = readFileSync(dependabotPath, 'utf8');
   const dependabotAnchor = '  - package-ecosystem: "github-actions"';
   const dependabotEntry = `  - package-ecosystem: "npm"
-    directory: "/${name}"
+    directory: "/demos/${name}"
     schedule:
       interval: "weekly"
 
@@ -292,7 +293,7 @@ if (existsSync(dependabotPath)) {
 console.log(`
 [new-demo] ${name} is wired in. Next:
 
-  cd ${name} && npm install && VITE_GMP_API_KEY=<key> npm run dev
+  cd demos/${name} && npm install && VITE_GMP_API_KEY=<key> npm run dev
   node scripts/build-local.mjs && npm run smoke   # CI runs this same pair
   node scripts/previews.mjs                       # regenerate homepage screenshots
 

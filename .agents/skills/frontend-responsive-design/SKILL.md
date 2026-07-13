@@ -15,8 +15,8 @@ Prefer current platform documentation for behavior questions:
 ## Workflow
 
 1. Determine the app and styling system:
-   - `strava-explorer/` uses Vite, Tailwind-loaded styles, and utility-heavy HTML.
-   - `aqi-map/` uses Mapbox Assembly classes plus inline CSS.
+   - `demos/strava-explorer/` uses Vite and app-local CSS.
+   - `demos/aqi-map/` uses Vite and app-local CSS.
 2. Inspect the relevant HTML and JavaScript before changing classes or structure.
 3. Start from the smallest supported viewport and progressively enhance for larger containers/viewports.
 4. Prefer resilient modern CSS:

@@ -1,20 +1,20 @@
-aqi-map/node_modules
-strava-explorer/node_modules
+demos/aqi-map/node_modules
+demos/strava-explorer/node_modules
 node_modules/
 
 .env
-strava-explorer/.env.development
-strava-explorer/.env.production
-strava-explorer/.env
-isochrones/.env
-aqi-map/.env
+demos/strava-explorer/.env.development
+demos/strava-explorer/.env.production
+demos/strava-explorer/.env
+demos/isochrones/.env
+demos/aqi-map/.env
 
 # Ignore build artifacts
-strava-explorer/build
-strava-explorer/dist
-isochrones/dist/
-isochrones/node_modules
-aqi-map/dist/
+demos/strava-explorer/build
+demos/strava-explorer/dist
+demos/isochrones/dist/
+demos/isochrones/node_modules
+demos/aqi-map/dist/
 portfolio/dist/
 portfolio/node_modules
 gateway/node_modules
@@ -28,6 +28,5 @@ gateway/node_modules
 **/.DS_Store
 
 # Ignore large source images
-strava-explorer/strava-explorer.png
-
+demos/strava-explorer/strava-explorer.png
 

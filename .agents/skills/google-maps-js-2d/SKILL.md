@@ -5,13 +5,13 @@ description: Use for focused Google Maps JavaScript API 2D map work in either ap
 
 # Google Maps JavaScript API 2D
 
-Use this repo-local skill when a task changes 2D Google Maps rendering, map loading, markers, overlays, controls, Places/geocoding widgets, or a Mapbox-to-Google Maps migration path in `aqi-map/` or `strava-explorer/`.
+Use this repo-local skill when a task changes 2D Google Maps rendering, map loading, markers, overlays, controls, Places/geocoding widgets, or a Mapbox-to-Google Maps migration path in `demos/aqi-map/` or `demos/strava-explorer/`.
 
 ## Quick workflow
 
 1. Identify the target app and runtime before editing:
-   - `aqi-map/` is currently a Browserify/Budo CommonJS app using Mapbox GL, Mapbox Geocoder, D3 contours, Turf, and PurpleAir sensor fetches.
-   - `strava-explorer/` is a Vite app with centralized Google Maps Platform loading in `strava-explorer/src/gmp.js`.
+   - `demos/aqi-map/` is a Vite app using Google Maps Platform Air Quality API heatmap tiles.
+   - `demos/strava-explorer/` is a Vite app with centralized Google Maps Platform loading in `demos/strava-explorer/src/gmp.js`.
 2. Read the app's `package.json`, README, relevant HTML, and map source files before changing map code.
 3. Verify current Maps JavaScript API behavior against official docs when touching loader, library imports, Advanced Markers, data-driven styling, WebGL, deck.gl, Drawing/Heatmap replacements, or release channels.
 4. Keep Maps JavaScript API loading centralized. Do not add duplicate script tags, duplicate `Loader` instances, or parallel loader mechanisms.
@@ -51,9 +51,9 @@ Use this repo-local skill when a task changes 2D Google Maps rendering, map load
 - Keep map container CSS scoped. Avoid global CSS that affects Google-rendered controls or shadow DOM descendants unexpectedly.
 - Respect `prefers-reduced-motion` for camera animations, auto-pan, flyovers, or continuous viewport changes.
 
-## Mapbox GL to Google Maps JS migration notes for `aqi-map/`
+## Mapbox GL to Google Maps JS migration notes for `demos/aqi-map/`
 
-When migrating `aqi-map/` from Mapbox GL to Google Maps JS:
+When migrating `demos/aqi-map/` from Mapbox GL to Google Maps JS:
 
 1. Preserve the existing product behavior first: global AQI map, geocoder/search, clustered sensors, AQI color ramp, sensor popups, contours/isobands, mobile panel, and PurpleAir attribution.
 2. Replace Mapbox token/style configuration with documented Google Maps Platform browser API-key configuration. Do not commit real keys.

@@ -52,12 +52,12 @@ Before running the application, you need:
 
 1.  **Clone the repo and install dependencies**:
     ```bash
-    cd strava-explorer
+    cd demos/strava-explorer
     npm install
     ```
 
 2.  **Configure environment variables**:
-    Create a `.env.development` file in the `strava-explorer` directory:
+    Create a `.env.development` file in the `demos/strava-explorer` directory:
     ```dotenv
     VITE_STRAVA_CLIENT_ID=YOUR_STRAVA_CLIENT_ID
     VITE_STRAVA_REDIRECT_URI=http://localhost:5173/

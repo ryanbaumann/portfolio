@@ -23,7 +23,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        package: [portfolio, aqi-map, isochrones, gateway, strava-explorer]
+        package: [portfolio, demos/aqi-map, demos/isochrones, gateway, demos/strava-explorer]
     steps:
       - name: Checkout Code
         uses: actions/checkout@v7

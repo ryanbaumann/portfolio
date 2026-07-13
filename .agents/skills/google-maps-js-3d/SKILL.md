@@ -5,19 +5,19 @@ description: Use for focused Google Maps JavaScript API 3D Maps work in strava-e
 
 # Google Maps JavaScript API 3D
 
-Use this repo-local skill when a task changes 3D Maps rendering, interaction, camera behavior, overlays, or 3D-specific Google Maps Platform usage in `strava-explorer/`.
+Use this repo-local skill when a task changes 3D Maps rendering, interaction, camera behavior, overlays, or 3D-specific Google Maps Platform usage in `demos/strava-explorer/`.
 
 ## Quick workflow
 
 1. Read the relevant app files first:
-   - `strava-explorer/src/gmp.js` for loader setup, `maps3d` imports, map creation, route/photo rendering, elevation, and camera helpers.
-   - `strava-explorer/src/followCamera.js` for route-follow camera animation.
-   - `strava-explorer/src/index.js` for UI orchestration and helper injection.
-   - `strava-explorer/index.html` for map host, sidebar controls, elevation widget, and responsive structure.
+   - `demos/strava-explorer/src/gmp.js` for loader setup, `maps3d` imports, map creation, route/photo rendering, elevation, and camera helpers.
+   - `demos/strava-explorer/src/followCamera.js` for route-follow camera animation.
+   - `demos/strava-explorer/src/index.js` for UI orchestration and helper injection.
+   - `demos/strava-explorer/index.html` for map host, sidebar controls, elevation widget, and responsive structure.
 2. Check the official docs or the local technical reference before changing 3D API behavior, especially when touching alpha/beta-only APIs.
 3. Keep API loading centralized. Do not add duplicate Maps script tags or a second loader.
 4. Import 3D classes with `await google.maps.importLibrary("maps3d")` after the existing loader resolves.
-5. Validate code changes with `yarn build` or `npm run build` from `strava-explorer/`.
+5. Validate code changes with `npm run build` from `demos/strava-explorer/`.
 6. For visible 3D/camera changes, run the app and capture a screenshot or manual QA note when the environment allows it.
 
 ## Load detailed 3D guidance when needed

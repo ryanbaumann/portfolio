@@ -14,7 +14,7 @@
     "title": "Strava 3D Explorer",
     "description": "Fly your Strava routes in Photorealistic 3D with follow-camera animation, an elevation profile, and your ride photos on the path.",
     "path": "/strava-explorer/",
-    "dev_build_dir": "strava-explorer/dist",
+    "dev_build_dir": "demos/strava-explorer/dist",
     "providers": ["strava"],
     "tags": ["strava", "3d-maps", "google-maps-platform"],
     "preview": "/previews/strava-explorer.jpg"
@@ -24,7 +24,7 @@
     "title": "Air Quality Map",
     "description": "Live air-quality heatmap with click-to-inspect pollutant detail, straight from the Air Quality API.",
     "path": "/aqi-map/",
-    "dev_build_dir": "aqi-map/dist",
+    "dev_build_dir": "demos/aqi-map/dist",
     "tags": ["air-quality", "google-maps-platform"],
     "preview": "/previews/aqi-map.jpg"
   },
@@ -33,7 +33,7 @@
     "title": "Isochrones",
     "description": "How far can you get in 10, 20, 30 minutes? Live-regenerating reachability bands for delivery, commute, and response planning.",
     "path": "/isochrones/",
-    "dev_build_dir": "isochrones/dist",
+    "dev_build_dir": "demos/isochrones/dist",
     "providers": ["isochrones"],
     "tags": ["isochrones", "routing", "google-maps-platform"],
     "preview": "/previews/isochrones.jpg"

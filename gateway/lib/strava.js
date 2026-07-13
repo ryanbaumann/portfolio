@@ -1,10 +1,10 @@
 // gateway/lib/strava.js
 //
-// Strava OAuth broker + photo proxy, ported from strava-explorer/server/broker.js
+// Strava OAuth broker + photo proxy, ported from demos/strava-explorer/server/broker.js
 // so the gateway can serve /api/strava/* same-origin without depending on the
-// standalone strava-explorer/server package. Keep the two in sync by hand;
-// strava-explorer/server/ is left intact for standalone deploys (see
-// strava-explorer/HOSTING.md).
+// standalone demos/strava-explorer/server package. Keep the two in sync by hand;
+// demos/strava-explorer/server/ is left intact for standalone deploys (see
+// demos/strava-explorer/HOSTING.md).
 
 import { resolveProvider } from './config.js';
 

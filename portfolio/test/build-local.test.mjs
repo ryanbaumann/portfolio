@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { buildTimeOverrides, sanitizedBuildEnv } from '../../scripts/build-local.mjs';
+import { buildTimeOverrides, resolveAppPaths, sanitizedBuildEnv } from '../../scripts/build-local.mjs';
 
 test('build-local exposes only browser-public configuration to app builds', () => {
   const apps = [{ auth: { envVar: 'PRIVATE_DEMO_PASSWORD' } }];
@@ -27,5 +27,12 @@ test('build-local exposes only browser-public configuration to app builds', () =
   assert.deepEqual(
     buildTimeOverrides({ name: 'isochrones' }, env),
     { VITE_GMP_API_KEY: 'root-isochrones-key' },
+  );
+});
+
+test('build-local derives nested demo sources from dev_build_dir', () => {
+  assert.deepEqual(
+    resolveAppPaths({ name: 'aqi-map', dev_build_dir: 'demos/aqi-map/dist' }, '/repo'),
+    { dir: '/repo/demos/aqi-map', outDir: '/repo/demos/aqi-map/dist' },
   );
 });

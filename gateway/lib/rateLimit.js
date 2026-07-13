@@ -1,7 +1,7 @@
 // gateway/lib/rateLimit.js
 //
 // Simple in-memory sliding-window-ish (fixed window) per-key rate limiter,
-// same shape as the one used in strava-explorer/server/server.js. Good
+// same shape as the one used in demos/strava-explorer/server/server.js. Good
 // enough for a single-instance Cloud Run service; not shared across
 // replicas, which is an accepted tradeoff for a portfolio demo.
 
