@@ -624,6 +624,7 @@ html[data-theme="dark"] {
 .button {
   min-height: 44px;
 }
+.site-header nav a { min-width: 44px; justify-content: center; }
 .header-actions { flex-wrap: nowrap; }
 .header-cta,
 .theme-toggle,
@@ -741,6 +742,11 @@ html[data-theme="dark"] {
   color: var(--ink);
 }
 .analytics-dialog::backdrop { background: rgb(3 7 18 / 55%); }
+.analytics-settings {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+}
 
 @media (min-width: 760px) {
   .operating-steps { grid-template-columns: repeat(5, minmax(0, 1fr)); border-bottom: 1px solid var(--line); }

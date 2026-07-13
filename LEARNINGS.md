@@ -1,5 +1,12 @@
 # Learnings
 
+## 2026-07-13: Demo source paths belong in the manifest
+
+Context: Demo packages moved from repository-root folders into `demos/`, while their public URLs and staged container paths needed to remain unchanged.
+Learning: Repository source location, public route, and runtime staging location are separate concerns. Build tooling must derive the source package from `dev_build_dir` instead of assuming an app's manifest name is also a top-level folder.
+Evidence: The old build-local path lookup coupled `app.name` to the repository root. The migration now resolves nested source directories from `dev_build_dir`, preserves all three public routes, and has a focused regression test plus the staged 17-route smoke test.
+Use next time: Add or move demos by updating `dev_build_dir` and the documented build surfaces; never reconstruct a source path from the public app name.
+
 ## 2026-07-13: Empty proxy bases must still produce same-origin URLs
 
 Context: Strava photo proxy support existed, but production left `VITE_STRAVA_AUTH_BASE_URL` empty because the gateway is same-origin.

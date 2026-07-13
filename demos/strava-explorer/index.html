@@ -34,7 +34,7 @@
 
         <!-- Floating HUD Share Button Container -->
         <div class="absolute top-[clamp(0.5rem,1.5vw,1rem)] right-3 z-10 flex space-x-2">
-            <button id="share-url-button" class="premium-glass text-white text-xs font-semibold py-2 px-3 rounded-xl shadow-lg flex items-center space-x-1.5 border border-white/10 hover:bg-white/10 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            <button id="share-url-button" class="premium-glass text-white text-xs font-semibold py-2 px-3 rounded-xl shadow-lg flex items-center space-x-1.5 border border-white/10 hover:bg-white/10 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 min-h-[44px] min-w-[44px]">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6L15.368 6M15 12a3 3 0 100 6M15 12a3 3 0 000-6" />
                 </svg>
@@ -82,8 +82,8 @@
                  </div>
                  <!-- Imperial/Metric Unit Toggle (D5) -->
                  <div class="flex items-center space-x-1.5 bg-white/5 border border-white/10 rounded-full p-0.5" role="group" aria-label="Unit system selector">
-                     <button id="unit-toggle-metric" class="px-2.5 py-1 text-[9px] rounded-full text-gray-400 font-semibold focus:outline-none transition-colors" aria-pressed="false">Metric</button>
-                     <button id="unit-toggle-imperial" class="px-2.5 py-1 text-[9px] rounded-full bg-indigo-600 text-white font-semibold focus:outline-none transition-colors" aria-pressed="true">Imperial</button>
+                     <button id="unit-toggle-metric" class="px-2.5 py-1 text-[9px] rounded-full text-gray-400 font-semibold focus:outline-none transition-colors min-h-[44px] min-w-[44px]" aria-pressed="false">Metric</button>
+                     <button id="unit-toggle-imperial" class="px-2.5 py-1 text-[9px] rounded-full bg-indigo-600 text-white font-semibold focus:outline-none transition-colors min-h-[44px] min-w-[44px]" aria-pressed="true">Imperial</button>
                  </div>
             </div>
 
@@ -117,8 +117,8 @@
                     <div class="h-[1px] bg-white/10"></div>
 
                     <div class="flex flex-col space-y-2 pt-1">
-                        <button id="strava-connect-button" class="w-full flex justify-center hover:scale-[1.01] transition-transform opacity-50 cursor-not-allowed" disabled>
-                            <img src="./static/btn_strava_connectwith_orange@2x.png" alt="Connect to Strava" class="h-10 object-contain">
+                        <button id="strava-connect-button" class="w-full min-h-[44px] flex justify-center hover:scale-[1.01] transition-transform opacity-50 cursor-not-allowed" disabled>
+                            <img src="./static/btn_strava_connectwith_orange@2x.png" alt="Connect to Strava" class="h-10 object-contain" width="386" height="96">
                         </button>
                         <button id="demo-button" class="w-full btn-primary text-white text-xs font-semibold py-2.5 px-4 rounded-lg focus:outline-none opacity-50 cursor-not-allowed min-h-[44px]" disabled>
                             ▶ Try the demo
@@ -345,7 +345,7 @@
             <!-- Sidebar Footer -->
             <footer class='p-3 border-t border-white/10 bg-white/5 flex-shrink-0 flex items-center justify-between'>
                  <div id="footer-athlete-info" class="flex items-center hidden text-xs">
-                     <img id="footer-strava_profile" src="" class="w-6 h-6 rounded-full mr-2 border border-white/20">
+                     <img id="footer-strava_profile" src="" alt="" class="w-6 h-6 rounded-full mr-2 border border-white/20" width="24" height="24">
                      <span id="footer-strava-username" class="text-gray-300 font-medium tracking-wide"></span>
                  </div>
                  <button id="logout-button" class="hidden text-xs bg-red-600 hover:bg-red-500 text-white font-semibold py-1.5 px-3.5 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-offset-slate-900 focus:ring-red-500 shadow-md min-h-[44px]"> 

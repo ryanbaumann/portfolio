@@ -9,6 +9,7 @@
 - Added eleven honest 1200×627 raster social cards for the portfolio, essays, talks, and demos, plus complete Open Graph/Twitter metadata and validation for dimensions, MIME type, alt text, canonical URLs, and large-card fallbacks.
 - Added a Privacy page and Basic Consent Mode foundation that loads no Google tag before opt-in, sanitizes page locations and referrers, excludes demos, and keeps the measurement ID unset pending GA4 administration approval.
 - Added contextual Work and recruiting links to every demo, a timed Strava map-loading fallback, consistent Strava naming, and deterministic Isochrones SVG icons.
+- Brought the remaining portfolio and demo controls to 44px touch targets, removed Strava motion under reduced-motion preferences, added intrinsic Strava image dimensions, and kept expected keyless builds console-clean.
 - Added a frozen synthetic evaluation set, strict privacy/schema validator, and blocking launch gates for the optional contact-note qualifier; no model integration or cloud evaluation is enabled.
 
 ## 2026-07-13: DevX and FDE content strategy

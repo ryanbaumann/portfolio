@@ -84,12 +84,15 @@ input[type="range"] { padding-inline: 0; accent-color: #34d399; }
 
 #search-slot { margin-bottom: 0.25rem; }
 #search-slot gmp-place-autocomplete {
+  display: block;
+  min-height: 44px;
   width: 100%;
   --gmp-mat-color-surface: rgba(2, 6, 23, 0.85);
   --gmp-mat-color-on-surface: #f8fafc;
   --gmp-mat-color-on-surface-variant: #94a3b8;
   color-scheme: dark;
 }
+#search-slot gmp-place-autocomplete::part(input) { min-height: 44px; }
 
 .legend { margin-top: 1rem; }
 .legend-bar { height: 0.6rem; border-radius: 999px; }

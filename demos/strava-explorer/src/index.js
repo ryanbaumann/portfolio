@@ -988,7 +988,10 @@ async function initApp() {
         }
 
     } catch (err) {
-        error("Initialization failed:", err);
+        // A keyless staged build is an intentional, user-visible configuration
+        // state. Keep unexpected runtime failures noisy without logging that
+        // expected state as a console error.
+        if (import.meta.env.VITE_GMP_API_KEY) error("Initialization failed:", err);
         showLoading(false);
         // Never fail silently: without this, a bad/missing Maps key leaves
         // the connect + demo buttons permanently disabled with no explanation.

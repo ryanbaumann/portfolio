@@ -37,7 +37,9 @@ button:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible
 .panel-header { display: flex; flex-direction: column; gap: 0.6rem; }
 
 .home-link {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
   color: #94a3b8;
   text-decoration: none;
   font-size: 0.78rem;
@@ -83,19 +85,22 @@ input, select {
   background: rgba(2, 6, 23, 0.68);
   padding: 0.65rem 0.8rem;
 }
-input[type="checkbox"] { width: auto; }
+input[type="checkbox"] { width: 44px; height: 44px; margin: 0; }
 input[type="range"] { padding-inline: 0; accent-color: #38bdf8; }
 .check { display: flex; align-items: center; gap: 0.5rem; }
 output { color: #38bdf8; font-weight: 700; }
 
 #search-slot { margin-top: 0.1rem; }
 #search-slot gmp-place-autocomplete {
+  display: block;
+  min-height: 44px;
   width: 100%;
   --gmp-mat-color-surface: rgba(2, 6, 23, 0.85);
   --gmp-mat-color-on-surface: #f8fafc;
   --gmp-mat-color-on-surface-variant: #94a3b8;
   color-scheme: dark;
 }
+#search-slot gmp-place-autocomplete::part(input) { min-height: 44px; }
 
 .scenario-grid {
   display: grid;
