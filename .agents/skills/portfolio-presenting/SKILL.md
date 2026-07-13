@@ -29,5 +29,6 @@ Answer as the practitioner, not the spokesperson: "here's what I saw in the trac
 
 1. Drop the deck (PDF) into `static/decks/` — anything in `static/` ships verbatim with the built site.
 2. Create `content/talks/<slug>.md` (copy `content/talks/_TEMPLATE.md`) with `type: deck` and a link like `{"label": "Slides", "url": "/decks/<file>.pdf"}`.
-3. Optionally write the abstract or speaker notes in the body for a page at `/talks/<slug>/`.
-4. `node build.mjs` and verify at `/talks/`.
+3. Write the abstract in the body so the owned page explains the developer problem, demo, architecture, business meaning, and invitation path.
+4. Add a distinct 1200×627 raster social card through `scripts/social-cards.mjs`, then set `socialImage`, `shareTitle`, `shareSummary`, and `shareImageAlt` in front matter.
+5. `node build.mjs` and verify the talk page, `/talks/`, and emitted social metadata.

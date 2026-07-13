@@ -5,7 +5,7 @@
 - Rebuilt the homepage around the DevX/FDE thesis, proof strip, five-stage operating system, principal-builder recruiting, Lab, Field Notes, speaking, and earlier platform foundation.
 - Reduced primary navigation to four routes plus `Build with Ryan`, added a three-state theme control, raised touch targets to 44px, improved text contrast, and removed clipped mobile navigation.
 - Replaced the generic contact pitch with approved intent categories and a developer-friction prompt; provider-confirmed delivery now returns to an accessible portfolio success page while failures stay explicit.
-- Added seven honest 1200×627 raster social cards, complete Open Graph/Twitter metadata, a zero-dependency generator, and validation for dimensions, MIME type, alt text, canonical URLs, and large-card fallbacks.
+- Added eleven honest 1200×627 raster social cards for the portfolio, essays, talks, and demos, plus complete Open Graph/Twitter metadata and validation for dimensions, MIME type, alt text, canonical URLs, and large-card fallbacks.
 - Added a Privacy page and Basic Consent Mode foundation that loads no Google tag before opt-in, sanitizes page locations and referrers, excludes demos, and keeps the measurement ID unset pending GA4 administration approval.
 - Added contextual Work and recruiting links to every demo, a timed Strava map-loading fallback, consistent Strava naming, and deterministic Isochrones SVG icons.
 
