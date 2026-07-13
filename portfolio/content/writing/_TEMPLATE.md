@@ -17,7 +17,7 @@ publish. Two kinds of writing entries:
 
 1. **A post hosted here**: write the body in markdown below the front
    matter. It renders at `/writing/<slug>/`. Use the writing skill
-   (`../.agents/skills/portfolio-writing/SKILL.md`) for voice.
+   (`../../../.agents/skills/portfolio-writing/SKILL.md`) for voice.
 2. **An external piece** (LinkedIn, a launch blog): add
    `external: https://...` to the front matter and leave the body empty.
    It lists with an outbound link.

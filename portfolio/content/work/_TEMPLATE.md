@@ -10,6 +10,7 @@ image: /previews/portfolio.jpg
 imageAlt: Ryan Baumann Portfolio preview card
 featured: false
 draft: true
+noindex: true
 order: 99
 ---
 

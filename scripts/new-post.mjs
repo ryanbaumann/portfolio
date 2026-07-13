@@ -9,7 +9,7 @@
 //   npm run new:post -- "Developer experience is a growth engine"
 //   npm run new:post -- "Launch post" --external https://example.com/launch
 //   npm run new:post -- "My post" --summary "One-line summary for lists."
-//   npm run new:post -- "Draft" --draft true
+//   npm run new:post -- "Ready to publish" --publish
 //
 // Voice and structure guidance: .agents/skills/portfolio-writing/SKILL.md
 
@@ -18,7 +18,7 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const WRITING_DIR = join(REPO_ROOT, 'portfolio', 'content', 'writing');
+const WRITING_DIR = resolve(process.env.PORTFOLIO_WRITING_DIR || join(REPO_ROOT, 'portfolio', 'content', 'writing'));
 
 const args = process.argv.slice(2);
 const title = args[0];
@@ -34,7 +34,7 @@ function flag(name, fallback) {
 
 const summary = flag('summary', 'One sentence: the claim and why the reader should care.');
 const external = flag('external', null);
-const draft = flag('draft', 'false') === 'true';
+const draft = !args.includes('--publish');
 const tags = flag('tags', 'developer experience');
 
 const slug = title

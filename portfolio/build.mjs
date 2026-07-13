@@ -10,14 +10,15 @@
 //   node build.mjs                 # build into dist/
 //   BASE_PATH=/portfolio/ node build.mjs   # build for a subpath mount
 
-import { cpSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { cpSync, existsSync, mkdirSync, readdirSync, readFileSync, renameSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)));
-const CONTENT_DIR = join(ROOT, 'content');
-const STATIC_DIR = join(ROOT, 'static');
-const DIST_DIR = join(ROOT, 'dist');
+const CONTENT_DIR = resolve(process.env.PORTFOLIO_CONTENT_DIR || join(ROOT, 'content'));
+const STATIC_DIR = resolve(process.env.PORTFOLIO_STATIC_DIR || join(ROOT, 'static'));
+const OUTPUT_DIR = resolve(process.env.PORTFOLIO_DIST_DIR || join(ROOT, 'dist'));
+const DIST_DIR = `${OUTPUT_DIR}.building-${process.pid}`;
 const BASE = (process.env.BASE_PATH || '/').endsWith('/')
   ? (process.env.BASE_PATH || '/')
   : `${process.env.BASE_PATH}/`;
@@ -41,7 +42,9 @@ function failValidation(message) {
 }
 
 function isValidIsoDate(value) {
-  return typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value) && !Number.isNaN(Date.parse(`${value}T00:00:00Z`));
+  if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+  const parsed = new Date(`${value}T00:00:00Z`);
+  return !Number.isNaN(parsed.valueOf()) && parsed.toISOString().slice(0, 10) === value;
 }
 
 function isValidUrl(value) {
@@ -71,17 +74,25 @@ function collectMarkdownLinks(markdown) {
   return links;
 }
 
+function validateInternalHref(id, href) {
+  if (!href?.startsWith('/')) return;
+  const path = pagePathForInternalHref(href);
+  if (path && !existsSync(path)) failValidation(`${id}: broken internal link ${href}`);
+}
+
 function validateEntry(collection, entry, seenSlugs) {
   const id = `${collection.name}/${entry.slug}`;
   if (seenSlugs.has(id)) failValidation(`${id}: duplicate slug`);
   seenSlugs.add(id);
   const { meta } = entry;
-  if (meta.draft === true) return;
   for (const field of ['title', 'summary']) {
     if (!meta[field] || typeof meta[field] !== 'string') failValidation(`${id}: missing required ${field}`);
   }
   if (meta.slug && !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(meta.slug)) failValidation(`${id}: slug must be lowercase kebab-case`);
-  if (meta.noindex === true && meta.canonical) failValidation(`${id}: noindex entries should not also set canonical`);
+  if (meta.draft !== undefined && typeof meta.draft !== 'boolean') failValidation(`${id}: draft must be a boolean`);
+  if (meta.noindex !== undefined && typeof meta.noindex !== 'boolean') failValidation(`${id}: noindex must be a boolean`);
+  if (meta.draft === true && meta.noindex !== true) failValidation(`${id}: drafts must set noindex: true`);
+  if (meta.draft !== true && meta.noindex === true && meta.canonical) failValidation(`${id}: published noindex entries should not also set canonical`);
   if (collection.name === 'writing' && !isValidIsoDate(meta.date)) failValidation(`${id}: writing date must be YYYY-MM-DD`);
   for (const field of ['external', 'canonical']) {
     if (meta[field] && !isValidUrl(meta[field])) failValidation(`${id}: ${field} must be an https, mailto, or root-relative URL`);
@@ -95,12 +106,39 @@ function validateEntry(collection, entry, seenSlugs) {
   if (meta.updated && !isValidIsoDate(meta.updated)) failValidation(`${id}: updated must be YYYY-MM-DD`);
   for (const link of meta.links || []) {
     if (!link.label || !isValidUrl(link.url)) failValidation(`${id}: links entries require label and valid url`);
+    else validateInternalHref(id, link.url);
   }
-  for (const href of collectMarkdownLinks(entry.body)) {
-    if (href.startsWith('/')) {
-      const path = pagePathForInternalHref(href);
-      if (path && !existsSync(path)) failValidation(`${id}: broken internal link ${href}`);
+  for (const href of collectMarkdownLinks(entry.body)) validateInternalHref(id, href);
+}
+
+function validatePage(slug, meta, body) {
+  const id = `pages/${slug}`;
+  for (const field of ['title', 'summary']) {
+    if (!meta[field] || typeof meta[field] !== 'string') failValidation(`${id}: missing required ${field}`);
+  }
+  if (meta.image) {
+    if (!meta.imageAlt) failValidation(`${id}: imageAlt is required when image is set`);
+    const imagePath = meta.image.startsWith('/') ? join(STATIC_DIR, meta.image.slice(1)) : join(CONTENT_DIR, 'pages', meta.image);
+    if (!existsSync(imagePath)) failValidation(`${id}: image asset not found: ${meta.image}`);
+  }
+  for (const href of collectMarkdownLinks(body)) validateInternalHref(id, href);
+}
+
+function validateSite() {
+  for (const field of ['name', 'role', 'description', 'siteUrl', 'canonicalHost', 'defaultShareImage']) {
+    if (!site[field] || typeof site[field] !== 'string') failValidation(`site.json: missing required ${field}`);
+  }
+  if (!isValidUrl(site.siteUrl)) failValidation('site.json: siteUrl must be an https URL');
+  if (site.siteUrl) {
+    try {
+      if (new URL(site.siteUrl).host !== site.canonicalHost) failValidation('site.json: canonicalHost must match siteUrl');
+    } catch {
+      // The URL-specific error above is more useful.
     }
+  }
+  if (site.defaultShareImage) {
+    const imagePath = join(STATIC_DIR, site.defaultShareImage.replace(/^\//, ''));
+    if (!existsSync(imagePath)) failValidation(`site.json: defaultShareImage asset not found: ${site.defaultShareImage}`);
   }
 }
 
@@ -108,6 +146,7 @@ function assertValidBuild() {
   if (!validationErrors.length) return;
   console.error('[portfolio] content validation failed:');
   for (const error of validationErrors) console.error(`- ${error}`);
+  rmSync(DIST_DIR, { recursive: true, force: true });
   process.exit(1);
 }
 
@@ -118,13 +157,14 @@ function assertValidBuild() {
 // own repo (no ../apps.json), the demos section and nav item simply
 // disappear — nothing else breaks.
 function loadDemos() {
-  const manifestPath = join(ROOT, '..', 'apps.json');
+  const manifestPath = resolve(process.env.PORTFOLIO_APPS_MANIFEST || join(ROOT, '..', 'apps.json'));
   if (!existsSync(manifestPath)) return [];
   try {
     const entries = JSON.parse(readFileSync(manifestPath, 'utf8'));
     // The portfolio itself is listed in the manifest (it's how the gateway
     // mounts this site at "/"); everything else is a demo.
-    return entries.filter((entry) => entry.path !== '/' && entry.name !== 'portfolio');
+    return entries.filter((entry) =>
+      entry.path !== '/' && entry.name !== 'portfolio' && (entry.visibility || 'public') === 'public');
   } catch {
     return [];
   }
@@ -182,7 +222,11 @@ function rebase(href) {
 
 function inlineMd(text) {
   let html = escapeHtml(text);
-  html = html.replace(/!\[([^\]]*)\]\(([^)\s]+)\)/g, (_, alt, src) => `<img src="${rebase(src)}" alt="${alt}" loading="lazy" />`);
+  html = html.replace(/!\[([^\]]*)\]\(([^)\s]+)\)/g, (_, alt, src) => {
+    const localPath = src.startsWith('/') ? join(STATIC_DIR, src.slice(1)) : null;
+    const { width, height } = localPath && existsSync(localPath) ? getImageDimensions(localPath) : { width: 960, height: 600 };
+    return `<img src="${rebase(src)}" alt="${alt}" loading="lazy" width="${width}" height="${height}" />`;
+  });
   html = html.replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, (_, label, href) => {
     const external = /^https?:\/\//.test(href);
     return `<a href="${rebase(href)}"${external ? ' rel="noopener"' : ''}>${label}</a>`;
@@ -288,7 +332,6 @@ function loadCollection(name) {
       const slug = meta.slug || fileSlug;
       return { slug, sourceSlug: fileSlug, meta, body };
     })
-    .filter((entry) => entry.meta.draft !== true)
     .sort((a, b) => {
       const orderA = a.meta.order ?? Number.MAX_SAFE_INTEGER;
       const orderB = b.meta.order ?? Number.MAX_SAFE_INTEGER;
@@ -521,8 +564,10 @@ function demoCard(demo) {
   const tags = (demo.tags || []).length
     ? `<p class="card-tags">${demo.tags.map((tag) => `<span>${escapeHtml(tag)}</span>`).join('')}</p>`
     : '';
+  const previewPath = demo.preview ? join(STATIC_DIR, demo.preview.replace(/^\//, '')) : null;
+  const previewSize = previewPath && existsSync(previewPath) ? getImageDimensions(previewPath) : { width: 960, height: 600 };
   const preview = demo.preview
-    ? `<img class="demo-preview" src="${rebase(demo.preview)}" alt="Screenshot of ${escapeHtml(demo.title)}" loading="lazy" width="960" height="600" />`
+    ? `<img class="demo-preview" src="${rebase(demo.preview)}" alt="Screenshot of ${escapeHtml(demo.title)}" loading="lazy" width="${previewSize.width}" height="${previewSize.height}" />`
     : '';
   return `<a class="card demo-card" href="${rebase(demo.path)}">
   ${preview}
@@ -810,7 +855,7 @@ function buildDemosPage() {
   <div class="grid demo-grid">
     ${demos.map(demoCard).join('\n')}
   </div>
-  <p class="section-note">Every demo is open source. <a href="${site.links.github}/ryanbaumann-portfolio" rel="noopener">read the code</a>. One Ryan Baumann portfolio container, one Cloud Run service, no secrets in the browser.</p>
+  <p class="section-note">Every demo is open source. <a href="${site.links.github}/Portfolio" rel="noopener">read the code</a>. One Ryan Baumann portfolio container, one Cloud Run service, no secrets in the browser.</p>
 </section>`;
 
   writePage(join('demos', 'index.html'), layout({
@@ -854,7 +899,14 @@ function buildCollectionIndex(collection, entries) {
 }
 
 
-function resumePageContent() {
+function pageImage(meta) {
+  if (!meta.image) return '';
+  const imagePath = meta.image.startsWith('/') ? join(STATIC_DIR, meta.image.slice(1)) : join(CONTENT_DIR, 'pages', meta.image);
+  const { width, height } = getImageDimensions(imagePath);
+  return `<img class="article-hero" src="${rebase(meta.image)}" alt="${escapeHtml(meta.imageAlt)}" loading="lazy" width="${width}" height="${height}" />`;
+}
+
+function resumePageContent(meta) {
   return `<section class="resume-shell">
   <div class="resume-header">
     <div>
@@ -864,6 +916,7 @@ function resumePageContent() {
     </div>
     <p class="resume-meta">${escapeHtml(site.location)}<br /><a href="${site.links.linkedin}" rel="noopener">LinkedIn</a> · <a href="${site.links.github}" rel="noopener">GitHub</a></p>
   </div>
+  ${pageImage(meta)}
   <div class="resume-section"><h2>Focus</h2><p>${escapeHtml(site.answerEngineSummary || site.description)}</p></div>
   <div class="resume-section"><h2>Experience</h2>
     <article><h3>Google Maps Platform</h3><p class="resume-meta">Developer Experience, solution architecture, product incubation · 2022 – present</p><p>Lead developer experience and forward-deployed platform work across Code Assist, agent skills, evals, AI-native distribution, and the Geo Architecture Center.</p></article>
@@ -876,11 +929,12 @@ function resumePageContent() {
 </section>`;
 }
 
-function contactPageContent() {
+function contactPageContent(meta) {
   return `<section class="contact-shell">
   <p class="eyebrow">Contact</p>
   <h1>Build better platform experiences</h1>
   <p class="lede">I am most useful when the work is about developer experience, AI-native product surfaces, or platform growth. Bring me in for advisor work, more platform seats, or content collaboration that helps builders succeed.</p>
+  ${pageImage(meta)}
   <div class="contact-prompts" aria-label="Good reasons to reach out">
     <article><h2>Advisor work</h2><p>Strategy for developer experience, agent-ready platforms, AI distribution, evals, and growth loops.</p></article>
     <article><h2>Platform growth</h2><p>Turning natural-language and agentic product behavior into better user experience, better developer experience, and more durable adoption.</p></article>
@@ -899,11 +953,13 @@ function contactPageContent() {
 function buildStandalonePages() {
   const dir = join(CONTENT_DIR, 'pages');
   if (!existsSync(dir)) return;
+  const pages = [];
   for (const file of readdirSync(dir)) {
     if (!file.endsWith('.md') || file.startsWith('_')) continue;
     const slug = file.replace(/\.md$/, '');
     const { meta, body } = parseFrontMatter(readFileSync(join(dir, file), 'utf8'));
-    const customContent = slug === 'resume' ? resumePageContent() : slug === 'contact' ? contactPageContent() : null;
+    pages.push({ slug, meta, body });
+    const customContent = slug === 'resume' ? resumePageContent(meta) : slug === 'contact' ? contactPageContent(meta) : null;
     const content = customContent || `<article class="prose">
   <p class="eyebrow">${escapeHtml(meta.eyebrow || site.name)}</p>
   <h1>${escapeHtml(meta.title)}</h1>
@@ -925,6 +981,7 @@ function buildStandalonePages() {
       ogImageAlt: meta.imageAlt || meta.title,
     }));
   }
+  for (const page of pages) validatePage(page.slug, page.meta, page.body);
 }
 
 
@@ -1006,6 +1063,7 @@ function validateMetadata() {
   const htmlFiles = readdirSync(DIST_DIR, { recursive: true })
     .filter((file) => String(file).endsWith('.html'));
   const errors = [];
+  const descriptions = new Map();
 
   for (const file of htmlFiles) {
     const filePath = join(DIST_DIR, String(file));
@@ -1022,14 +1080,38 @@ function validateMetadata() {
     if (!html.includes('twitter:title')) errors.push(`${id}: missing twitter:title`);
     if (!html.includes('twitter:description')) errors.push(`${id}: missing twitter:description`);
     if (!html.includes('twitter:image')) errors.push(`${id}: missing twitter:image`);
+    const description = html.match(/<meta name="description" content="([^"]+)"/i)?.[1];
+    if (description) {
+      if (descriptions.has(description)) errors.push(`${id}: duplicate description also used by ${descriptions.get(description)}`);
+      descriptions.set(description, id);
+    }
+    const canonical = html.match(/<link rel="canonical" href="([^"]+)"/i)?.[1];
+    if (!canonical || !/^https:\/\//.test(canonical)) errors.push(`${id}: canonical must be an absolute https URL`);
   }
 
   if (errors.length) {
     console.error('[portfolio] metadata validation failed:');
     for (const error of errors) console.error(`- ${error}`);
+    rmSync(DIST_DIR, { recursive: true, force: true });
     process.exit(1);
   }
   console.log(`[portfolio] metadata validation passed for ${htmlFiles.length} pages`);
+}
+
+function publishOutput() {
+  const backupDir = `${OUTPUT_DIR}.previous-${process.pid}`;
+  rmSync(backupDir, { recursive: true, force: true });
+  const hadPreviousOutput = existsSync(OUTPUT_DIR);
+  if (hadPreviousOutput) renameSync(OUTPUT_DIR, backupDir);
+  try {
+    renameSync(DIST_DIR, OUTPUT_DIR);
+    rmSync(backupDir, { recursive: true, force: true });
+  } catch (error) {
+    if (hadPreviousOutput && !existsSync(OUTPUT_DIR) && existsSync(backupDir)) {
+      renameSync(backupDir, OUTPUT_DIR);
+    }
+    throw error;
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -1039,9 +1121,14 @@ function validateMetadata() {
 rmSync(DIST_DIR, { recursive: true, force: true });
 mkdirSync(DIST_DIR, { recursive: true });
 
+validateSite();
+
 const collections = {};
+const allCollections = {};
 for (const collection of COLLECTIONS) {
-  const entries = loadCollection(collection.name);
+  const allEntries = loadCollection(collection.name);
+  const entries = allEntries.filter((entry) => entry.meta.draft !== true);
+  allCollections[collection.name] = allEntries;
   collections[collection.name] = entries;
   buildCollectionIndex(collection, entries);
   if (collection.detailPages) {
@@ -1057,7 +1144,7 @@ buildStandalonePages();
 
 const seenSlugs = new Set();
 for (const collection of COLLECTIONS) {
-  for (const entry of collections[collection.name]) validateEntry(collection, entry, seenSlugs);
+  for (const entry of allCollections[collection.name]) validateEntry(collection, entry, seenSlugs);
 }
 assertValidBuild();
 writePage('feed.xml', rssFeed(collections.writing));
@@ -1069,6 +1156,6 @@ if (existsSync(STATIC_DIR)) {
 }
 
 const pageCount = readdirSync(DIST_DIR, { recursive: true }).filter((file) => String(file).endsWith('index.html')).length;
-console.log(`[portfolio] built ${pageCount} pages into dist/ (base: ${BASE})`);
-
 validateMetadata();
+publishOutput();
+console.log(`[portfolio] built ${pageCount} pages into ${OUTPUT_DIR} (base: ${BASE})`);
