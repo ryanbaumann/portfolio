@@ -9,7 +9,7 @@ links: [{"label": "Launch blog", "url": "https://cloud.google.com/blog/products/
 image: /img/work/intelligent-product-essentials.svg
 imageAlt: Panel showing the Intelligent Product Essentials launch facts, zero to launch in nine months with GE Appliances
 featured: false
-order: 6
+order: 7
 ---
 
 ## The goal

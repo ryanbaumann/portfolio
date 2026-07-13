@@ -1,14 +1,14 @@
 ---
 title: Agentic Growth & AI-Native Distribution
 org: Google
-role: Product growth strategy lead
+role: Product growth & distribution lead
 period: 2024 – present
 summary: Platform tools shipped into the default connectors of AI Studio, Replit, and Lovable, plus OSS libraries that grew reach 300%+ with AI-native builders.
 tags: ["growth", "distribution", "open source"]
 image: /img/work/agentic-growth.svg
 imageAlt: Panel listing the distribution surfaces, AI Studio, Replit, and Lovable, above the react-google-maps download stat
 featured: true
-order: 4
+order: 2
 ---
 
 ## The goal

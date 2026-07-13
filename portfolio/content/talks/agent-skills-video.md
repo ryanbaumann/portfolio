@@ -6,6 +6,6 @@ date: 2025-12-01
 summary: Introducing portable skill modules that teach AI agents to ship production-ready platform code in one install.
 links: [{"label": "Watch", "url": "https://youtu.be/NEk37sPlgaY"}]
 image: /img/talks/agent-skills-video.svg
-imageAlt: Card for the agent skills introduction video
+imageAlt: Artifact card for the agent skills introduction video, used because YouTube thumbnail fetching is blocked
 order: 2
 ---

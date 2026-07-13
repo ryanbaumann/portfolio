@@ -472,6 +472,8 @@ function getImageDimensions(imagePath) {
 
 function workCard(entry) {
   const { meta } = entry;
+  const imagePath = meta.image ? join(STATIC_DIR, meta.image.replace(/^\//, '')) : '';
+  const imageSize = meta.image ? getImageDimensions(imagePath) : null;
   const url = hasDetailPage(entry) ? entryUrl('work', entry) : rebase(meta.links?.[0]?.url || `${BASE}work/`);
   const external = !hasDetailPage(entry) && /^https?:/.test(url);
   const cardMeta = `<p class="card-meta">${metaLine([meta.org, meta.period])}</p>
@@ -480,7 +482,7 @@ function workCard(entry) {
   ${meta.tags ? `<p class="card-tags">${meta.tags.map((tag) => `<span>${escapeHtml(tag)}</span>`).join('')}</p>` : ''}`;
   if (meta.image) {
     return `<a class="card work-card has-thumb" href="${url}"${external ? ' rel="noopener"' : ''}>
-  <img class="card-thumb" src="${rebase(meta.image)}" alt="${escapeHtml(meta.imageAlt || meta.title)}" loading="lazy" width="960" height="600" />
+  <img class="card-thumb" src="${rebase(meta.image)}" alt="${escapeHtml(meta.imageAlt || meta.title)}" loading="lazy" width="${imageSize.width}" height="${imageSize.height}" />
   <div class="card-body">
   ${cardMeta}
   </div>
@@ -499,8 +501,10 @@ function listRow(collection, entry) {
   const title = clickable
     ? `<a href="${url}"${external ? ' rel="noopener"' : ''}>${escapeHtml(meta.title)}${external ? ' ↗' : ''}</a>`
     : escapeHtml(meta.title);
+  const imagePath = meta.image ? join(STATIC_DIR, meta.image.replace(/^\//, '')) : '';
+  const imageSize = meta.image ? getImageDimensions(imagePath) : null;
   const thumb = meta.image
-    ? `<img class="row-thumb" src="${rebase(meta.image)}" alt="${escapeHtml(meta.imageAlt || meta.title)}" loading="lazy" width="192" height="120" />`
+    ? `<img class="row-thumb" src="${rebase(meta.image)}" alt="${escapeHtml(meta.imageAlt || meta.title)}" loading="lazy" width="${imageSize.width}" height="${imageSize.height}" />`
     : '';
   return `<li class="row">
   ${thumb}

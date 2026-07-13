@@ -1,7 +1,7 @@
 ---
 title: Google Maps Platform Agent Skills
 org: Google
-role: Product & engineering lead
+role: Product, GTM & engineering lead
 period: 2025 – present
 summary: Portable skill modules that teach AI agents how to build with the platform across Web, Android, iOS, and Web Services. Installed with one command.
 tags: ["agent skills", "applied ai", "distribution"]
@@ -9,7 +9,7 @@ links: [{"label": "GitHub", "url": "https://github.com/googlemaps/agent-skills"}
 image: /img/work/agent-skills.svg
 imageAlt: Terminal panel showing the one-line install command npx skills add googlemaps/agent-skills
 featured: true
-order: 2
+order: 3
 ---
 
 ## The goal

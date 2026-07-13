@@ -8,7 +8,7 @@ tags: ["evals", "context engineering", "growth"]
 image: /img/work/agentic-evals.svg
 imageAlt: Panel showing the eval loop, from task to agent run to scored result to launch decision
 featured: true
-order: 3
+order: 5
 ---
 
 ## The goal

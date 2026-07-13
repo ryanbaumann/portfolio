@@ -8,7 +8,7 @@ tags: ["technical writing", "solution architecture"]
 links: [{"label": "Architecture Center", "url": "https://developers.google.com/maps/architecture"}]
 image: /img/work/geo-architecture-center.svg
 imageAlt: Panel showing the Geo Architecture Center stat of 40+ published solution architectures
-order: 7
+order: 6
 ---
 
 ## The goal

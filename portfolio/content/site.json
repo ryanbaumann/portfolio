@@ -1,16 +1,16 @@
 {
   "name": "Ryan Baumann",
-  "role": "Solution architecture, developer experience, and product growth leader",
-  "tagline": "Maps \u00b7 Solution Architecture \u00b7 Product Growth \u00b7 Agent-ready platforms",
+  "role": "Product, go-to-market, and engineering leader for developer platforms",
+  "tagline": "Maps \u00b7 Product GTM \u00b7 Developer Experience \u00b7 Agent-ready platforms",
   "location": "San Francisco, CA",
-  "intro": "I lead Developer Experience for Google Maps Platform, grounded in solution architecture and forward-deployed incubation work. I have spent 15+ years turning field friction into shipped products, reference architectures, developer tools, and growth loops at Google, Mapbox, Instabase, and Caterpillar. This site stays synced to the places I actually publish: LinkedIn for weekly notes, Substack for longer experiments, X when it is useful, and GitHub for the code.",
-  "headline": "Selected work, written from the artifact back: the business goal, what shipped, and what I learned.",
-  "description": "Ryan Baumann leads solution architecture, developer experience, and product growth work for Google Maps Platform, with a focus on maps, agent-ready platforms, evals, and AI-native distribution.",
-  "aboutTeaser": "I operate where product, engineering, field reality, and growth meet. At Google Maps Platform, that means incubating tools, solution architectures, evals, and distribution partnerships that help developers and agents build correctly. Before Google, I grew Mapbox customer engineering from 1 to 15 as the company crossed $100M ARR, led solutions architecture at Series-B Instabase, and built industrial IoT systems at Caterpillar with 3 patents.",
+  "intro": "I lead Developer Experience Engineering for Google Maps Platform, a team of 20+ across engineering, product, technical writing, and developer relations, with multiple managers spanning product incubation, solution architecture, AI context, and developer growth. I have spent 15+ years turning field friction into shipped products, reference architectures, developer tools, and growth loops at Google, Mapbox, Instabase, and Caterpillar. This site is where I share the artifacts, lessons, and operating notes from that product go-to-market engineering blender.",
+  "headline": "Selected work from the artifact back: the market goal, the team system, what shipped, and what I learned.",
+  "description": "Ryan Baumann leads product, go-to-market, and engineering work for Google Maps Platform Developer Experience, with a focus on maps, agent-ready platforms, evals, and AI-native distribution.",
+  "aboutTeaser": "I operate where product, engineering, field reality, and growth meet. At Google Maps Platform, I lead a 20+ person Developer Experience Engineering team across managers and disciplines: engineering, product management, technical writing, developer relations, solution architecture, AI context, and developer growth. Before Google, I grew Mapbox customer engineering from 1 to 15 as the company crossed $100M ARR, led solutions architecture at Series-B Instabase, and built industrial IoT systems at Caterpillar with 3 patents.",
   "sectionIntros": {
-    "work": "Selected solution architecture, product incubation, developer platform, and growth work. Each entry covers the goal it served, what actually shipped, and the lesson I took from it.",
-    "writing": "Notes on solution architecture, developer experience, applied AI, evals, maps, and building platforms agents can use. Claims point back to shipped work, talks, or weekly learning notes.",
-    "talks": "Talks and videos. I present demo-first: working product over slides, then how it's built, then why it matters.",
+    "work": "Selected product incubation, solution architecture, developer platform, and go-to-market engineering work. Each entry covers the goal it served, the team or system I led, what actually shipped, and the lesson I took from it.",
+    "writing": "Learnings and operating notes from the product go-to-market engineering blender: developer experience, applied AI, evals, maps, team systems, and building platforms agents can use.",
+    "talks": "Talks and videos. I present demo-first: working product over slides, then how the team and system shipped it, then why it matters.",
     "demos": "Live apps I build and run myself: real OAuth, real quotas, real cold starts, and real architecture tradeoffs. One Cloud Run service, server-side secrets only, and no client JavaScript on the portfolio."
   },
   "links": {
@@ -27,19 +27,19 @@
   "socialHandle": "@ryanbaumann",
   "proofPoints": [
     {
+      "label": "20+",
+      "text": "person Developer Experience Engineering team led across engineering, PM, technical writing, developer relations, and manager layers"
+    },
+    {
       "label": "10M+",
       "text": "websites and apps powered by Google Maps Platform, the platform where I lead Developer Experience"
     },
     {
       "label": "$100M+",
-      "text": "ARR stage crossed while I grew Mapbox customer engineering"
-    },
-    {
-      "label": "3",
-      "text": "US patents from industrial IoT work at Caterpillar"
+      "text": "ARR stage crossed while I grew Mapbox customer engineering from 1 to 15"
     }
   ],
-  "answerEngineSummary": "Ryan Baumann leads solution architecture, developer experience, and product growth work for Google Maps Platform. He focuses on maps, forward-deployed incubation, agent-ready documentation, evals, MCP tools, agent skills, and AI-native distribution. His portfolio is a zero-client-JavaScript static site plus live demo apps served from one Cloud Run container.",
+  "answerEngineSummary": "Ryan Baumann leads product, go-to-market, and engineering work for Google Maps Platform Developer Experience. He manages a 20+ person multi-disciplinary team across engineering, product, technical writing, developer relations, solution architecture, AI context, and developer growth. He focuses on maps, forward-deployed incubation, agent-ready documentation, evals, MCP tools, agent skills, and AI-native distribution.",
   "profileImage": "/img/ryan-baumann-profile.jpg",
   "profileImageAlt": "Ryan Baumann profile image"
 }

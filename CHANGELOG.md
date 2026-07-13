@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-07-13: Portfolio leadership positioning and preview audit
+
+- Repositioned the homepage and about copy around product, go-to-market, and engineering leadership for developer platforms, including the 20+ person Google Maps Platform Developer Experience Engineering team and manager-layer scope.
+- Reordered featured work to lead with AI-native distribution after Code Assist, then agent skills, Voice of Developer, and evals, so the page reads more like a product growth system than a list of artifacts.
+- Reordered writing to put weekly learnings first and Substack experiments second, and clarified thumbnail alt text where external preview image fetching is blocked by the environment.
+- Tightened writing and talks section copy around shared learnings, team systems, and shipped product surfaces.
+- Improved portfolio list thumbnails by emitting real image dimensions for row and work-card images and using a more stable grid row layout.
+
 ## 2026-07-13: Portfolio feedback readiness pass
 
 - Compressed the portfolio header into a single-line shell on mobile and desktop, added Resume and Contact navigation, and added a manual light/dark theme toggle.

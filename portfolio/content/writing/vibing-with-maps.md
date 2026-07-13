@@ -7,5 +7,5 @@ tags: ["applied ai", "maps", "vibe coding"]
 external: https://ryanbaumann.substack.com/p/vibing-with-maps-practical-experiments
 image: /img/writing/vibing-with-maps.svg
 imageAlt: Card for the Vibing with Maps post on Substack
-order: 3
+order: 2
 ---

@@ -8,7 +8,7 @@ tags: ["open source", "developer advocacy", "data science"]
 links: [{"label": "mapboxgl-jupyter", "url": "https://github.com/mapbox/mapboxgl-jupyter"}, {"label": "mapboxgl-powerbi", "url": "https://github.com/mapbox/mapboxgl-powerbi"}]
 image: /img/work/mapboxgl-jupyter.jpg
 imageAlt: A Jupyter notebook rendering a Mapbox circle visualization of US healthcare charges with mapboxgl-jupyter
-order: 10
+order: 11
 ---
 
 ## The goal

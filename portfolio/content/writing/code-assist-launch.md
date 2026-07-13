@@ -7,5 +7,5 @@ tags: ["code assist", "mcp", "developer experience"]
 external: https://mapsplatform.google.com/resources/blog/announcing-code-assist-toolkit-bring-google-maps-platform-expertise-to-your-ai-coding-assistant/
 image: /img/writing/code-assist-launch.svg
 imageAlt: Card for the Code Assist launch post on the Google Maps Platform blog
-order: 2
+order: 3
 ---

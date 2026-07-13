@@ -1,9 +1,9 @@
 ---
 title: Google Maps Platform Code Assist
 org: Google
-role: Product incubation & engineering lead
+role: Product incubation, GTM & engineering lead
 period: 2024 – present
-summary: A product incubation that turned field demand for accurate AI-generated Maps code into a Google-hosted MCP service grounded in official docs and samples.
+summary: Led the cross-functional team that turned field demand for accurate AI-generated Maps code into a Google-hosted MCP service grounded in official docs and samples.
 tags: ["mcp", "applied ai", "developer platforms"]
 links: [{"label": "Docs", "url": "https://developers.google.com/maps/ai/code-assist"}, {"label": "Launch blog", "url": "https://mapsplatform.google.com/resources/blog/announcing-code-assist-toolkit-bring-google-maps-platform-expertise-to-your-ai-coding-assistant/"}, {"label": "GitHub", "url": "https://github.com/googlemaps/platform-ai"}, {"label": "Video", "url": "https://youtu.be/L2V58kKIHvc"}]
 image: /img/work/code-assist.svg
