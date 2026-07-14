@@ -51,5 +51,21 @@
     "providers": ["isochrones"],
     "tags": ["isochrones", "routing", "google-maps-platform"],
     "preview": "/previews/isochrones.jpg"
+  },
+  {
+    "name": "infographic-agent",
+    "title": "Infographic Agent",
+    "description": "Portable infographic architect. Generate professional infographics, visual summaries, charts, and data visualizations via autonomous agent.",
+    "path": "https://github.com/ryanbaumann/infographic-agent/",
+    "tags": ["agent", "python", "playwright"],
+    "preview": null
+  },
+  {
+    "name": "unlimited-maps-demo",
+    "title": "Unlimited Maps Demo",
+    "description": "Experimental real-world reasoning map demo showcasing unlimited context.",
+    "path": "https://github.com/ryanbaumann/unlimited-maps-demo/",
+    "tags": ["maps", "google-maps-platform", "reasoning"],
+    "preview": null
   }
 ]
