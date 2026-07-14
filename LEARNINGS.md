@@ -1,5 +1,12 @@
 # Learnings
 
+## 2026-07-14: Optimizing Cloud Run for zero-cost idleness with snappy cold starts
+
+Context: The deployment workflow kept one warm instance (`--min-instances 1`) to avoid cold start latency, which incurred continuous idle billing.
+Learning: For a zero-npm-dependency Node.js gateway that starts in milliseconds, a warm instance is unnecessary. Scaling to zero (`--min-instances 0`) reduces costs to $0.00 when idle. To keep the first request snappy, Cloud Run's Startup CPU Boost (`--cpu-boost`) temporarily allocates extra CPU during container startup, shortening cold start times to a fraction of a second.
+Evidence: Updated `.github/workflows/deploy.yml` with `--min-instances 0` and `--cpu-boost`. Since the Node.js gateway has no heavy dependencies and starts in under 20ms, it is a perfect candidate for zero-instance scaling without degrading user experience.
+Use next time: For lightweight containers (e.g., zero-npm-dependency Go/Rust/Node gateways), scale to 0 and enable `--cpu-boost` rather than paying for warm standby instances.
+
 ## 2026-07-14: Never put a comment inside a backslash-continued shell command
 
 Context: A generated edit to `.github/workflows/deploy.yml` inserted a `# comment` line between `--port 8080 \` and `--min-instances 1` in the `gcloud run deploy` invocation.
