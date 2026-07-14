@@ -23,4 +23,3 @@
     {"id":"weak-commercial-020","intent":"Other","message":"I have an idea that may help your site. Can I send more information?","expected":"deliver","critical":true}
   ]
 }
-
