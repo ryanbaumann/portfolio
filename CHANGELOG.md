@@ -7,7 +7,7 @@
 ## 2026-07-14: Faster serving and consistent public docs
 
 - Added brotli/gzip compression for text responses (homepage HTML drops from ~36 KB to ~9 KB) and weak-ETag/Last-Modified conditional requests with 304s for static files. Images and fonts stay uncompressed; `/api/*` behavior is unchanged apart from compression.
-- Kept one warm Cloud Run instance (`--min-instances 1`) so shared links do not hit a cold start.
+- Configured Cloud Run to scale down to zero instances (`--min-instances 0`) when idle to minimize costs, and enabled startup CPU boost (`--cpu-boost`) to ensure first-request cold starts remain fast and snappy.
 - Brought the root and per-app READMEs into one consistent style: preview screenshot near the top, sentence-case headings, no em-dashes, section order aligned across demos, and copy checked against the evidence ledger.
 
 ## 2026-07-14: Public-readiness fixes and copy pass
