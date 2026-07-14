@@ -61,8 +61,8 @@
     "preview": null
   },
   {
-    "name": "unlimited-maps-demo",
-    "title": "Unlimited Maps Demo",
+    "name": "real-world-reasoning-agent",
+    "title": "Real-World Reasoning Agent",
     "description": "Experimental real-world reasoning map demo showcasing unlimited context.",
     "path": "https://github.com/ryanbaumann/unlimited-maps-demo/",
     "tags": ["maps", "google-maps-platform", "reasoning"],

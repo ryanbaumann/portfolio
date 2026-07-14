@@ -8,7 +8,7 @@
 
 ## 2026-07-14: Support external lab experiments
 
-- Added `ryanbaumann/infographic-agent` and `ryanbaumann/unlimited-maps-demo` to `apps.json` as external GitHub link entries (no local build required).
+- Added `ryanbaumann/infographic-agent` and `real-world-reasoning-agent` (linking to the `ryanbaumann/unlimited-maps-demo` repo) to `apps.json` as external GitHub link entries (no local build required).
 - Updated `gateway/lib/apps.js` and `scripts/build-local.mjs` to gracefully accept and skip local builds/routing for external `https://` URLs in `apps.json`.
 - Updated `scripts/smoke.mjs` to skip gateway routing and local HTML asset validation checks for external links.
 

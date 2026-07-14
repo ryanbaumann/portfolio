@@ -8,7 +8,7 @@ Evidence: Updated the `scripts/artifact-cards.mjs` generator script to output sy
 
 ## 2026-07-14: Support external/repository URLs as lab experiments in apps.json
 
-Context: Added external GitHub repos (`infographic-agent` and `unlimited-maps-demo`) to the "Lab" page, which is generated from the root `apps.json` manifest.
+Context: Added external GitHub repos (`infographic-agent` and `real-world-reasoning-agent`) to the "Lab" page, which is generated from the root `apps.json` manifest.
 Learning: The gateway routing logic, local builder script (`scripts/build-local.mjs`), and smoke tests (`scripts/smoke.mjs`) originally assumed every manifest entry in `apps.json` represented a local app that has a local `dev_build_dir` and needs to be hosted by the Node gateway. To support external URLs, we must allow `http(s)://` paths in the gateway regex validation, skip the local build/staging directories if `dev_build_dir` is missing, and bypass localized smoke tests for those external entries.
 Evidence: Updated validation regex in `gateway/lib/apps.js`, skipped local staging in `scripts/build-local.mjs`, and bypassed routing validations in `scripts/smoke.mjs`. All 17 smoke tests now pass.
 Use next time: When adding external project URLs to `apps.json`, ensure they have no `dev_build_dir` and verify validation and build scripts handle `https://` schemas gracefully.
