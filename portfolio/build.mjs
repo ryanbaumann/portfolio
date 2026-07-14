@@ -972,17 +972,9 @@ function writerDashboard(entries) {
 
 function buildHome(collections) {
   const bySlug = (collection, slug) => collections[collection].find((entry) => entry.slug === slug);
-  const operatingSteps = [
-    ['Find the failure', 'Start with a repeated developer problem', 'voice-of-developer'],
-    ['Build the fix', 'Turn the pattern into a useful tool', 'code-assist'],
-    ['Test the task', 'Compare the result against a baseline', 'agentic-evals'],
-    ['Ship the workflow', 'Put the tool where developers work', 'agent-skills'],
-    ['Measure use', 'Check whether adoption actually moved', 'agentic-growth'],
-  ].map(([label, text, slug]) => ({ label, text, entry: bySlug('work', slug) })).filter((step) => step.entry);
-  const writingEntries = collections.writing.slice(0, 3);
-  const talkEntries = collections.talks.slice(0, 3);
-  const foundationEntries = ['intelligent-product-essentials', 'mapbox-boundaries-atlas', 'mapbox-uber-deckgl']
+  const selectedWork = ['code-assist', 'agent-skills', 'agentic-growth']
     .map((slug) => bySlug('work', slug)).filter(Boolean);
+  const writingEntries = collections.writing.slice(0, 2);
   const demosSection = demos.length
     ? `
 <section>
@@ -995,30 +987,18 @@ function buildHome(collections) {
 `
     : '';
 
-  const proofPoints = Array.isArray(site.proofPoints) && site.proofPoints.length
-    ? `<dl class="proof-grid" aria-label="Proof points">
-      ${site.proofPoints.map((point) => `<div>
-        <dt>${escapeHtml(point.label)}</dt>
-        <dd>${escapeHtml(point.text)}</dd>
-      </div>`).join('\n')}
-    </dl>`
-    : '';
   const content = `
 <section class="hero">
   ${site.profileImage ? `<img class="profile-image" src="${rebase(site.profileImage)}" alt="${escapeHtml(site.profileImageAlt || site.name)}" width="460" height="460" />` : ''}
   <p class="eyebrow">${escapeHtml(site.tagline)}</p>
   <h1>${escapeHtml(site.heroHeadline || site.name)}</h1>
   <p class="lede">${escapeHtml(site.intro)}</p>
-  <p class="hero-actions"><a class="button button-primary" href="${BASE}work/">See the work</a></p>
+  <p class="hero-actions"><a class="button button-primary" href="${BASE}work/">See selected work</a></p>
 </section>
-${proofPoints}
 
-<section id="operating-system" class="operating-system">
-  ${sectionHeader('How I work', site.headline, `${BASE}work/`, 'See the work')}
-  <p class="section-note">${escapeHtml(site.categoryDefinition || '')}</p>
-  <ol class="operating-steps">
-    ${operatingSteps.map((step) => `<li><a href="${entryUrl('work', step.entry)}"><span>${escapeHtml(step.label)}</span><strong>${escapeHtml(step.text)}</strong><small>${escapeHtml(step.entry.meta.title)}</small></a></li>`).join('\n')}
-  </ol>
+<section>
+  ${sectionHeader('Selected work', 'Tools developers can use')}
+  <div class="grid home-work-grid">${selectedWork.map(workCard).join('\n')}</div>
 </section>
 
 ${demosSection}
@@ -1029,22 +1009,15 @@ ${demosSection}
   </ul>
 </section>
 
-<section>
-  ${sectionHeader('Speaking and media', 'Demo first', `${BASE}talks/`, 'All talks')}
-  <ul class="rows">
-    ${talkEntries.map((entry) => listRow('talks', entry)).join('\n')}
-  </ul>
-</section>
-
-<section>
-  ${sectionHeader('Foundation', 'Earlier platform work', `${BASE}about/`, 'Full background')}
-  <ul class="rows compact-rows">${foundationEntries.map((entry) => listRow('work', entry)).join('\n')}</ul>
-</section>
-
-<section class="personal-close">
-  <p class="eyebrow">Still in the work</p>
-  <h2>I lead the work and keep my hands on the tools.</h2>
-  <p class="lede">I started as an engineer, raced bikes professionally, and still build maps to understand the developer experience from the inside.</p>
+<section class="build-section home-close">
+  <div>
+    <p class="eyebrow">Start a conversation</p>
+    <h2>Working on a builder platform or developer tool?</h2>
+  </div>
+  <div>
+    <p>I am most useful when the problem is concrete: a repeated developer failure, a tool that needs a clearer path to working code, or a launch that needs evidence.</p>
+    <a class="button button-primary" href="${BASE}contact/">Send a note</a>
+  </div>
 </section>
 `;
 
@@ -1068,7 +1041,7 @@ function buildDemosPage() {
   <div class="grid demo-grid">
     ${demos.map(demoCard).join('\n')}
   </div>
-  <p class="section-note">Every demo is open source. <a href="${site.links.github}/Portfolio" target="_blank" rel="noopener noreferrer">read the code</a>. One Ryan Baumann portfolio container, one Cloud Run service, no secrets in the browser.</p>
+  <p class="section-note">Every demo is open source. <a href="${site.links.github}/Portfolio" target="_blank" rel="noopener noreferrer">read the code</a>. One Ryan Baumann portfolio container, one Cloud Run service, and no server secrets shipped to the browser.</p>
 </section>`;
 
   writePage(join('demos', 'index.html'), layout({
@@ -1163,6 +1136,10 @@ function contactPageContent(meta) {
     </label>
     <label>Name <input name="name" autocomplete="name" maxlength="120" required /></label>
     <label>Email <input name="email" type="email" autocomplete="email" maxlength="200" required /></label>
+    <div class="contact-honeypot" aria-hidden="true">
+      <label>Company fax number <input name="company_fax_number" tabindex="-1" autocomplete="off" /></label>
+    </div>
+    <label class="human-check"><input name="human" type="checkbox" value="1" required /> <span>I am a person, and this is not an unsolicited sales pitch.</span></label>
     <button class="button" type="submit">Send note</button>
   </form>
   <p class="section-note">The server uses your details only to deliver the note and reply. See <a href="${BASE}privacy/">Privacy</a>.</p>

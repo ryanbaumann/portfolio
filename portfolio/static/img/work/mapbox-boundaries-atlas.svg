@@ -20,7 +20,7 @@
   <circle class="dot" cx="98" cy="46" r="7"/>
   <text class="eyebrow" x="480" y="266" text-anchor="middle" font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace" font-size="19" letter-spacing="4">TWO PRODUCTS, ZERO TO ONE</text>
   <text class="title" x="480" y="330" text-anchor="middle" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="52" font-weight="700">Boundaries · Atlas</text>
-  <text class="body" x="480" y="392" text-anchor="middle" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="30">first $5M ARR</text>
+  <text class="body" x="480" y="392" text-anchor="middle" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="30">global boundaries · self-hosted maps</text>
   <line class="rule" x1="120" y1="504" x2="840" y2="504" stroke-width="2"/>
-  <text class="footer" x="480" y="544" text-anchor="middle" font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace" font-size="19">still in the Mapbox portfolio 8+ years later</text>
+  <text class="footer" x="480" y="544" text-anchor="middle" font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace" font-size="19">both remain in the Mapbox product portfolio</text>
 </svg>

@@ -18,7 +18,7 @@ Visualization platforms have deep capability and a steep path to the first usefu
 
 The talk follows the path from a working visualization back to the libraries, current context, and checks that made it reliable. It asks what deck.gl and kepler.gl need to make the first useful result easier without hiding the underlying system.
 
-Google Maps Platform sponsors [@vis.gl/react-google-maps](https://www.npmjs.com/package/@vis.gl/react-google-maps), which reached approximately 1.5 million weekly downloads when verified on July 13, 2026. That public artifact shows the reach open-source client libraries can create when they are treated as product and distribution, not side projects.
+Google Maps Platform sponsors [@vis.gl/react-google-maps](https://www.npmjs.com/package/@vis.gl/react-google-maps), which has more than 1 million weekly downloads. That public artifact shows the reach open-source client libraries can create when they are treated as product and distribution, not side projects.
 
 [Open the slides](https://docs.google.com/presentation/d/1Nc2aa6YIAdiUswzYzm4djvJAQYiuSyKupH9jEq3kgyA/edit) or [watch the talk on YouTube](https://www.youtube.com/watch?v=Cj6JixwzrFw).
 

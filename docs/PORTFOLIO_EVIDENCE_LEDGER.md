@@ -1,6 +1,6 @@
 # Portfolio Evidence Ledger
 
-Last reviewed: 2026-07-13
+Last reviewed: 2026-07-14
 
 Use this ledger before publishing a material claim or adding a product artifact.
 The approved copy is the widest claim currently supported. Team work must credit
@@ -22,7 +22,7 @@ Statuses:
 | Developer Experience organization size | `approved-internal` | Led a 20+ person organization. | [Approved strategy](PORTFOLIO_STRATEGY_EXECUTION_PLAN.md#approved-evidence-and-claim-language) | 2026-07-13 | Describe the disciplines without implying every person reports directly to Ryan. |
 | OSS unique active-user growth | `approved-internal` | From March 2025 to March 2026, our open-source client libraries grew unique active users 300%. | [Approved strategy](PORTFOLIO_STRATEGY_EXECUTION_PLAN.md#exact-approved-metric-copy) | 2026-07-13 | Keep the population, period, and team attribution. Do not assign the full increase to one integration. |
 | OSS API-engagement growth | `approved-internal` | From March 2025 to March 2026, API engagement for our open-source client libraries grew approximately 200%. | [Approved strategy](PORTFOLIO_STRATEGY_EXECUTION_PLAN.md#exact-approved-metric-copy) | 2026-07-13 | Keep separate from unique active users. Use `approximately` or `~`. |
-| `@vis.gl/react-google-maps` weekly downloads | `public-source` | `1M+ weekly downloads` on durable surfaces. Supporting copy may say `approximately 1.5 million weekly downloads, verified July 13, 2026`. | [npm downloads API](https://api.npmjs.org/downloads/point/last-week/%40vis.gl%2Freact-google-maps) | 2026-07-13 | API returned 1,512,269 downloads for 2026-07-05 through 2026-07-11. Verify again before using a newer dated value. |
+| `@vis.gl/react-google-maps` weekly downloads | `public-source` | `1M+ weekly downloads` on durable surfaces. | [npm downloads API](https://api.npmjs.org/downloads/point/last-week/%40vis.gl%2Freact-google-maps) | 2026-07-14 | API returned 1,439,897 downloads for 2026-07-07 through 2026-07-13. Verify again before using a newer dated value. |
 | Google Maps Platform reach | `public-source` | Google Maps Platform powers more than 10 million websites and apps. | [Google Maps Platform](https://mapsplatform.google.com/resources/blog/build-smarter-and-faster-new-ai-products-and-tools-from-google-maps-platform/) | 2026-07-13 | Platform scale, not a Ryan-attributed outcome. |
 | Code Assist product | `public-source` | The team shipped Code Assist, a Google-hosted remote MCP service that retrieves official Google Maps Platform documentation and samples for AI coding agents. | [Documentation](https://developers.google.com/maps/ai/code-assist), [launch post](https://mapsplatform.google.com/resources/blog/announcing-code-assist-toolkit-bring-google-maps-platform-expertise-to-your-ai-coding-assistant/) | 2026-07-13 | `I led the team` is separately `approved-internal`. |
 | Code Assist reduces hallucinations | `qualify` | Agents retrieve current official documentation instead of relying only on training-data memory. | [Code Assist documentation](https://developers.google.com/maps/ai/code-assist) | 2026-07-13 | Do not say `far fewer hallucinations` without a publishable eval delta. |
@@ -62,6 +62,15 @@ the actual public artifact over a decorative reconstruction.
 | 6 | Mapbox work | Public Jupyter, Power BI, deck.gl, or kepler.gl project imagery with the original repository or post URL. |
 | 7 | About | An approved portrait or honest public work artifact. Do not use a screenshot of the portfolio as Ryan's profile image. |
 | 8 | Demo Lab | Fresh desktop and mobile screenshots of the live applications, captured without exposing account data, tokens, or private activities. |
+
+## Public image sources in use
+
+| Asset | Public source | License / basis | Retrieved |
+|---|---|---|---|
+| `code-assist-docs.png` | [official Code Assist documentation](https://developers.google.com/maps/ai/code-assist) | CC BY 4.0 documentation capture | 2026-07-14 |
+| `mapboxgl-jupyter.jpg` | [repository screenshot](https://raw.githubusercontent.com/mapbox/mapboxgl-jupyter/master/examples/screenshots/screenshot.png) | MIT-licensed repository asset | 2026-07-14 |
+| `mapboxgl-powerbi.jpg` | [repository screenshot](https://raw.githubusercontent.com/mapbox/mapboxgl-powerbi/master/assets/mapbox-viz-screenshot-1-min.png) | MIT-licensed repository asset | 2026-07-14 |
+| `kepler-mapbox.jpg` | [repository screenshot](https://raw.githubusercontent.com/keplergl/kepler.gl/master/screenshots/screenshot.png) | MIT-licensed repository asset; visible attribution preserved | 2026-07-14 |
 
 ## Excluded private artifacts
 

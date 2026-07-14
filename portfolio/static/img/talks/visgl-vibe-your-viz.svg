@@ -22,5 +22,5 @@
   <text class="title" x="480" y="330" text-anchor="middle" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="52" font-weight="700">Vibe your Viz</text>
   <text class="body" x="480" y="392" text-anchor="middle" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="30">growing with AI-native makers</text>
   <line class="rule" x1="120" y1="504" x2="840" y2="504" stroke-width="2"/>
-  <text class="footer" x="480" y="544" text-anchor="middle" font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace" font-size="19">deck.gl · kepler.gl · the next million builders</text>
+  <text class="footer" x="480" y="544" text-anchor="middle" font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace" font-size="19">deck.gl · kepler.gl · AI-native visualization</text>
 </svg>

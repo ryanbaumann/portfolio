@@ -3,11 +3,11 @@ title: Mapbox Boundaries & Atlas
 org: Mapbox
 role: 0→1 product manager
 period: 2016 – 2017
-summary: Two products taken from zero to one, a global boundaries data product and self-hosted maps, through launch to the first $5M ARR.
+summary: Two products taken from zero to one: a global boundaries data product and self-hosted maps.
 tags: ["0→1", "product", "enterprise"]
 links: [{"label": "Boundaries", "url": "https://www.mapbox.com/boundaries"}, {"label": "Atlas", "url": "https://www.mapbox.com/atlas"}]
 image: /img/work/mapbox-boundaries-atlas.svg
-imageAlt: Panel showing Boundaries and Atlas taken from zero to the first five million dollars in ARR
+imageAlt: Panel showing Boundaries and Atlas as two zero-to-one enterprise mapping products
 order: 8
 ---
 
@@ -22,7 +22,7 @@ I drove both from zero to one as the founding product manager:
 - **Boundaries**: a global administrative boundary data product for joining customer data to geography.
 - **Atlas**: self-hosted Mapbox for on-premises and air-gapped environments, which opened the government and financial services segments.
 
-I took both to their first $5M ARR before handing them to dedicated PMs. Both are still in Mapbox's portfolio 8+ years later.
+I led both from strategy through launch before handing them to dedicated product managers. Both remain in Mapbox's product portfolio.
 
 ## What I learned
 

@@ -8,7 +8,7 @@ This portfolio collects as little data as practical. The public pages work witho
 
 ## Contact
 
-The contact form sends your selected intent, message, name, and email address to a server-managed email provider so Ryan can receive and reply to your note. The site does not publish your email address. Do not include secrets, customer data, or other sensitive information in the message.
+The contact form sends your selected intent, message, name, and email address to a server-managed email provider so Ryan can receive and reply to your note. The server may send the selected intent and message to Google's Gemini service to check for unsolicited advertising before delivery. Name and email are not included in that classifier request. The site does not publish your email address. Do not include secrets, customer data, or other sensitive information in the message.
 
 ## Optional portfolio analytics
 

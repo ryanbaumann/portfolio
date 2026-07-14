@@ -14,7 +14,7 @@ I lead Developer Experience Engineering and product work for builder platforms. 
 
 - Lead Developer Experience Engineering for Google Maps Platform.
 - Led the team's client-library and AI distribution strategy across React, Compose, AI Studio, Lovable, and Replit.
-- From March 2025 to March 2026, open-source client-library unique active users grew 300% and API engagement grew approximately 200%.
+- From March 2025 to March 2026, our open-source client-library unique active users grew 300% and API engagement grew approximately 200%.
 - Led teams behind [Code Assist](https://developers.google.com/maps/ai/code-assist), [agent skills](https://github.com/googlemaps/agent-skills), agentic evals, and the [Geo Architecture Center](https://developers.google.com/maps/architecture).
 
 ## Earlier roles
@@ -29,11 +29,11 @@ Built the solutions architecture team and led demos, proofs of value, and post-s
 
 **Senior Manager and Senior Solutions Architect, Mapbox** (2016 to 2020)
 
-Joined as the first customer-facing engineer and grew the solutions architecture team from 1 to 15. Built the Voice of Customer program, led the open-source partnership with Uber around deck.gl and kepler.gl, and took Mapbox Boundaries and Atlas from zero to their first $5M ARR.
+Joined as the first customer-facing engineer and later led the solutions architecture team. Built the Voice of Customer program, led the open-source partnership with Uber around deck.gl and kepler.gl, and took Mapbox Boundaries and Atlas from strategy through launch.
 
 **Technical Solutions Engineer, Caterpillar** (2012 to 2016)
 
-Built a cloud, IoT, mobile, and analytics solution deployed across 50+ job sites. Co-inventor on 3 US patents for video and audio analytics in fleet operations.
+Built a cloud, IoT, mobile, and analytics worksite productivity solution for fleet operations.
 
 ## Education and foundation
 

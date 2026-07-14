@@ -19,7 +19,7 @@ Developer acquisition is moving into agent sessions. We needed to meet builders 
 
 From March 2025 to March 2026, our open-source client libraries grew unique active users 300% and API engagement approximately 200%. I led the team's client-library and AI distribution strategy across React, Compose, AI Studio, Lovable, and Replit.
 
-We treated open source, agent context, product integrations, and measurement as one system. Google Maps Platform also sponsors [@vis.gl/react-google-maps](https://www.npmjs.com/package/@vis.gl/react-google-maps), which reached approximately 1.5 million weekly downloads when verified on July 13, 2026.
+We treated open source, agent context, product integrations, and measurement as one system. Google Maps Platform also sponsors [@vis.gl/react-google-maps](https://www.npmjs.com/package/@vis.gl/react-google-maps), which has more than 1 million weekly downloads.
 
 ## What I learned
 

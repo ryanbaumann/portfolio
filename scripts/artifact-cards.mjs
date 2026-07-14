@@ -39,10 +39,10 @@ const CARDS = [
   },
   {
     file: 'work/agentic-growth.svg',
-    eyebrow: 'DEFAULT DISTRIBUTION',
-    title: 'AI Studio · Replit · Lovable',
-    lines: ['present the moment a builder starts'],
-    footer: '@vis.gl/react-google-maps · 500k+ weekly npm downloads',
+    eyebrow: 'PUBLIC OSS REACH',
+    title: '1M+ weekly downloads',
+    lines: ['@vis.gl/react-google-maps'],
+    footer: 'npm downloads API · verified July 14, 2026',
   },
   {
     file: 'work/voice-of-developer.svg',
@@ -54,8 +54,8 @@ const CARDS = [
   {
     file: 'work/geo-architecture-center.svg',
     eyebrow: 'GEO ARCHITECTURE CENTER',
-    title: '40+ solution architectures',
-    lines: ['diagrams · cost models · reference implementations'],
+    title: 'Solution architectures',
+    lines: ['public diagrams · guidance · reference implementations'],
     footer: 'developers.google.com/maps/architecture',
   },
   {
@@ -69,8 +69,8 @@ const CARDS = [
     file: 'work/mapbox-boundaries-atlas.svg',
     eyebrow: 'TWO PRODUCTS, ZERO TO ONE',
     title: 'Boundaries · Atlas',
-    lines: ['first $5M ARR'],
-    footer: 'still in the Mapbox portfolio 8+ years later',
+    lines: ['global boundaries · self-hosted maps'],
+    footer: 'both remain in the Mapbox product portfolio',
   },
   {
     file: 'talks/geomob-vibing-with-maps.svg',
@@ -84,7 +84,7 @@ const CARDS = [
     eyebrow: 'VIS.GL SUMMIT · SEATTLE · OCT 2025',
     title: 'Vibe your Viz',
     lines: ['growing with AI-native makers'],
-    footer: 'deck.gl · kepler.gl · the next million builders',
+    footer: 'deck.gl · kepler.gl · AI-native visualization',
   },
   {
     file: 'talks/code-assist-video.svg',
@@ -102,7 +102,7 @@ const CARDS = [
   },
   {
     file: 'writing/this-weeks-learnings.svg',
-    eyebrow: 'WEEKLY SERIES · LINKEDIN',
+    eyebrow: 'LINKEDIN SERIES',
     title: '#ThisWeeksLearnings',
     lines: ['what shipping taught me this week'],
     footer: 'traces read · evals written · opinions revised',

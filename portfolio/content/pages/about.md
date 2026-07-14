@@ -12,7 +12,7 @@ Today I lead Developer Experience Engineering for Google Maps Platform, where my
 
 I stay close to the code by reviewing traces, writing evals, dogfooding products, and shipping the reference apps on this site. The loop is simple: find a repeated developer failure, build the smallest useful artifact, test whether it helps, and publish what can be reused.
 
-From March 2025 to March 2026, our open-source client libraries grew unique active users 300% and API engagement approximately 200%. I led the team's client-library and AI distribution strategy across React, Compose, AI Studio, Lovable, and Replit. Google Maps Platform also sponsors [@vis.gl/react-google-maps](https://www.npmjs.com/package/@vis.gl/react-google-maps), which reached approximately 1.5 million weekly downloads when verified on July 13, 2026.
+From March 2025 to March 2026, our open-source client libraries grew unique active users 300% and API engagement approximately 200%. I led the team's client-library and AI distribution strategy across React, Compose, AI Studio, Lovable, and Replit. Google Maps Platform also sponsors [@vis.gl/react-google-maps](https://www.npmjs.com/package/@vis.gl/react-google-maps), which has more than 1 million weekly downloads.
 
 ## Google, 2021 to present
 
@@ -20,7 +20,7 @@ From March 2025 to March 2026, our open-source client libraries grew unique acti
 
 We sit with developers and field teams, find an architecture or adoption blocker that repeats, build the smallest real artifact that addresses it, then publish the result through product, documentation, open source, and partners. [Work](/work/) shows those artifacts and the decisions behind them.
 
-**Manufacturing Industry Solutions Manager, Google Cloud** (2021 to 2022). I led product and engineering for Google Cloud's first manufacturing industry solution, [Intelligent Product Essentials](https://cloud.google.com/blog/products/data-analytics/introducing-intelligent-products-essentials-for-manufacturers), from zero to launch with GE Appliances in nine months.
+**Manufacturing Industry Solutions Manager, Google Cloud** (2021 to 2022). I led the product and engineering team for [Intelligent Product Essentials](https://cloud.google.com/blog/products/data-analytics/introducing-intelligent-products-essentials-for-manufacturers), from zero to launch with GE Appliances in nine months.
 
 ## Instabase, 2020 to 2021
 
@@ -28,17 +28,17 @@ We sit with developers and field teams, find an architecture or adoption blocker
 
 ## Mapbox, 2016 to 2020
 
-I joined Mapbox as its first customer-facing engineer at Series B and grew the solutions architecture team from 1 to 15 through Series D as the company passed $100M ARR.
+I joined Mapbox as its first customer-facing engineer and later led the solutions architecture team.
 
 As **Senior Manager, Solutions Architecture**, I built a Voice of Customer program across enterprise customers, partners, and developers. That signal fed products including [Movement](https://docs.mapbox.com/data/movement/guides/). I also led the [open-source partnership with Uber](https://blog.mapbox.com/launching-custom-layers-with-uber-2a235841a125) that integrated Mapbox with deck.gl and kepler.gl.
 
-Earlier, as **Senior Solutions Architect**, I was the founding product manager for [Boundaries](https://www.mapbox.com/boundaries) and [Atlas](https://www.mapbox.com/atlas), from strategy through launch to the first $5M ARR. I also wrote [mapboxgl-jupyter](https://github.com/mapbox/mapboxgl-jupyter) and [mapboxgl-powerbi](https://github.com/mapbox/mapboxgl-powerbi) to bring the platform into data science and business intelligence workflows.
+Earlier, as **Senior Solutions Architect**, I was the founding product manager for [Boundaries](https://www.mapbox.com/boundaries) and [Atlas](https://www.mapbox.com/atlas), leading both from strategy through launch. I also wrote [mapboxgl-jupyter](https://github.com/mapbox/mapboxgl-jupyter) and [mapboxgl-powerbi](https://github.com/mapbox/mapboxgl-powerbi) to bring the platform into data science and business intelligence workflows.
 
 ![A Jupyter notebook rendering a Mapbox visualization of US healthcare data with mapboxgl-jupyter](/img/work/mapboxgl-jupyter.jpg)
 
 ## Earlier
 
-- **Technical Solutions Engineer, Caterpillar** (2012 to 2016). Built a cloud, IoT, mobile, and analytics worksite productivity solution deployed across 50+ job sites. Co-inventor on 3 US patents for video and audio analytics in fleet operations.
+- **Technical Solutions Engineer, Caterpillar** (2012 to 2016). Built a cloud, IoT, mobile, and analytics worksite productivity solution for fleet operations.
 - **Mechanical Design Engineer Intern, Trek Bicycle** (2011 to 2012).
 - **Professional cyclist**, Trek-Livestrong and Bahati Foundation (2009 to 2011). Racing taught me to pace long efforts, measure the right signal, and keep looking for the next marginal gain. I still chase trails.
 

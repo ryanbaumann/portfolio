@@ -31,7 +31,7 @@ At Mapbox, I wrote [mapboxgl-jupyter](https://github.com/mapbox/mapboxgl-jupyter
 
 AI coding agents create the same distribution problem at a new interface. Developers increasingly ask an agent to read the docs, choose an API, and generate the first implementation. If the platform is absent from that session, the agent works from whatever it already knows.
 
-Google Maps Platform approached open source, agent context, and product integrations as one system. From March 2025 to March 2026, our open-source client libraries grew unique active users 300% and API engagement approximately 200%. I led the team's client-library and AI distribution strategy across React, Compose, AI Studio, Lovable, and Replit. Google Maps Platform also sponsors [@vis.gl/react-google-maps](https://www.npmjs.com/package/@vis.gl/react-google-maps), which reached approximately 1.5 million weekly downloads when verified on July 13, 2026.
+Google Maps Platform approached open source, agent context, and product integrations as one system. From March 2025 to March 2026, our open-source client libraries grew unique active users 300% and API engagement approximately 200%. I led the team's client-library and AI distribution strategy across React, Compose, AI Studio, Lovable, and Replit. Google Maps Platform also sponsors [@vis.gl/react-google-maps](https://www.npmjs.com/package/@vis.gl/react-google-maps), which has more than 1 million weekly downloads.
 
 Those metrics describe the system, not a claim that one integration caused all of the growth. That distinction matters. Distribution creates opportunity. Measurement tells you whether developers reached the platform and used it.
 

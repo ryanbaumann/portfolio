@@ -7,7 +7,7 @@ summary: Portable skill modules that teach AI agents how to build with the platf
 tags: ["agent skills", "applied ai", "distribution"]
 links: [{"label": "GitHub", "url": "https://github.com/googlemaps/agent-skills"}, {"label": "Docs", "url": "https://developers.google.com/maps/ai/agent-skills"}, {"label": "Video", "url": "https://youtu.be/NEk37sPlgaY"}]
 image: /img/work/agent-skills.svg
-imageAlt: Terminal panel showing the one-line install command npx skills add googlemaps/agent-skills
+imageAlt: Terminal panel showing the public one-line install command npx skills add googlemaps/agent-skills
 featured: true
 order: 3
 ---

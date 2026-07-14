@@ -17,4 +17,4 @@ Choose the intent that fits best, then share enough context to make the first re
 
 I am not available for outside consulting while employed at Google.
 
-The form sends your note through a server-managed endpoint. Your email address is used to reply and is not exposed on this site.
+The form sends your note through a server-managed endpoint. Your email address is used to reply, is not exposed on this site, and is not sent to the advertising classifier.

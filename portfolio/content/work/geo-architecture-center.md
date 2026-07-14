@@ -7,7 +7,7 @@ summary: A public catalog that turns repeated enterprise questions into reusable
 tags: ["technical writing", "solution architecture"]
 links: [{"label": "Architecture Center", "url": "https://developers.google.com/maps/architecture"}]
 image: /img/work/geo-architecture-center.svg
-imageAlt: Panel showing the Geo Architecture Center stat of 40+ published solution architectures
+imageAlt: Panel representing the Geo Architecture Center's public catalog of solution architectures
 order: 6
 ---
 
