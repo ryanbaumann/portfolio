@@ -13,6 +13,7 @@ description: How Ryan designs. Use before changing style.css, page layouts in bu
 4. **Both color schemes, always.** Light and dark are first-class via `prefers-color-scheme` and the token block at the top of `style.css`. Never hardcode a color in a component: add or use a token.
 5. **Show, don't tell.** Every page carries at least one real image. Real screenshots first (previews, product shots). When no honest screenshot exists, generate an SVG artifact card with `scripts/artifact-cards.mjs`; cards state only facts already in the entry (real commands, real published stats). Never mock a product UI or fabricate a screenshot.
 6. **No aspect ratio distortion or Cumulative Layout Shift (CLS).** Every responsive image must have `height: auto;` in CSS and exact `width` and `height` attributes in the HTML matching the physical image dimensions. For dynamic detail pages, query image dimensions at build time to populate these attributes.
+7. **Strict 16:9 Landscape Rule.** All generated infographics, inline images, hero graphics, and social previews must be exactly 16:9 widescreen landscape (e.g., 1200x675). Never use vertical, square, or portrait aspect ratios. Social thumbnails must be cropped exactly to 1200x627.
 
 ## Tokens (style.css `:root`)
 
