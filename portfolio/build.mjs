@@ -1163,6 +1163,10 @@ function contactPageContent(meta) {
     </label>
     <label>Name <input name="name" autocomplete="name" maxlength="120" required /></label>
     <label>Email <input name="email" type="email" autocomplete="email" maxlength="200" required /></label>
+    <div class="contact-honeypot" aria-hidden="true">
+      <label>Company fax number <input name="company_fax_number" tabindex="-1" autocomplete="off" /></label>
+    </div>
+    <label class="human-check"><input name="human" type="checkbox" value="1" required /> <span>I am a person, and this is not an unsolicited sales pitch.</span></label>
     <button class="button" type="submit">Send note</button>
   </form>
   <p class="section-note">The server uses your details only to deliver the note and reply. See <a href="${BASE}privacy/">Privacy</a>.</p>

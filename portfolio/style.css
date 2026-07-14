@@ -621,6 +621,22 @@ html[data-theme="dark"] {
   padding: 0.7rem 0.8rem;
 }
 .contact-form textarea { resize: vertical; }
+.contact-honeypot {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.contact-form .human-check {
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  max-width: var(--prose);
+  color: var(--ink);
+  font-weight: 500;
+}
+.contact-form .human-check input { width: 1.15rem; height: 1.15rem; margin-top: 0.25rem; }
 .intent-options {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));

@@ -1,5 +1,12 @@
 # Learnings
 
+## 2026-07-14: Contact filtering needs a delivery-first third state
+
+Context: The contact route silently dropped any message matching a broad keyword or dotted-Gmail heuristic, and treated any Gemini response containing `SPAM` as final.
+Learning: A personal contact form should distinguish obvious advertising from uncertain mail. Deterministic rejection must be narrow, model output must be structured and category-gated, and every ambiguous, malformed, or failed classifier result must still reach the owner for review.
+Evidence: The old route could discard legitimate messages, sent visitor identity fields to Gemini, and redirected suppressed spam with `delivered=1`. The new tri-state module excludes identity fields, requires high-confidence advertising for model rejection, tags review mail, and reserves lead analytics for Resend-confirmed delivery.
+Use next time: Freeze legitimate and advertising cases before tuning a classifier. Make false-positive prevention a blocking gate, keep PII outside model calls, and never let anti-spam decisions masquerade as provider-confirmed business events.
+
 ## 2026-07-13: Demo source paths belong in the manifest
 
 Context: Demo packages moved from repository-root folders into `demos/`, while their public URLs and staged container paths needed to remain unchanged.

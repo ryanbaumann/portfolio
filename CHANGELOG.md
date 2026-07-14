@@ -1,7 +1,9 @@
 # Changelog
 
 ## 2026-07-14: Contact Form Spam Filter & VisGL Talk Video
-- Implemented an intelligent, zero-dependency spam filter for the contact form in the gateway. Rejects SEO/sales pitches using regex and a Gemini LLM classification fallback to prevent spam from exhausting Resend API quota.
+- Replaced the contact form's binary spam check with delivery-first triage: explicit advertising is suppressed, ambiguous messages are delivered with a review label, and classifier failures fail open.
+- Added a human confirmation and hidden bot trap, removed name and email from Gemini requests, stopped logging upstream response bodies, and reserved lead analytics for provider-confirmed email.
+- Added a frozen synthetic spam/ham dataset with a zero-tolerance gate for rejecting critical legitimate messages.
 - Added YouTube video link and embedded URL preview image to the VisGL talk.
 ## 2026-07-13: Analytics, links, and CI/CD resilience
 

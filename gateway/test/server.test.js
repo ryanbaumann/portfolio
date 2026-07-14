@@ -177,11 +177,13 @@ test('contact delivery validates intent and marks only provider-confirmed succes
   const previousEnv = {
     RESEND_API_KEY: process.env.RESEND_API_KEY,
     CONTACT_TO_EMAIL: process.env.CONTACT_TO_EMAIL,
+    GEMINI_API_KEY: process.env.GEMINI_API_KEY,
   };
   const originalFetch = globalThis.fetch;
   const delivered = [];
   process.env.RESEND_API_KEY = 'test-resend-key';
   process.env.CONTACT_TO_EMAIL = 'ryan@example.com';
+  delete process.env.GEMINI_API_KEY;
   globalThis.fetch = async (_url, options) => {
     delivered.push(JSON.parse(options.body));
     return { ok: true, status: 200 };
@@ -192,6 +194,7 @@ test('contact delivery validates intent and marks only provider-confirmed succes
     name: 'Ada Lovelace',
     email: 'ada@example.com',
     message: 'I am building a developer platform and would like to compare notes.',
+    human: '1',
   };
 
   try {
@@ -231,7 +234,7 @@ test('contact delivery validates intent and marks only provider-confirmed succes
       message: 'Hello, I want to sell you SEO services to get you on the 1st page of google!',
     }, { 'x-forwarded-for': '1.1.1.1, proxy' });
     assert.equal(spamRegexMatch.res.statusCode, 303);
-    assert.equal(spamRegexMatch.res.headers.location, '/contact-success/?delivered=1');
+    assert.equal(spamRegexMatch.res.headers.location, '/contact-success/');
     assert.equal(delivered.length, 1); // Not delivered, count remains 1
 
     const spamSeoConsultingMatch = await postForm(port, '/api/contact', {
@@ -241,7 +244,7 @@ test('contact delivery validates intent and marks only provider-confirmed succes
       message: 'We recently ran a backend analysis of your website, and the results show that several important SEO (Search Engine Optimization) steps are incomplete.',
     }, { 'x-forwarded-for': '1.1.1.2, proxy' });
     assert.equal(spamSeoConsultingMatch.res.statusCode, 303);
-    assert.equal(spamSeoConsultingMatch.res.headers.location, '/contact-success/?delivered=1');
+    assert.equal(spamSeoConsultingMatch.res.headers.location, '/contact-success/');
     assert.equal(delivered.length, 1); // Not delivered, count remains 1
 
     const spamDotTrickMatch = await postForm(port, '/api/contact', {
@@ -252,7 +255,24 @@ test('contact delivery validates intent and marks only provider-confirmed succes
     }, { 'x-forwarded-for': '2.2.2.2, proxy' });
     assert.equal(spamDotTrickMatch.res.statusCode, 303);
     assert.equal(spamDotTrickMatch.res.headers.location, '/contact-success/?delivered=1');
-    assert.equal(delivered.length, 1); // Not delivered, count remains 1
+    assert.equal(delivered.length, 2); // Dotted Gmail addresses are not evidence of spam.
+
+    const missingHumanCheck = await postForm(port, '/api/contact', {
+      ...valid,
+      intent: 'Other',
+      human: '',
+    }, { 'x-forwarded-for': '2.2.2.3, proxy' });
+    assert.equal(missingHumanCheck.res.statusCode, 400);
+    assert.equal(delivered.length, 2);
+
+    const honeypotMatch = await postForm(port, '/api/contact', {
+      ...valid,
+      intent: 'Other',
+      company_fax_number: '555-0100',
+    }, { 'x-forwarded-for': '2.2.2.4, proxy' });
+    assert.equal(honeypotMatch.res.statusCode, 303);
+    assert.equal(honeypotMatch.res.headers.location, '/contact-success/');
+    assert.equal(delivered.length, 2);
 
     globalThis.fetch = async () => ({ ok: false, status: 500 });
     const rejected = await postForm(port, '/api/contact', {

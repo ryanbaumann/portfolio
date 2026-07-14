@@ -21,6 +21,7 @@ import {
 import { handleStravaApi } from './lib/strava.js';
 import { handleIsochronesApi } from './lib/isochrones.js';
 import { publishWritingUpdate } from './lib/writer.js';
+import { classifyContactSubmission } from './lib/contactSpam.js';
 
 const PORT = Number(process.env.PORT || 8080);
 const JSON_BODY_LIMIT_BYTES = 16 * 1024;
@@ -151,6 +152,8 @@ async function handleContactRequest(request, response) {
   const email = String(params.get('email') || '').trim().slice(0, 200);
   const message = String(params.get('message') || '').trim().slice(0, 5000);
   const intent = String(params.get('intent') || '').trim();
+  const humanConfirmed = params.get('human') === '1';
+  const honeypot = String(params.get('company_fax_number') || '').trim();
 
   if (!name || !email || !message || !email.includes('@') || message.length < 20) {
     sendHtml(response, 400, contactResponsePage('Message not sent', 'Please include your name, a valid email, and a message with at least 20 characters.', 400));
@@ -162,50 +165,23 @@ async function handleContactRequest(request, response) {
     return;
   }
 
-  // Basic spam filter: block common pitch keywords and excessive Gmail dot tricks
-  const spamRegex = /\b(seo|1st page|first page|targeted visitors|branding refresh|graphic design|website online|increase traffic|search results|backend analysis|online visibility|generate more business)\b/i;
-  const localPart = email.split('@')[0] || '';
-  let isSpam = spamRegex.test(message) || (email.endsWith('@gmail.com') && (localPart.match(/\./g) || []).length >= 4);
-
-  // Advanced spam filter: use Gemini if configured and simple heuristics didn't trigger
-  if (!isSpam) {
-    const { apiKey: geminiApiKey } = resolveProvider('gemini', process.env);
-    if (geminiApiKey) {
-      try {
-        const aiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent?key=${geminiApiKey}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [{
-              parts: [{
-                text: `Classify the following contact form submission as "SPAM" or "HAM". It is spam if it is a sales pitch (e.g. SEO, web design, lead gen), unsolicited marketing, obvious gibberish, or literal test spam (e.g. "spam spam"). Reply with only one word: SPAM or HAM.\n\nName: ${name}\nEmail: ${email}\n\n${message}`
-              }]
-            }],
-            generationConfig: { maxOutputTokens: 5, temperature: 0.1 }
-          }),
-          signal: AbortSignal.timeout(5000),
-        });
-        if (aiResponse.ok) {
-          const aiData = await aiResponse.json();
-          const reply = aiData.candidates?.[0]?.content?.parts?.[0]?.text?.trim().toUpperCase() || '';
-          if (reply.includes('SPAM')) isSpam = true;
-        } else {
-          const errorText = await aiResponse.text();
-          console.error(`Gemini API failed: ${aiResponse.status} ${aiResponse.statusText}`, errorText);
-        }
-      } catch (err) {
-        // If Gemini fails or times out, fail open (let the message through)
-        console.error('Gemini spam check failed:', err);
-      }
-    }
+  if (!humanConfirmed) {
+    sendHtml(response, 400, contactResponsePage('Message not sent', 'Please confirm that you are a person before sending your note.', 400));
+    return;
   }
-  
-  if (isSpam) {
-    // Silently drop the spam: return the same success redirect that a real email gets
+
+  const { apiKey: geminiApiKey } = resolveProvider('gemini', process.env);
+  const classification = honeypot
+    ? { decision: 'reject', category: 'advertising', confidence: 1, source: 'honeypot' }
+    : await classifyContactSubmission({ intent, message, geminiApiKey });
+
+  if (classification.decision === 'reject') {
+    // Give automated senders a neutral success response without recording a
+    // delivered lead. Only provider-confirmed mail receives delivered=1.
     applySecurityHeaders(response);
-    response.writeHead(303, { 
-      Location: '/contact-success/?delivered=1',
-      'Cache-Control': 'no-store'
+    response.writeHead(303, {
+      Location: '/contact-success/',
+      'Cache-Control': 'no-store',
     });
     response.end();
     return;
@@ -230,7 +206,7 @@ async function handleContactRequest(request, response) {
         from: fromEmail,
         to: [toEmail],
         reply_to: email,
-        subject: `[${intent}] Portfolio contact from ${name}`,
+        subject: `${classification.decision === 'review' ? '[Possible spam] ' : ''}[${intent}] Portfolio contact from ${name}`,
         text: `Intent: ${intent}\nName: ${name}\nEmail: ${email}\n\n${message}`,
       }),
       signal: AbortSignal.timeout(10_000),
