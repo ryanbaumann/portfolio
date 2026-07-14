@@ -234,8 +234,9 @@ test('contact delivery validates intent and marks only provider-confirmed succes
       message: 'Hello, I want to sell you SEO services to get you on the 1st page of google!',
     }, { 'x-forwarded-for': '1.1.1.1, proxy' });
     assert.equal(spamRegexMatch.res.statusCode, 303);
-    assert.equal(spamRegexMatch.res.headers.location, '/contact-success/');
-    assert.equal(delivered.length, 1); // Not delivered, count remains 1
+    assert.equal(spamRegexMatch.res.headers.location, '/contact-success/?delivered=1');
+    assert.equal(delivered.length, 2);
+    assert.match(delivered[1].subject, /^\[Likely advertising\]/);
 
     const spamSeoConsultingMatch = await postForm(port, '/api/contact', {
       ...valid,
@@ -244,8 +245,9 @@ test('contact delivery validates intent and marks only provider-confirmed succes
       message: 'We recently ran a backend analysis of your website, and the results show that several important SEO (Search Engine Optimization) steps are incomplete.',
     }, { 'x-forwarded-for': '1.1.1.2, proxy' });
     assert.equal(spamSeoConsultingMatch.res.statusCode, 303);
-    assert.equal(spamSeoConsultingMatch.res.headers.location, '/contact-success/');
-    assert.equal(delivered.length, 1); // Not delivered, count remains 1
+    assert.equal(spamSeoConsultingMatch.res.headers.location, '/contact-success/?delivered=1');
+    assert.equal(delivered.length, 3);
+    assert.match(delivered[2].subject, /^\[Likely advertising\]/);
 
     const spamDotTrickMatch = await postForm(port, '/api/contact', {
       ...valid,
@@ -255,7 +257,7 @@ test('contact delivery validates intent and marks only provider-confirmed succes
     }, { 'x-forwarded-for': '2.2.2.2, proxy' });
     assert.equal(spamDotTrickMatch.res.statusCode, 303);
     assert.equal(spamDotTrickMatch.res.headers.location, '/contact-success/?delivered=1');
-    assert.equal(delivered.length, 2); // Dotted Gmail addresses are not evidence of spam.
+    assert.equal(delivered.length, 4); // Dotted Gmail addresses are not evidence of spam.
 
     const missingHumanCheck = await postForm(port, '/api/contact', {
       ...valid,
@@ -263,7 +265,7 @@ test('contact delivery validates intent and marks only provider-confirmed succes
       human: '',
     }, { 'x-forwarded-for': '2.2.2.3, proxy' });
     assert.equal(missingHumanCheck.res.statusCode, 400);
-    assert.equal(delivered.length, 2);
+    assert.equal(delivered.length, 4);
 
     const honeypotMatch = await postForm(port, '/api/contact', {
       ...valid,
@@ -272,7 +274,7 @@ test('contact delivery validates intent and marks only provider-confirmed succes
     }, { 'x-forwarded-for': '2.2.2.4, proxy' });
     assert.equal(honeypotMatch.res.statusCode, 303);
     assert.equal(honeypotMatch.res.headers.location, '/contact-success/');
-    assert.equal(delivered.length, 2);
+    assert.equal(delivered.length, 4);
 
     globalThis.fetch = async () => ({ ok: false, status: 500 });
     const rejected = await postForm(port, '/api/contact', {

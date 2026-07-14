@@ -6,8 +6,8 @@ visitor-facing writing assistant.
 
 The classifier receives only `intent` and `message`. It must never receive a
 name, email address, IP address, or verification token. `deliver` includes both
-normal delivery and delivery tagged for review. Only explicit unsolicited
-advertising may resolve to `reject`.
+normal delivery and delivery tagged for review. Production classifier output
+does not silently reject mail; only the bot-only honeypot suppresses delivery.
 
 Run the deterministic privacy and safety gate with:
 
@@ -18,4 +18,3 @@ node evals/contact-spam/validate.mjs
 Remote model inference is intentionally not part of this validator. A future
 candidate run should persist model results, compare them with these expected
 labels, and require human approval before changing production thresholds.
-

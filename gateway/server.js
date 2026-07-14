@@ -206,7 +206,7 @@ async function handleContactRequest(request, response) {
         from: fromEmail,
         to: [toEmail],
         reply_to: email,
-        subject: `${classification.decision === 'review' ? '[Possible spam] ' : ''}[${intent}] Portfolio contact from ${name}`,
+        subject: `${classification.decision === 'review' ? '[Likely advertising] ' : ''}[${intent}] Portfolio contact from ${name}`,
         text: `Intent: ${intent}\nName: ${name}\nEmail: ${email}\n\n${message}`,
       }),
       signal: AbortSignal.timeout(10_000),

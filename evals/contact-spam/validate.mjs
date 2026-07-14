@@ -9,7 +9,7 @@ assert.ok(Array.isArray(dataset.cases) && dataset.cases.length >= 20);
 
 const ids = new Set();
 let criticalDeliveries = 0;
-let advertisingRejects = 0;
+let advertisingFlags = 0;
 for (const entry of dataset.cases) {
   assert.match(entry.id, /^[a-z0-9-]+$/);
   assert.ok(!ids.has(entry.id), `duplicate id: ${entry.id}`);
@@ -27,11 +27,10 @@ for (const entry of dataset.cases) {
     assert.notEqual(ruleDecision, 'reject', `${entry.id}: critical legitimate message was rejected`);
   }
   if (entry.expected === 'reject') {
-    advertisingRejects += 1;
-    assert.equal(ruleDecision, 'reject', `${entry.id}: explicit advertising escaped deterministic rules`);
+    advertisingFlags += 1;
+    assert.equal(ruleDecision, 'review', `${entry.id}: explicit advertising escaped deterministic triage`);
   }
 }
 
 console.log(`Validated ${dataset.cases.length} contact-spam cases.`);
-console.log(`Critical legitimate deliveries: ${criticalDeliveries}; explicit advertising rejects: ${advertisingRejects}.`);
-
+console.log(`Critical legitimate deliveries: ${criticalDeliveries}; explicit advertising flags: ${advertisingFlags}.`);

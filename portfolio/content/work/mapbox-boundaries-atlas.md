@@ -7,7 +7,7 @@ summary: Two products taken from zero to one: a global boundaries data product a
 tags: ["0→1", "product", "enterprise"]
 links: [{"label": "Boundaries", "url": "https://www.mapbox.com/boundaries"}, {"label": "Atlas", "url": "https://www.mapbox.com/atlas"}]
 image: /img/work/mapbox-boundaries-atlas.svg
-imageAlt: Panel showing Boundaries and Atlas taken from zero to the first five million dollars in ARR
+imageAlt: Panel showing Boundaries and Atlas as two zero-to-one enterprise mapping products
 order: 8
 ---
 

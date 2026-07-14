@@ -15,7 +15,7 @@ const VALID_CATEGORIES = new Set(['legitimate', 'advertising', 'gibberish', 'oth
 export function deterministicContactDecision(message) {
   const matched = ADVERTISING_PATTERNS.find((pattern) => pattern.test(message));
   if (!matched) return { decision: 'allow', category: 'other', confidence: 0, source: 'rules' };
-  return { decision: 'reject', category: 'advertising', confidence: 1, source: 'rules' };
+  return { decision: 'review', category: 'advertising', confidence: 1, source: 'rules' };
 }
 
 export function parseContactClassifierOutput(raw) {
@@ -34,16 +34,15 @@ export function parseContactClassifierOutput(raw) {
 }
 
 function safeModelDecision(result) {
-  if (result.decision === 'reject' && result.category === 'advertising' && result.confidence >= 0.98) {
-    return result;
-  }
+  // Classifier confidence is useful for inbox triage, but is not evidence
+  // enough to silently discard a potentially legitimate personal message.
+  if (result.decision === 'reject') return { ...result, decision: 'review' };
   if (result.decision === 'allow' && result.confidence >= 0.8) return result;
   return { ...result, decision: 'review' };
 }
 
 export async function classifyContactSubmission({ intent, message, geminiApiKey, fetchImpl = fetch }) {
   const deterministic = deterministicContactDecision(message);
-  if (deterministic.decision === 'reject') return deterministic;
   if (!geminiApiKey) return deterministic;
 
   try {

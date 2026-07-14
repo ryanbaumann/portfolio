@@ -997,7 +997,7 @@ function buildHome(collections) {
 </section>
 
 <section>
-  ${sectionHeader('Selected work', 'Tools developers can use', `${BASE}work/`, 'All work')}
+  ${sectionHeader('Selected work', 'Tools developers can use')}
   <div class="grid home-work-grid">${selectedWork.map(workCard).join('\n')}</div>
 </section>
 

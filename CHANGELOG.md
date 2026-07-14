@@ -19,7 +19,7 @@
 - Added team attribution where outcomes were collective, replaced architecture absolutes with observable wording, and made the volatile React-library metric a durable 1M+ claim.
 
 ## 2026-07-14: Contact Form Spam Filter & VisGL Talk Video
-- Replaced the contact form's binary spam check with delivery-first triage: explicit advertising is suppressed, ambiguous messages are delivered with a review label, and classifier failures fail open.
+- Replaced the contact form's binary spam check with delivery-first triage: bot-trap submissions are suppressed, suspected advertising is delivered with an inbox-filterable label, and classifier failures fail open.
 - Added a human confirmation and hidden bot trap, removed name and email from Gemini requests, stopped logging upstream response bodies, and reserved lead analytics for provider-confirmed email.
 - Added a frozen synthetic spam/ham dataset with a zero-tolerance gate for rejecting critical legitimate messages.
 - Added YouTube video link and embedded URL preview image to the VisGL talk.
