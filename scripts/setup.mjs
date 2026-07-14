@@ -43,6 +43,9 @@ async function main() {
   console.log('\n5. Analytics (optional; public configuration)');
   const ANALYTICS_MEASUREMENT_ID = await ask('   GA4 Measurement ID (G-...)');
 
+  console.log('\n6. AI (optional; for spam classification)');
+  const GEMINI_API_KEY = await ask('   Gemini API Key');
+
   rl.close();
 
   const envContent = formatEnv({
@@ -57,6 +60,7 @@ async function main() {
     PORTFOLIO_WRITER_PASSWORD,
     GITHUB_CONTENT_TOKEN,
     ANALYTICS_MEASUREMENT_ID,
+    GEMINI_API_KEY,
   });
 
   writeFileSync(ENV_PATH, envContent + '\n');
@@ -87,6 +91,9 @@ GITHUB_CONTENT_TOKEN=${values.GITHUB_CONTENT_TOKEN || ''}
 
 # Analytics (public Measurement ID)
 ANALYTICS_MEASUREMENT_ID=${values.ANALYTICS_MEASUREMENT_ID || ''}
+
+# AI
+GEMINI_API_KEY=${values.GEMINI_API_KEY || ''}
 `.trim();
 }
 

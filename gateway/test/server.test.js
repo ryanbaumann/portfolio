@@ -225,11 +225,30 @@ test('contact delivery validates intent and marks only provider-confirmed succes
     assert.equal(delivered[0].subject, '[Consulting] Portfolio contact from Ada Lovelace');
     assert.match(delivered[0].text, /^Intent: Consulting\nName: Ada Lovelace\nEmail: ada@example\.com\n\n/);
 
+    const spamRegexMatch = await postForm(port, '/api/contact', {
+      ...valid,
+      intent: 'Other',
+      message: 'Hello, I want to sell you SEO services to get you on the 1st page of google!',
+    }, { 'x-forwarded-for': '1.1.1.1, proxy' });
+    assert.equal(spamRegexMatch.res.statusCode, 303);
+    assert.equal(spamRegexMatch.res.headers.location, '/contact-success/?delivered=1');
+    assert.equal(delivered.length, 1); // Not delivered, count remains 1
+
+    const spamDotTrickMatch = await postForm(port, '/api/contact', {
+      ...valid,
+      intent: 'Other',
+      email: 'a.b.c.d.e@gmail.com',
+      message: 'This is a normal message, but the email has too many dots for a legit sender.',
+    }, { 'x-forwarded-for': '2.2.2.2, proxy' });
+    assert.equal(spamDotTrickMatch.res.statusCode, 303);
+    assert.equal(spamDotTrickMatch.res.headers.location, '/contact-success/?delivered=1');
+    assert.equal(delivered.length, 1); // Not delivered, count remains 1
+
     globalThis.fetch = async () => ({ ok: false, status: 500 });
     const rejected = await postForm(port, '/api/contact', {
       ...valid,
       intent: 'Speaking opportunity',
-    });
+    }, { 'x-forwarded-for': '3.3.3.3, proxy' });
     assert.equal(rejected.res.statusCode, 502);
     assert.match(rejected.body, /data-contact-delivery="failure"/);
     assert.doesNotMatch(rejected.body, /data-contact-delivery="success"/);

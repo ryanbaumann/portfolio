@@ -162,6 +162,52 @@ async function handleContactRequest(request, response) {
     return;
   }
 
+  // Basic spam filter: block common pitch keywords and excessive Gmail dot tricks
+  const spamRegex = /\b(seo|1st page|first page|targeted visitors|branding refresh|graphic design|website online|increase traffic|search results)\b/i;
+  const localPart = email.split('@')[0] || '';
+  let isSpam = spamRegex.test(message) || (email.endsWith('@gmail.com') && (localPart.match(/\./g) || []).length >= 4);
+
+  // Advanced spam filter: use Gemini if configured and simple heuristics didn't trigger
+  if (!isSpam) {
+    const { apiKey: geminiApiKey } = resolveProvider('gemini', process.env);
+    if (geminiApiKey) {
+      try {
+        const aiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent?key=${geminiApiKey}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{
+              parts: [{
+                text: `Classify the following contact form submission as "SPAM" or "HAM". It is spam if it is a sales pitch (e.g. SEO, web design, lead gen) or unsolicited marketing. Reply with only one word: SPAM or HAM.\n\nName: ${name}\nEmail: ${email}\n\n${message}`
+              }]
+            }],
+            generationConfig: { maxOutputTokens: 5, temperature: 0.1 }
+          }),
+          signal: AbortSignal.timeout(5000),
+        });
+        if (aiResponse.ok) {
+          const aiData = await aiResponse.json();
+          const reply = aiData.candidates?.[0]?.content?.parts?.[0]?.text?.trim().toUpperCase() || '';
+          if (reply.includes('SPAM')) isSpam = true;
+        }
+      } catch (err) {
+        // If Gemini fails or times out, fail open (let the message through)
+        console.error('Gemini spam check failed:', err);
+      }
+    }
+  }
+  
+  if (isSpam) {
+    // Silently drop the spam: return the same success redirect that a real email gets
+    applySecurityHeaders(response);
+    response.writeHead(303, { 
+      Location: '/contact-success/?delivered=1',
+      'Cache-Control': 'no-store'
+    });
+    response.end();
+    return;
+  }
+
   const { apiKey: resendApiKey, toEmail, fromEmail: configuredFromEmail } = resolveProvider('resend', process.env);
   const fromEmail = configuredFromEmail || 'Portfolio Contact <onboarding@resend.dev>';
   if (!resendApiKey || !toEmail) {

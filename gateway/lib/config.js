@@ -14,6 +14,9 @@ export const PROVIDER_REGISTRY = Object.freeze({
     toEmail: 'CONTACT_TO_EMAIL',
     fromEmail: 'CONTACT_FROM_EMAIL',
   }),
+  gemini: Object.freeze({
+    apiKey: 'GEMINI_API_KEY',
+  }),
 });
 
 export function isKnownProvider(name) {

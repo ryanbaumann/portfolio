@@ -6,7 +6,7 @@ name: Deploy to Cloud Run
 # build now ship in one image, built with Cloud Build and deployed to one
 # Cloud Run service. There is no GCS step anymore.
 #
-# Runtime secrets (STRAVA_CLIENT_SECRET, GMP_SERVER_API_KEY, RESEND_API_KEY,
+# Runtime secrets (STRAVA_CLIENT_SECRET, GMP_SERVER_API_KEY, RESEND_API_KEY, GEMINI_API_KEY,
 # CONTACT_TO_EMAIL, PORTFOLIO_WRITER_PASSWORD, GITHUB_CONTENT_TOKEN) and public
 # config (STRAVA_CLIENT_ID) are set once on the Cloud Run
 # service, not passed through this workflow on every deploy — see the
@@ -79,6 +79,7 @@ jobs:
             echo "- STRAVA_CLIENT_SECRET"
             echo "- GMP_SERVER_API_KEY"
             echo "- RESEND_API_KEY (optional)"
+            echo "- GEMINI_API_KEY (optional)"
             echo "- CONTACT_TO_EMAIL (optional)"
             echo "- PORTFOLIO_WRITER_PASSWORD (required for /writer/)"
             echo "- GITHUB_CONTENT_TOKEN (required for writer publishing)"
@@ -125,6 +126,7 @@ jobs:
           #     --update-secrets=STRAVA_CLIENT_SECRET=strava-client-secret:latest \
           #     --update-secrets=GMP_SERVER_API_KEY=gmp-server-api-key:latest \
           #     --update-secrets=RESEND_API_KEY=resend-api-key:latest \
+          #     --update-secrets=GEMINI_API_KEY=gemini-api-key:latest \
           #     --update-secrets=CONTACT_TO_EMAIL=contact-to-email:latest \
           #     --update-secrets=PORTFOLIO_WRITER_PASSWORD=portfolio-writer-password:latest \
           #     --update-secrets=GITHUB_CONTENT_TOKEN=github-content-token:latest \
