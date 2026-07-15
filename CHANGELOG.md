@@ -7,7 +7,7 @@
 - Replaced the oversized text-heavy hero with a 16:9 growth-loop diagram, added a separate 1200×627 social card, and embedded a purpose-built agent-evaluation loop in the article.
 - Added reusable front-matter aliases for future detail-page renames and documented the workflow in the portfolio content skill.
 - Hardened aliases against slashless duplicates, canonical-page collisions, private-route disclosure, stale canonicals, external targets, and bodyless entries.
-- Installed Infographic Agent 3.2.0 and documented the required three-asset visual standard for every future hosted essay.
+- Updated the vendored Infographic Agent skill to the merged 3.2.1 source, including Python 3.9 / `google-genai 1.47.0` compatibility and matching lock metadata, and documented the required three-asset visual standard for every future hosted essay.
 - Archived the exact final image prompts and settings, including Gemini 3.1 Flash Image at 1K with high thinking, so all three visuals can be reproduced.
 - Added a mandatory portfolio review workflow for every publishable content change: deterministic copy, claim, link, URL, image, metadata, and browser checks plus a bounded independent maker/checker loop.
 

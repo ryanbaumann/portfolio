@@ -51,7 +51,7 @@ function findPython() {
       if (match) {
         const major = parseInt(match[1], 10);
         const minor = parseInt(match[2], 10);
-        if (major >= 3 && minor >= 8) return candidate;
+        if (major >= 3 && minor >= 9) return candidate;
       }
     }
   }
@@ -120,7 +120,7 @@ Examples:
 
 if (!python) {
   err(
-    "Python 3.8+ is required but was not found on your PATH.\n\n" +
+    "Python 3.9+ is required but was not found on your PATH.\n\n" +
     "  Install Python from https://www.python.org/downloads/ and make sure\n" +
     "  it is on your PATH, then re-run:\n\n" +
     "    npx infographic-agent ..."
@@ -132,7 +132,7 @@ if (!python) {
 
 if (doInstall) {
   print("Installing Python dependencies (google-genai, pillow)...");
-  const result = run(python, ["-m", "pip", "install", "--upgrade", "google-genai", "pillow"]);
+  const result = run(python, ["-m", "pip", "install", "--upgrade", "google-genai>=1.47.0", "pillow"]);
   if (result.status !== 0) process.exit(result.status);
 
   print(`
