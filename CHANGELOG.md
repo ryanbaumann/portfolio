@@ -6,6 +6,12 @@
 - Privatized older writing entries by setting `draft: true` and `noindex: true`.
 - Generated and integrated a portable infographic thumbnail for the new essay.
 
+## 2026-07-14: Support external lab experiments
+
+- Added `ryanbaumann/infographic-agent` and `real-world-reasoning-agent` (linking to the `ryanbaumann/unlimited-maps-demo` repo) to `apps.json` as external GitHub link entries (no local build required).
+- Updated `gateway/lib/apps.js` and `scripts/build-local.mjs` to gracefully accept and skip local builds/routing for external `https://` URLs in `apps.json`.
+- Updated `scripts/smoke.mjs` to skip gateway routing and local HTML asset validation checks for external links.
+
 ## 2026-07-14: Premium artifact cards and demo source navigation
 
 - Redesigned and regenerated all SVG artifact cards (thumbnails) under `portfolio/static/img/` using flush-left typography, a subtle schematic background grid, and native CSS custom properties for `prefers-color-scheme` support.

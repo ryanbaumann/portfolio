@@ -233,7 +233,7 @@ async function main() {
     });
 
     await check('/<app> (no trailing slash) redirects to /<app>/', async () => {
-      const app = apps.find((a) => a.path !== '/');
+      const app = apps.find((a) => a.path !== '/' && !a.path.startsWith('http'));
       if (!app) throw new Error('no demo app (non-root path) in apps.json');
       const bare = app.path.slice(0, -1);
       const response = await fetch(`${baseUrl}${bare}`, { redirect: 'manual' });
@@ -243,6 +243,7 @@ async function main() {
     });
 
     for (const app of apps) {
+      if (app.path.startsWith('http')) continue;
       await check(`${app.path} returns 200 HTML with resolving asset references`, async () => {
         const pageUrl = `${baseUrl}${app.path}`;
         const { response, text } = await fetchText(pageUrl);
@@ -314,7 +315,7 @@ async function main() {
     });
 
     await check('every demo app links back to the home page', async () => {
-      for (const app of apps.filter((a) => a.path !== '/')) {
+      for (const app of apps.filter((a) => a.path !== '/' && !a.path.startsWith('http'))) {
         const { text } = await fetchText(`${baseUrl}${app.path}`);
         if (!/href=["']\/["']/.test(text)) {
           throw new Error(`${app.path} HTML has no href="/" link back to the home page`);

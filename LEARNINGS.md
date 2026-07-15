@@ -6,6 +6,14 @@ Context: Redesigning artifact cards (thumbnails) to look consistent in both ligh
 Learning: Inline SVG graphic assets can use CSS Custom Properties (e.g. `var(--surface)`) that resolve directly to the hosting site's document variables when embedded inline. When referenced as images (e.g. `<img>`), SVGs can still resolve native media queries like `@media (prefers-color-scheme: dark)` inside their `<style>` tags to match the client's system theme dynamically.
 Evidence: Updated the `scripts/artifact-cards.mjs` generator script to output system-theme-aware styles. Verified that the resulting SVG artifact cards transition cleanly on the portfolio index pages when toggling dark mode.
 
+## 2026-07-14: Support external/repository URLs as lab experiments in apps.json
+
+Context: Added external GitHub repos (`infographic-agent` and `real-world-reasoning-agent`) to the "Lab" page, which is generated from the root `apps.json` manifest.
+Learning: The gateway routing logic, local builder script (`scripts/build-local.mjs`), and smoke tests (`scripts/smoke.mjs`) originally assumed every manifest entry in `apps.json` represented a local app that has a local `dev_build_dir` and needs to be hosted by the Node gateway. To support external URLs, we must allow `http(s)://` paths in the gateway regex validation, skip the local build/staging directories if `dev_build_dir` is missing, and bypass localized smoke tests for those external entries.
+Evidence: Updated validation regex in `gateway/lib/apps.js`, skipped local staging in `scripts/build-local.mjs`, and bypassed routing validations in `scripts/smoke.mjs`. All 17 smoke tests now pass.
+Use next time: When adding external project URLs to `apps.json`, ensure they have no `dev_build_dir` and verify validation and build scripts handle `https://` schemas gracefully.
+
+
 ## 2026-07-14: Node `--env-file` crashes if the specified file does not exist
 
 Context: Executing `npm start` which runs `node --env-file=.env gateway/server.js` fails with an unhandled exit code when `.env` is absent.

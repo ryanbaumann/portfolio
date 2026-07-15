@@ -85,7 +85,7 @@ export function loadApps(env = process.env) {
 
 const NAME_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const ENV_VAR_PATTERN = /^[A-Z][A-Z0-9_]*$/;
-const APP_PATH_PATTERN = /^\/(?:[a-z0-9]+(?:-[a-z0-9]+)*\/)*$/;
+const APP_PATH_PATTERN = /^(?:\/(?:[a-z0-9]+(?:-[a-z0-9]+)*\/)*|https?:\/\/.*)$/;
 
 export function validateManifestEntries(entries) {
   if (!Array.isArray(entries)) throw new Error('apps.json must contain an array.');
