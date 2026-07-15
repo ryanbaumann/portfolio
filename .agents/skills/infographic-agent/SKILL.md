@@ -6,7 +6,7 @@ description: >
   then gemini-3.1-flash-lite-image renders it into a PNG. No browser, Playwright, or Chromium dependencies —
   the only requirement is Google's GenAI SDK. Fully portable to any agent CLI environment.
 metadata:
-  version: "3.2.0"
+  version: "3.2.1"
   author: "Infographic Agent contributors"
 ---
 

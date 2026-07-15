@@ -637,9 +637,14 @@ def _normalize_to_png(data: bytes, mime: str):
         return data, m
 
 
+def _config_fields(config_type):
+    """Return the declared fields across supported Pydantic SDK versions."""
+    return getattr(config_type, "model_fields", None) or getattr(config_type, "__fields__", {})
+
+
 def _image_config(aspect: str, resolution: str):
-    """Use newer quality controls only when the installed SDK supports them."""
-    fields = getattr(types.ImageConfig, "model_fields", {})
+    """Request image size only when the installed SDK exposes that field."""
+    fields = _config_fields(types.ImageConfig)
     kwargs = {"aspect_ratio": aspect}
     if "image_size" in fields:
         kwargs["image_size"] = resolution
@@ -649,7 +654,8 @@ def _image_config(aspect: str, resolution: str):
 
 
 def _thinking_config():
-    fields = getattr(types.ThinkingConfig, "model_fields", {})
+    """Use high thinking on current SDKs and dynamic thinking on older SDKs."""
+    fields = _config_fields(types.ThinkingConfig)
     if "thinking_level" in fields:
         return types.ThinkingConfig(thinking_level="HIGH", include_thoughts=True)
     return types.ThinkingConfig(thinking_budget=-1, include_thoughts=True)

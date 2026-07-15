@@ -1,4 +1,4 @@
 # Runtime dependencies. Install with:  pip install -r requirements.txt
 # (or:  pip install google-genai pillow)
-google-genai>=1.0.0   # Gemini SDK — the two-agent research + image pipeline
+google-genai>=1.47.0  # Gemini SDK — includes the typed image/thinking config surface tested here
 pillow>=10.0.0        # transcodes the model's output to lossless PNG (crisp text)

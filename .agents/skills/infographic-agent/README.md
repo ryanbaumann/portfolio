@@ -24,7 +24,7 @@ npx infographic-agent "Top 5 programming languages in 2026"
 
 ## 📋 Prerequisites
 
-- **Python 3.8+**
+- **Python 3.9+**
 - **Gemini API Key**: Get a free key at [Google AI Studio](https://aistudio.google.com/apikey). Set it as:
   ```bash
   export GEMINI_API_KEY="your-key"
