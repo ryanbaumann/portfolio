@@ -96,6 +96,9 @@ jobs:
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v3
 
+      - name: Fetch checksum-pinned private lab artifacts
+        run: npm run labs:fetch -- --required && npm run labs:scan
+
       - name: Build image with Cloud Build
         run: |
           set -euo pipefail
@@ -152,17 +155,24 @@ jobs:
           node - "$SERVICE_JSON" <<'NODE'
           const { readFileSync } = require('node:fs');
           const service = JSON.parse(readFileSync(process.argv[2], 'utf8'));
+          const apps = JSON.parse(readFileSync('apps.json', 'utf8'));
           const configured = new Set(
             (service.spec?.template?.spec?.containers?.[0]?.env || []).map((entry) => entry.name),
           );
-          const required = [
+          const required = new Set([
             'STRAVA_CLIENT_ID',
             'STRAVA_CLIENT_SECRET',
             'GMP_SERVER_API_KEY',
-            'PORTFOLIO_WRITER_PASSWORD',
             'GITHUB_CONTENT_TOKEN',
-          ];
-          const missing = required.filter((name) => !configured.has(name));
+          ]);
+          for (const app of apps) {
+            if (app.auth?.envVar) required.add(app.auth.envVar);
+            if (app.api?.type === 'upstream') {
+              required.add(app.api.originEnv);
+              required.add(app.api.audienceEnv);
+            }
+          }
+          const missing = [...required].filter((name) => !configured.has(name));
           if (missing.length) {
             console.error(`::error::Cloud Run is missing runtime configuration: ${missing.join(', ')}`);
             process.exit(1);

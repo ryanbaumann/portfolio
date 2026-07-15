@@ -25,6 +25,24 @@ steps:
       - '${_IMAGE}'
       - '.'
 
+  - name: 'gcr.io/cloud-builders/docker'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        set -euo pipefail
+        PRIVATE_ENVS="$$(docker run --rm --entrypoint node '${_IMAGE}' -e "const apps=require('/app/apps.json'); console.log(apps.filter(a=>a.source?.type==='artifact').map(a=>'-e '+a.auth.envVar+'=artifact-smoke-password').join(' '))")"
+        docker run --rm -d --network=cloudbuild --name=portfolio-private-smoke $$PRIVATE_ENVS '${_IMAGE}'
+        trap 'docker rm -f portfolio-private-smoke >/dev/null 2>&1 || true' EXIT
+        for attempt in $$(seq 1 30); do
+          if docker run --rm --network=cloudbuild curlimages/curl:8.12.1 --fail --silent http://portfolio-private-smoke:8080/healthz >/dev/null; then break; fi
+          if [ "$$attempt" -eq 30 ]; then docker logs portfolio-private-smoke; exit 1; fi
+          sleep 1
+        done
+        docker run --rm --network=cloudbuild -v /workspace:/workspace -w /workspace \
+          -e BASE_URL=http://portfolio-private-smoke:8080 -e LABS_SMOKE_PASSWORD=artifact-smoke-password \
+          node:20-slim node scripts/smoke-private-artifacts.mjs
+
 images:
   - '${_IMAGE}'
 

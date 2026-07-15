@@ -78,7 +78,10 @@ export function loadApps(env = process.env) {
 
   const apps = raw.map((entry) => {
     const prodDir = join(appsRoot, entry.name);
-    const devDir = entry.dev_build_dir ? join(REPO_ROOT, entry.dev_build_dir) : null;
+    const devBuildDir = entry.dev_build_dir || (entry.source?.type === 'workspace'
+      ? join(entry.source.package, entry.source.output)
+      : null);
+    const devDir = devBuildDir ? join(REPO_ROOT, devBuildDir) : null;
 
     let dir = null;
     let source = null;
@@ -107,12 +110,17 @@ export function loadApps(env = process.env) {
 
 const NAME_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const ENV_VAR_PATTERN = /^[A-Z][A-Z0-9_]*$/;
-const APP_PATH_PATTERN = /^(?:\/(?:[a-z0-9]+(?:-[a-z0-9]+)*\/)*|https?:\/\/.*)$/;
+const APP_PATH_PATTERN = /^\/(?:[a-z0-9]+(?:-[a-z0-9]+)*\/)*$/;
+const SHA256_PATTERN = /^[a-f0-9]{64}$/;
+const RELATIVE_PATH_PATTERN = /^(?!\/)(?!.*(?:^|\/)\.\.(?:\/|$))[a-zA-Z0-9._/-]+$/;
+const RESERVED_UPSTREAM_ROUTES = ['/api/apps', '/api/healthz', '/api/contact', '/api/writer/', '/api/strava/', '/api/isochrones'];
 
 export function validateManifestEntries(entries) {
   if (!Array.isArray(entries)) throw new Error('apps.json must contain an array.');
   const names = new Set();
   const paths = new Set();
+  const apiRoutes = new Set();
+  const upstreamPrefixes = [];
   for (const entry of entries) {
     if (!entry || typeof entry !== 'object' || Array.isArray(entry)) throw new Error('Each apps.json entry must be an object.');
     if (!NAME_PATTERN.test(entry.name || '')) throw new Error(`Invalid app name: ${entry.name || '(missing)'}`);
@@ -140,6 +148,64 @@ export function validateManifestEntries(entries) {
       if (!Array.isArray(entry.providers) || entry.providers.some((name) => typeof name !== 'string' || !isKnownProvider(name))) {
         throw new Error(`App ${entry.name} references an unknown provider.`);
       }
+    }
+    if (entry.source_url !== undefined) {
+      let sourceUrl;
+      try {
+        sourceUrl = new URL(entry.source_url);
+      } catch {
+        throw new Error(`Invalid source_url for app ${entry.name}.`);
+      }
+      if (sourceUrl.protocol !== 'https:' || sourceUrl.username || sourceUrl.password || sourceUrl.search || sourceUrl.hash) {
+        throw new Error(`Invalid source_url for app ${entry.name}.`);
+      }
+      if (!/^[a-f0-9]{40}$/.test(entry.source_ref || '')) throw new Error(`App ${entry.name} source_url requires an exact source_ref commit.`);
+    } else if (entry.source_ref !== undefined) {
+      throw new Error(`App ${entry.name} source_ref requires source_url.`);
+    }
+    const source = entry.source;
+    if (!source || !['workspace', 'artifact'].includes(source.type)) {
+      throw new Error(`App ${entry.name} requires source.type workspace or artifact.`);
+    }
+    if (source.type === 'workspace') {
+      if (!RELATIVE_PATH_PATTERN.test(source.package || '') || !RELATIVE_PATH_PATTERN.test(source.output || '')) {
+        throw new Error(`App ${entry.name} has an invalid workspace source path.`);
+      }
+      if (entry.dev_build_dir !== `${source.package}/${source.output}`) {
+        throw new Error(`App ${entry.name} dev_build_dir must match its workspace source.`);
+      }
+    } else {
+      if (entry.dev_build_dir !== undefined) throw new Error(`Artifact app ${entry.name} must not define dev_build_dir.`);
+      if (typeof source.uri !== 'string' || !source.uri.startsWith('gs://') || source.uri.includes('?') || source.uri.includes('#')) {
+        throw new Error(`Artifact app ${entry.name} requires a gs:// source URI.`);
+      }
+      if (!SHA256_PATTERN.test(source.sha256 || '') || typeof source.release !== 'string' || !source.release) {
+        throw new Error(`Artifact app ${entry.name} requires an immutable sha256 and release.`);
+      }
+    }
+    const api = entry.api || { type: 'none' };
+    if (!['none', 'gateway', 'upstream'].includes(api.type)) throw new Error(`App ${entry.name} has an unsupported API type.`);
+    if (api.type === 'gateway') {
+      const route = api.path || api.prefix;
+      if (typeof route !== 'string' || !route.startsWith('/api/') || (api.path && api.prefix) || (api.prefix && !api.prefix.endsWith('/'))) {
+        throw new Error(`App ${entry.name} gateway API requires one /api/... path or trailing-slash prefix.`);
+      }
+      if (apiRoutes.has(route)) throw new Error(`Duplicate app API route: ${route}`);
+      apiRoutes.add(route);
+    }
+    if (api.type === 'upstream') {
+      if (visibility !== 'private' || typeof api.prefix !== 'string' || !api.prefix.startsWith('/api/') || !api.prefix.endsWith('/') ||
+          !ENV_VAR_PATTERN.test(api.originEnv || '') || !ENV_VAR_PATTERN.test(api.audienceEnv || '') ||
+          !Array.isArray(api.methods) || api.methods.length === 0 || new Set(api.methods).size !== api.methods.length || api.methods.some((method) => !['GET', 'POST'].includes(method))) {
+        throw new Error(`App ${entry.name} has an invalid private upstream API contract.`);
+      }
+      if (RESERVED_UPSTREAM_ROUTES.some((route) => api.prefix.startsWith(route) || route.startsWith(api.prefix)) ||
+          upstreamPrefixes.some((prefix) => api.prefix.startsWith(prefix) || prefix.startsWith(api.prefix))) {
+        throw new Error(`App ${entry.name} upstream API prefix collides with another gateway route.`);
+      }
+      upstreamPrefixes.push(api.prefix);
+      if (apiRoutes.has(api.prefix)) throw new Error(`Duplicate app API route: ${api.prefix}`);
+      apiRoutes.add(api.prefix);
     }
   }
   return entries;

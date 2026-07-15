@@ -19,6 +19,7 @@ import { fileURLToPath } from 'node:url';
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const APPS_JSON_PATH = join(REPO_ROOT, 'apps.json');
 const APPS_OUT_DIR = join(REPO_ROOT, 'apps');
+const ARTIFACTS_DIR = join(REPO_ROOT, '.labs-artifacts');
 const ROOT_ENV_PATH = join(REPO_ROOT, '.env');
 const PUBLIC_BUILD_ENV_KEYS = new Set([
   'VITE_GMP_API_KEY',
@@ -40,6 +41,8 @@ const SAFE_INHERITED_ENV_KEYS = new Set([
 const args = new Set(process.argv.slice(2));
 const forceInstall = args.has('--force-install');
 const skipInstall = args.has('--skip-install');
+const allowMissingArtifacts = args.has('--allow-missing-artifacts');
+const onlyArtifacts = args.has('--only-artifacts');
 
 function log(...parts) {
   console.log('[build-local]', ...parts);
@@ -99,10 +102,8 @@ function loadApps() {
 }
 
 export function resolveAppPaths(entry, repoRoot = REPO_ROOT) {
-  if (entry.path && entry.path.startsWith('http') || !entry.dev_build_dir) {
-    return { dir: null, outDir: null };
-  }
-  const outDir = join(repoRoot, entry.dev_build_dir);
+  if (entry.source?.type === 'artifact') return { dir: null, outDir: join(repoRoot, '.labs-artifacts', entry.name) };
+  const outDir = join(repoRoot, entry.dev_build_dir || join(entry.source.package, entry.source.output));
   return { dir: dirname(outDir), outDir };
 }
 
@@ -135,6 +136,20 @@ export function buildTimeOverrides(app, env) {
 
 function buildApp(app, childEnv) {
   log(`--- ${app.name} ---`);
+  const destDir = join(APPS_OUT_DIR, app.name);
+  if (app.source?.type === 'artifact') {
+    rmSync(destDir, { recursive: true, force: true });
+    if (!existsSync(join(app.outDir, 'index.html'))) {
+      if (allowMissingArtifacts) {
+        log(`SKIPPED ${app.name}: private artifact is unavailable in this untrusted build; gateway will fail closed.`);
+        return;
+      }
+      throw new Error(`private artifact is not staged: run npm run labs:fetch -- --required`);
+    }
+    cpSync(app.outDir, destDir, { recursive: true });
+    log(`Staged verified artifact ${app.name} -> ${destDir}`);
+    return;
+  }
   if (!existsSync(app.dir)) {
     throw new Error(`App directory not found: ${app.dir}`);
   }
@@ -159,7 +174,6 @@ function buildApp(app, childEnv) {
     throw new Error(`${app.name} build output is missing index.html: ${app.outDir}`);
   }
 
-  const destDir = join(APPS_OUT_DIR, app.name);
   rmSync(destDir, { recursive: true, force: true });
   mkdirSync(destDir, { recursive: true });
   cpSync(app.outDir, destDir, { recursive: true });
@@ -167,9 +181,10 @@ function buildApp(app, childEnv) {
 }
 
 function main() {
-  const apps = loadApps();
+  const manifestApps = loadApps();
+  const apps = onlyArtifacts ? manifestApps.filter((app) => app.source?.type === 'artifact') : manifestApps;
   const childEnv = {
-    ...sanitizedBuildEnv(apps, loadRootPublicEnv()),
+    ...sanitizedBuildEnv(manifestApps, loadRootPublicEnv()),
     PORTFOLIO_BUILD_TIME: new Date().toISOString(),
   };
   log(`Building ${apps.length} app(s) from ${APPS_JSON_PATH}`);
@@ -177,7 +192,6 @@ function main() {
 
   const failures = [];
   for (const app of apps) {
-    if (!app.dir) continue;
     try {
       buildApp(app, childEnv);
     } catch (err) {

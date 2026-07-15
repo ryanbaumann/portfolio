@@ -25,8 +25,9 @@ picture.
 
 ## Paved paths (use these before doing it by hand)
 
-- **Add a demo app:** `npm run new:demo -- my-demo --title "My Demo"` —
-  scaffolds the folder and wires apps.json, the Dockerfile, and dependabot.
+- **Add a demo app:** `npm run labs:new -- my-demo --template static` —
+  scaffolds the folder and wires apps.json and Dependabot; Docker and CI
+  discover workspace entries from the manifest.
   The homepage card, nav item, gateway route, container build, and smoke
   coverage all follow from the apps.json entry.
   Use `--visibility unlisted` for direct-link previews or `--visibility private`
@@ -151,49 +152,15 @@ Run commands from the app directory unless noted.
 
 ## Adding a new demo app
 
-**Fast path:** `npm run new:demo -- my-demo --title "My Demo"` does all of
-the below in one command. The manual steps, for when the scaffold doesn't
-fit:
+Use `labs:new` for a new static/Maps package, `labs:import` for a reviewed
+public-repository snapshot, and `labs:attach` for a checksum-pinned build from
+private source. Private full-stack demos can declare an authenticated Cloud
+Run upstream under `/api/<demo>/`. Source type, API type, and visibility are
+independent manifest fields. Do not hand-edit Docker or the CI package matrix.
 
-Apps are folders under `demos/` (`docs/ARCHITECTURE.md` design rule 1): the gateway
-discovers whatever is listed in the root `apps.json`, so adding a demo is
-just adding a folder plus a manifest entry. No gateway code changes needed.
-
-1. `mkdir demos/my-demo` at the repo root and build it like the existing apps: a
-   `package.json` with a `build` script that emits static output (`dist/`
-   or `build/`) and an `engines.node >= 20` field. Keep its dependencies and
-   config inside `my-demo/` only.
-2. If the app needs a secret-bearing API call, do not call the third-party
-   API directly from the browser — add a proxy module under `gateway/lib/`
-   (follow the pattern in `gateway/lib/isochrones.js`: validate input, read the secret from a
-   non-`VITE_` env var, return `503` with a JSON error if it's unset, add a
-   10s upstream timeout) and wire a route for it in `gateway/server.js`.
-3. Add an entry to the root `apps.json`:
-   ```json
-   {
-     "name": "my-demo",
-     "title": "My Demo",
-     "description": "One line, shown on the landing page card.",
-     "path": "/my-demo/",
-    "dev_build_dir": "demos/my-demo/dist",
-     "tags": ["..."],
-     "preview": null
-   }
-   ```
-   `dev_build_dir` is also the local-dev fallback: `node gateway/server.js`
-   will serve straight from it if `apps/my-demo/` (the staged/container
-   layout) doesn't exist yet.
-4. Add a builder stage for it in the root `Dockerfile` (copy the pattern of
-   the other `*-builder` stages: `npm ci`, set `BASE_PATH=/my-demo/` if the
-   app's bundler supports a configurable base path, `npm run build`) and a
-   matching `COPY --from=my-demo-builder ... ./apps/my-demo` in the runtime
-   stage.
-5. Run `node scripts/build-local.mjs && node scripts/smoke.mjs` — the smoke
-   test picks up the new app automatically from `apps.json` (route
-   liveness, asset resolution, and the secret-leak scan all iterate over
-   every listed app) and will fail loudly if something's missing.
-6. If your app needs npm dependency updates over time, add it to
-   `.github/dependabot.yml` alongside the other app directories.
+The complete command examples, artifact trust boundary, required IAM, API
+rules, and acceptance checks are in `docs/LABS_ONBOARDING.md`; follow that
+runbook rather than duplicating the steps here.
 
 ## Local Skills
 

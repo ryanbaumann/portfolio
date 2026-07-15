@@ -1,0 +1,12 @@
+.git/
+.github/
+.codex/
+**/node_modules/
+**/.env
+**/.env.*
+gha-creds-*.json
+**/*.log
+apps/
+docs/
+*.md
+!.labs-artifacts/**

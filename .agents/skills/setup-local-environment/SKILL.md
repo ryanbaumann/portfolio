@@ -21,11 +21,14 @@ description: Automatically helps the user configure their local environment by r
 5. Guide the user to find the keys based on the template:
    - Strava keys: https://www.strava.com/settings/api
    - Google Maps keys: GCP Cloud Console -> Credentials
-6. Once the user provides the keys in chat, use the `write_to_file` tool to create the `.env` file directly.
-7. Remind the user they must restart the local server (`npm run build && npm start`) if it was already running.
+   - Gemini server key: Google AI Studio or the approved Google Cloud project.
+6. Never ask the user to paste secret values into chat or place them in tool-call arguments/logs. Have the user enter them directly through `npm run setup` or edit the ignored root `.env` locally.
+7. Verify only that required variable names are non-empty; never print values. Treat `GEMINI_API_KEY`, `STRAVA_CLIENT_SECRET`, `GMP_SERVER_API_KEY`, tokens, and passwords as server-only.
+8. Remind the user they must restart the local server (`npm run build && npm start`) if it was already running.
 
 ## Verification
 - Run `npm run build` to ensure Vite successfully detects and injects the `VITE_` prefixed variables without errors.
+- Confirm served assets contain only intended browser keys and do not contain server keys or client secrets; report booleans/counts, not values.
 
 ## Output
 - Confirm to the user that the `.env` file was successfully written and all applications are ready for local testing.

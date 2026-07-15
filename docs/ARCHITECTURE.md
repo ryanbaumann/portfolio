@@ -32,8 +32,9 @@ secrets ever reach the browser.
   GITHUB_CONTENT_TOKEN
 ```
 
-Routing is manifest-driven: `apps.json` at the repo root lists every app
-with its mount `path`. The gateway matches the most specific path first, so
+Routing and builds are manifest-driven: `apps.json` lists each app's mount
+`path`, `source` (`workspace` or immutable private `artifact`), and `api`
+(`none`, gateway-owned, or authenticated private upstream). The gateway matches the most specific path first, so
 the root-mounted portfolio (`path: "/"`) is the catch-all after every demo
 path has had its chance.
 
@@ -54,13 +55,14 @@ plain-HTTP gateway development URL.
 
 ## Design rules
 
-1. **Apps are folders.** Any top-level directory with a `package.json` whose
+1. **Apps are registered build outputs.** A workspace package has a `package.json` whose
    `npm run build` emits static output, plus an `apps.json` entry, is an
    app; the gateway serves it at its manifest `path`. The same manifest
    feeds the homepage Demos section and nav (`portfolio/build.mjs`), the
    local staging build, and the smoke test. Adding a demo =
-   `npm run new:demo -- <name>` (scaffolds the folder and every wiring
-   point), or by hand per AGENTS.md "Adding a new demo app".
+   `npm run labs:new -- <name>`; a reviewed public checkout uses
+   `labs:import`; confidential source publishes a checksum-pinned artifact
+   registered with `labs:attach`. See `docs/LABS_ONBOARDING.md`.
 2. **Browser keys vs. server secrets.** Anything `VITE_`-prefixed is inlined
    into the browser bundle by Vite and must be public client config only:
    referrer-restricted browser keys (Maps JS / Air Quality / Places) and
@@ -88,11 +90,11 @@ plain-HTTP gateway development URL.
 
 ## Build
 
-Root `Dockerfile` is multi-stage: one stage per app runs `npm ci && npm run
-build` (the portfolio stage is dependency-free: `node build.mjs`), the
-runtime stage copies each static output plus `gateway/` into `node:20-slim`
-and runs as the non-root `node` user. `scripts/build-local.mjs` performs the
-equivalent arrangement without Docker; CI and humans both use it.
+The root `Dockerfile` runs the manifest-driven `scripts/build-local.mjs`, then
+copies only staged outputs and `gateway/` into `node:20-slim` and runs as the
+non-root `node` user. Workspace additions therefore require no Docker edit.
+Trusted deployment fetches and verifies declared private artifacts before the
+image build; untrusted PR CI has no artifact credentials.
 
 ## Deploy
 
@@ -112,17 +114,22 @@ deploys to Cloud Run on pushes to `main`. Required repo configuration:
 | var     | `ANALYTICS_MEASUREMENT_ID` | Optional public GA4 `G-...` stream ID |
 
 Runtime secrets (`STRAVA_CLIENT_SECRET`, `GMP_SERVER_API_KEY`,
-`RESEND_API_KEY`, `CONTACT_TO_EMAIL`, `PORTFOLIO_WRITER_PASSWORD`, and
-`GITHUB_CONTENT_TOKEN`) are set on the Cloud Run service
+`RESEND_API_KEY`, `CONTACT_TO_EMAIL`, `GEMINI_API_KEY`,
+`PORTFOLIO_WRITER_PASSWORD`, and `GITHUB_CONTENT_TOKEN`) are set on the Cloud Run service
 as Secret Manager references, never in the image or repo. `CONTACT_FROM_EMAIL`
 is optional non-secret sender configuration and must use a sender accepted by
-the mail provider.
+the mail provider. `GEMINI_API_KEY` is optional when contact classification is
+disabled; when enabled, create a Secret Manager secret named `gemini-api-key`
+and map it to the Cloud Run environment as shown in `deploy.yml`. Never create
+a `VITE_GEMINI_API_KEY`: Vite would expose it in the browser bundle.
 
 ## Paved paths
 
 | I want to… | Run |
 |---|---|
-| Add a demo app | `npm run new:demo -- my-demo --title "My Demo"` |
+| Add a demo app | `npm run labs:new -- my-demo --template static` |
+| Import public source | `npm run labs:import -- my-demo --from ../checkout --source-url <https-url> --ref <sha> --confirm-source-public` |
+| Attach private build | `npm run labs:attach -- my-demo --artifact <tgz> --uri <content-addressed-gs-uri> --release <id>` |
 | Add a blog post | `npm run new:post -- "Post title"` |
 | Schedule a blog post | `npm run new:post -- "Post title" --schedule 2026-07-14T16:00:00Z` |
 | Add a work entry / talk | copy the `_TEMPLATE.md` in `portfolio/content/<collection>/` |

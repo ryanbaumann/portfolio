@@ -22,6 +22,8 @@ gateway/node_modules
 # scripts/build-local.mjs staging output (mirrors the Dockerfile's runtime
 # stage); regenerate with `node scripts/build-local.mjs`.
 /apps/
+/.labs-artifacts/
+gha-creds-*.json
 
 # OS files
 .DS_Store
@@ -29,4 +31,3 @@ gateway/node_modules
 
 # Ignore large source images
 demos/strava-explorer/strava-explorer.png
-

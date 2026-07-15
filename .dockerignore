@@ -7,6 +7,7 @@ docs
 **/.env
 **/.env.*
 !**/.env.example
+gha-creds-*.json
 
 demos/strava-explorer/dist
 demos/strava-explorer/test-results

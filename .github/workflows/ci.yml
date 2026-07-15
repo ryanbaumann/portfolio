@@ -16,8 +16,23 @@ concurrency:
   cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
+  discover-packages:
+    name: Discover workspace packages
+    runs-on: ubuntu-latest
+    outputs:
+      packages: ${{ steps.packages.outputs.value }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 20
+      - run: npm run check:labs && npm run test:labs
+      - id: packages
+        run: echo "value=$(node scripts/list-ci-packages.mjs)" >> "$GITHUB_OUTPUT"
+
   package-checks:
     name: ${{ matrix.package }} checks
+    needs: discover-packages
     runs-on: ubuntu-latest
     # Every job here finishes in under a minute when healthy. A tight timeout
     # turns a hang (see LEARNINGS.md, 2026-07-12 node --test entry) into a
@@ -26,7 +41,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        package: [portfolio, demos/aqi-map, demos/isochrones, gateway, demos/strava-explorer]
+        package: ${{ fromJSON(needs.discover-packages.outputs.packages) }}
     steps:
       - name: Checkout Code
         uses: actions/checkout@v7
@@ -84,7 +99,10 @@ jobs:
       - name: Build every app (stages apps/<name>/ like the Dockerfile does)
         env:
           PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: 1
-        run: node scripts/build-local.mjs
+        run: node scripts/build-local.mjs --allow-missing-artifacts
+
+      - name: Validate lab manifest and cross-wiring
+        run: npm run check:labs && npm run test:labs
 
       # Use `npm test` (not raw `node --test`): the npm script sets
       # NODE_ENV=test. The server also guards on NODE_TEST_CONTEXT now, but
@@ -114,9 +132,30 @@ jobs:
         with:
           context: .
           push: false
+          load: true
           tags: ryan-baumann-portfolio
+          build-args: |
+            VITE_STRAVA_CLIENT_ID=smoke-test-placeholder-client-id
+            ALLOW_MISSING_ARTIFACTS=1
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+      - name: Smoke test the built container
+        run: |
+          set -euo pipefail
+          docker run --rm -d -p 8080:8080 --name portfolio-smoke ryan-baumann-portfolio
+          trap 'docker rm -f portfolio-smoke >/dev/null 2>&1 || true' EXIT
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:8080/healthz >/dev/null; then
+              break
+            fi
+            if [ "$attempt" -eq 30 ]; then
+              docker logs portfolio-smoke
+              exit 1
+            fi
+            sleep 1
+          done
+          BASE_URL=http://127.0.0.1:8080 node scripts/smoke.mjs
 
   secret-scan:
     name: Secret Scanner

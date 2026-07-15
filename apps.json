@@ -5,6 +5,8 @@
     "description": "Home: work, writing, talks, and the demo lab.",
     "path": "/",
     "dev_build_dir": "portfolio/dist",
+    "source": { "type": "workspace", "package": "portfolio", "output": "dist" },
+    "api": { "type": "gateway", "path": "/api/contact" },
     "providers": ["resend"],
     "tags": [],
     "preview": "/previews/portfolio.jpg"
@@ -15,6 +17,8 @@
     "description": "Private draft previews and publishing controls.",
     "path": "/writer/",
     "dev_build_dir": "portfolio/writer-dist",
+    "source": { "type": "workspace", "package": "portfolio", "output": "writer-dist" },
+    "api": { "type": "gateway", "path": "/api/writer/publish" },
     "visibility": "private",
     "auth": {
       "type": "password",
@@ -29,6 +33,8 @@
     "description": "Fly your Strava routes in Photorealistic 3D with follow-camera animation, an elevation profile, and your ride photos on the path.",
     "path": "/strava-explorer/",
     "dev_build_dir": "demos/strava-explorer/dist",
+    "source": { "type": "workspace", "package": "demos/strava-explorer", "output": "dist" },
+    "api": { "type": "gateway", "prefix": "/api/strava/" },
     "providers": ["strava"],
     "tags": ["strava", "3d-maps", "google-maps-platform"],
     "preview": "/previews/strava-explorer.jpg"
@@ -39,6 +45,8 @@
     "description": "Live air-quality heatmap with click-to-inspect pollutant detail, straight from the Air Quality API.",
     "path": "/aqi-map/",
     "dev_build_dir": "demos/aqi-map/dist",
+    "source": { "type": "workspace", "package": "demos/aqi-map", "output": "dist" },
+    "api": { "type": "none" },
     "tags": ["air-quality", "google-maps-platform"],
     "preview": "/previews/aqi-map.jpg"
   },
@@ -48,34 +56,10 @@
     "description": "How far can you get in 10, 20, 30 minutes? Live-regenerating reachability bands for delivery, commute, and response planning.",
     "path": "/isochrones/",
     "dev_build_dir": "demos/isochrones/dist",
+    "source": { "type": "workspace", "package": "demos/isochrones", "output": "dist" },
+    "api": { "type": "gateway", "path": "/api/isochrones" },
     "providers": ["isochrones"],
     "tags": ["isochrones", "routing", "google-maps-platform"],
     "preview": "/previews/isochrones.jpg"
-  },
-  {
-    "name": "infographic-agent",
-    "title": "Infographic Agent",
-    "description": "Portable infographic architect. Generate professional infographics, visual summaries, charts, and data visualizations via autonomous agent.",
-    "path": "https://github.com/ryanbaumann/infographic-agent/",
-    "visibility": "private",
-    "auth": {
-      "type": "password",
-      "envVar": "PORTFOLIO_INFOGRAPHIC_AGENT_PASSWORD"
-    },
-    "tags": ["agent", "python", "playwright"],
-    "preview": null
-  },
-  {
-    "name": "real-world-reasoning-agent",
-    "title": "Real-World Reasoning Agent",
-    "description": "Experimental real-world reasoning map demo showcasing unlimited context.",
-    "path": "https://github.com/ryanbaumann/unlimited-maps-demo/",
-    "visibility": "private",
-    "auth": {
-      "type": "password",
-      "envVar": "PORTFOLIO_REAL_WORLD_REASONING_AGENT_PASSWORD"
-    },
-    "tags": ["maps", "google-maps-platform", "reasoning"],
-    "preview": null
   }
 ]

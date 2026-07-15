@@ -24,6 +24,7 @@ import { handleIsochronesApi } from './lib/isochrones.js';
 import { publishWritingUpdate } from './lib/writer.js';
 import { classifyContactSubmission } from './lib/contactSpam.js';
 import { errorPageHtml } from './lib/errorPage.js';
+import { proxyUpstream } from './lib/upstream.js';
 
 const PORT = Number(process.env.PORT || 8080);
 const JSON_BODY_LIMIT_BYTES = 16 * 1024;
@@ -67,6 +68,7 @@ const routeRateLimiters = Object.fromEntries(
 //   - Firestore increment-based counters (serverless, but adds latency)
 // For a portfolio site the single-instance limiter is the right trade-off.
 const authRateLimiter = routeRateLimiters.auth;
+const upstreamRateLimiter = createRateLimiter({ windowMs: 60_000, max: 60 });
 
 function sendJson(request, response, statusCode, payload) {
   applySecurityHeaders(response);
@@ -408,6 +410,28 @@ async function handleApi(request, response, pathname, searchParams) {
       return;
     }
     sendJson(request, response, result.statusCode, result.json);
+    return;
+  }
+
+  const upstreamApp = apps.find((app) => app.api?.type === 'upstream' && pathname.startsWith(app.api.prefix));
+  if (upstreamApp) {
+    const secret = process.env[upstreamApp.auth.envVar];
+    if (!secret) {
+      sendJson(request, response, 503, { error: 'Private demo is not configured.' });
+      return;
+    }
+    if (!verifyAuthCookie(request, upstreamApp.name, secret)) {
+      sendJson(request, response, 401, { error: 'Private demo authentication required.' });
+      return;
+    }
+    if (!upstreamRateLimiter.check(`${upstreamApp.name}:${ip}`)) {
+      response.setHeader('Retry-After', '60');
+      sendJson(request, response, 429, { error: 'Too many requests. Please try again later.' });
+      return;
+    }
+    applySecurityHeaders(response);
+    const result = await proxyUpstream({ request, response, pathname, search: searchParams.size ? `?${searchParams}` : '', app: upstreamApp });
+    if (result) sendJson(request, response, result.statusCode, result.json);
     return;
   }
 

@@ -7,18 +7,25 @@ Learning: Changing a slug and canonical tag is not enough. Published links need 
 Evidence: The build now emits `redirects.json` from front-matter aliases, the gateway returns HTTP 308 while preserving the query string, and tests cover the runtime behavior.
 Use next time: When renaming a work, writing, or talk detail page, set the new `slug`, append the previous path to `aliases`, update `canonical`, and verify both the new 200 response and old 308 response.
 
+## 2026-07-15: Lab source, visibility, and API runtime are independent contracts
+
+Context: New labs can be authored in the portfolio, imported from a public repository, or built from confidential source while still sharing one gateway.
+Learning: Source location (`workspace` or immutable artifact), listing/access (`public`, `unlisted`, or `private`), and API ownership (`none`, gateway, or authenticated upstream) must be modeled independently. Coupling them creates skipped CI, leaked source, or APIs that bypass the private static gate.
+Evidence: The manifest now drives dynamic package CI and container staging; trusted deploy verifies private artifacts; private upstream requests require the owning app session and a fixed service identity.
+Use next time: Choose one value on each axis, register it in `apps.json`, and make CI prove the declared build, route, auth denial, and runtime configuration before cutover.
+
 ## 2026-07-14: Light/Dark theme compatibility in SVG graphics using native CSS variables
 
 Context: Redesigning artifact cards (thumbnails) to look consistent in both light and dark modes without maintaining multiple static assets.
 Learning: Inline SVG graphic assets can use CSS Custom Properties (e.g. `var(--surface)`) that resolve directly to the hosting site's document variables when embedded inline. When referenced as images (e.g. `<img>`), SVGs can still resolve native media queries like `@media (prefers-color-scheme: dark)` inside their `<style>` tags to match the client's system theme dynamically.
 Evidence: Updated the `scripts/artifact-cards.mjs` generator script to output system-theme-aware styles. Verified that the resulting SVG artifact cards transition cleanly on the portfolio index pages when toggling dark mode.
 
-## 2026-07-14: Support external/repository URLs as lab experiments in apps.json
+## 2026-07-15: A routing manifest cannot double as an external-link catalog
 
-Context: Added external GitHub repos (`infographic-agent` and `real-world-reasoning-agent`) to the "Lab" page, which is generated from the root `apps.json` manifest.
-Learning: The gateway routing logic, local builder script (`scripts/build-local.mjs`), and smoke tests (`scripts/smoke.mjs`) originally assumed every manifest entry in `apps.json` represented a local app that has a local `dev_build_dir` and needs to be hosted by the Node gateway. To support external URLs, we must allow `http(s)://` paths in the gateway regex validation, skip the local build/staging directories if `dev_build_dir` is missing, and bypass localized smoke tests for those external entries.
-Evidence: Updated validation regex in `gateway/lib/apps.js`, skipped local staging in `scripts/build-local.mjs`, and bypassed routing validations in `scripts/smoke.mjs`. All 17 smoke tests now pass.
-Use next time: When adding external project URLs to `apps.json`, ensure they have no `dev_build_dir` and verify validation and build scripts handle `https://` schemas gracefully.
+Context: Two GitHub URLs were placed in the `path` field of private `apps.json` entries and CI was changed to skip their builds and routes.
+Learning: `apps.json` is executable deployment metadata. A green build that skips an entry proves nothing, and gateway password auth cannot protect another host. External or source links need separate fields or portfolio content; hosted apps need internal routes and complete build/runtime wiring.
+Evidence: Both records resolved as unavailable, were filtered from public discovery, could never match a request pathname, and received no build, route, asset, API, or preview checks. `npm run check:labs` now rejects that incomplete state.
+Use next time: Classify the project first, keep `path` internal, and require every manifest record to pass the same package, Docker, CI, gateway, privacy, and smoke contract.
 
 
 ## 2026-07-14: Node `--env-file` crashes if the specified file does not exist

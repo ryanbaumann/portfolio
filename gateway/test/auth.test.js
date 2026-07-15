@@ -226,6 +226,7 @@ describe('appVisibility', () => {
 });
 
 describe('validateManifestEntries', () => {
+  const workspace = { source: { type: 'workspace', package: 'demos/demo', output: 'dist' }, dev_build_dir: 'demos/demo/dist' };
   test('requires valid password auth metadata for private apps', () => {
     assert.throws(() => validateManifestEntries([{ name: 'secret', path: '/secret/', visibility: 'private' }]), /requires password auth/);
     assert.throws(() => validateManifestEntries([{
@@ -234,14 +235,38 @@ describe('validateManifestEntries', () => {
   });
 
   test('accepts known provider names but rejects unknown providers', () => {
-    assert.doesNotThrow(() => validateManifestEntries([{ name: 'demo', path: '/demo/', providers: ['strava'] }]));
+    assert.doesNotThrow(() => validateManifestEntries([{ name: 'demo', path: '/demo/', providers: ['strava'], ...workspace }]));
     assert.throws(() => validateManifestEntries([{ name: 'demo', path: '/demo/', providers: ['mystery'] }]), /unknown provider/);
+  });
+
+  test('keeps route paths internal and validates source URLs separately', () => {
+    assert.throws(() => validateManifestEntries([{ name: 'external', path: 'https://example.com/demo' }]), /Invalid path/);
+    assert.doesNotThrow(() => validateManifestEntries([{
+      name: 'demo', path: '/demo/', source_url: 'https://github.com/example/demo', source_ref: 'a'.repeat(40), ...workspace,
+    }]));
+    for (const source_url of [
+      'http://github.com/example/demo',
+      'https://user:password@github.com/example/demo',
+      'https://github.com/example/demo?token=secret',
+      'https://github.com/example/demo#readme',
+    ]) {
+      assert.throws(() => validateManifestEntries([{ name: 'demo', path: '/demo/', source_url, source_ref: 'a'.repeat(40) }]), /Invalid source_url/);
+    }
   });
 
   test('rejects duplicate names and normalized paths', () => {
     assert.throws(() => validateManifestEntries([
-      { name: 'one', path: '/same' }, { name: 'two', path: '/same/' },
+      { name: 'one', path: '/same', ...workspace }, { name: 'two', path: '/same/', ...workspace },
     ]), /Duplicate app path/);
+  });
+
+  test('validates workspace and immutable artifact sources', () => {
+    assert.doesNotThrow(() => validateManifestEntries([{ name: 'demo', path: '/demo/', ...workspace }]));
+    assert.doesNotThrow(() => validateManifestEntries([{
+      name: 'private-demo', path: '/private-demo/', visibility: 'private', auth: { type: 'password', envVar: 'PRIVATE_DEMO_PASSWORD' },
+      source: { type: 'artifact', uri: `gs://private-labs/demo-${'a'.repeat(64)}.tgz`, sha256: 'a'.repeat(64), release: '2026-07-15.1' },
+    }]));
+    assert.throws(() => validateManifestEntries([{ name: 'demo', path: '/demo/', source: { type: 'artifact', uri: 'https://example.com/demo.tgz', sha256: 'bad', release: 'latest' } }]), /gs:\/\//);
   });
 });
 
