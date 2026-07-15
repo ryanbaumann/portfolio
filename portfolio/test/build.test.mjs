@@ -107,6 +107,39 @@ test('build publishes scheduled writing once its timestamp is due', () => {
   assert.match(readFileSync(join(paths.dist, 'feed.xml'), 'utf8'), /Scheduled essay/);
 });
 
+test('build emits published aliases and omits redirects from writer previews', () => {
+  const paths = fixture();
+  write(join(paths.content, 'writing', 'source.md'), `---\ntitle: Renamed essay\nsummary: Redirect fixture\ndate: 2026-07-14\nslug: current\naliases: ["/writing/previous/"]\ncanonical: https://example.com/writing/current/\n---\nPublished.`);
+  let result = build(paths);
+  assert.equal(result.status, 0, result.stderr);
+  assert.deepEqual(JSON.parse(readFileSync(join(paths.dist, 'redirects.json'), 'utf8')), {
+    '/writing/previous/': '/writing/current/',
+  });
+
+  result = build(paths, { BASE_PATH: '/writer/', PORTFOLIO_WRITER_MODE: 'true' });
+  assert.equal(result.status, 0, result.stderr);
+  assert.deepEqual(JSON.parse(readFileSync(join(paths.dist, 'redirects.json'), 'utf8')), {});
+});
+
+test('build rejects aliases that collide with canonical pages and stale same-site canonicals', () => {
+  const paths = fixture();
+  write(join(paths.content, 'writing', 'first.md'), `---\ntitle: First\nsummary: First fixture\ndate: 2026-07-14\naliases: ["/writing/second/"]\ncanonical: https://example.com/writing/stale/\n---\nFirst.`);
+  write(join(paths.content, 'writing', 'second.md'), `---\ntitle: Second\nsummary: Second fixture\ndate: 2026-07-13\n---\nSecond.`);
+  const result = build(paths);
+  assert.notEqual(result.status, 0);
+  assert.match(result.stderr, /alias collides with a generated canonical path/);
+  assert.match(result.stderr, /same-site canonical must match the generated detail URL/);
+});
+
+test('build rejects aliases on external and bodyless entries', () => {
+  const paths = fixture();
+  write(join(paths.content, 'writing', 'external.md'), `---\ntitle: External\nsummary: External fixture\ndate: 2026-07-14\nexternal: https://example.org/post\naliases: ["/writing/old-external/"]\n---`);
+  write(join(paths.content, 'work', 'bodyless.md'), `---\ntitle: Bodyless\nsummary: Bodyless fixture\naliases: ["/work/old-bodyless/"]\n---`);
+  const result = build(paths);
+  assert.notEqual(result.status, 0);
+  assert.equal((result.stderr.match(/aliases require a generated internal detail page/g) || []).length, 2);
+});
+
 test('markdown headings get stable deep-link ids and explicit ids are preserved', () => {
   const paths = fixture();
   write(join(paths.content, 'writing', 'anchors.md'), `---\ntitle: Anchors\nsummary: Heading links\ndate: 2026-07-13\n---\n## Hello, World!\n\n## Custom heading {#chosen-id}\n\n| Option | Result |\n| --- | --- |\n| A | Works |`);

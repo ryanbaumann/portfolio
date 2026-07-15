@@ -151,6 +151,9 @@ test('server enforces public, unlisted, and private manifest behavior before sta
     const redirect = await request(port, '/public-demo/old/?source=essay');
     assert.equal(redirect.res.statusCode, 308);
     assert.equal(redirect.res.headers.location, '/public-demo/new/?source=essay');
+    const slashlessRedirect = await request(port, '/public-demo/old?source=essay');
+    assert.equal(slashlessRedirect.res.statusCode, 308);
+    assert.equal(slashlessRedirect.res.headers.location, '/public-demo/new/?source=essay');
     assert.equal((await request(port, '/unlisted-demo/')).res.statusCode, 200);
     assert.equal((await request(port, '/private-demo/')).res.statusCode, 401);
     assert.equal((await request(port, '/private-demo/asset.js')).res.statusCode, 401);

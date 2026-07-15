@@ -1,0 +1,39 @@
+{
+  "name": "infographic-agent",
+  "version": "3.2.0",
+  "description": "Generate professional infographic PNGs from text with Gemini — a research agent (gemini-3.5-flash) prepares and validates the prompt, then gemini-3.1-flash-lite-image renders it. No browser/Playwright deps.",
+  "license": "MIT",
+  "author": "Ryan Baumann",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ryanbaumann/infographic-agent.git",
+    "directory": "skill/infographic-agent"
+  },
+  "homepage": "https://github.com/ryanbaumann/infographic-agent#the-portable-skill",
+  "keywords": [
+    "infographic",
+    "gemini",
+    "gemini-3.1-flash-lite-image",
+    "ai",
+    "image-generation",
+    "cli",
+    "data-visualization",
+    "agent-skill"
+  ],
+  "type": "module",
+  "engines": {
+    "node": ">=18"
+  },
+  "bin": {
+    "infographic-agent": "bin/infographic-agent.js"
+  },
+  "files": [
+    "bin/",
+    "portable_infographic.py",
+    "requirements.txt",
+    "SKILL.md"
+  ],
+  "publishConfig": {
+    "access": "public"
+  }
+}

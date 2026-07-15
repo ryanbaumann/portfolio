@@ -50,6 +50,14 @@ Markdown headings receive stable fragment IDs. Authors may pin one with `## Head
 
 When renaming a published detail page, set its new `slug`, add every previous path to `aliases`, and update `canonical`. The build writes `redirects.json`; the gateway turns each alias into an HTTP 308 and preserves the query string. Never leave the old page rendered as duplicate content.
 
+Every hosted essay needs three purposeful visual assets before publication:
+
+1. A dedicated 1200×675 header that explains the thesis without repeating the title.
+2. A distinct 1200×627 raster social card composed for thumbnail legibility.
+3. At least one dedicated 1200×675 inline image that shows a mechanism, artifact, or evidence from the argument.
+
+Write asset-specific alt text for each. Do not reuse a generic portfolio preview, title card, or the header as the inline evidence image.
+
 ## Adding a new content type
 
 1. Add `{ name, label, listPage, detailPages }` to `COLLECTIONS` in `build.mjs`.

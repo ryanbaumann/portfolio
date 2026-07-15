@@ -6,6 +6,8 @@
 - Rewrote the essay around owning developer friction, distributing improvements into builder workflows, and measuring outcomes with product evidence and agent evaluations.
 - Replaced the oversized text-heavy hero with a 16:9 growth-loop diagram, added a separate 1200×627 social card, and embedded an agentic-evals artifact in the article.
 - Added reusable front-matter aliases for future detail-page renames and documented the workflow in the portfolio content skill.
+- Hardened aliases against slashless duplicates, canonical-page collisions, private-route disclosure, stale canonicals, external targets, and bodyless entries.
+- Installed Infographic Agent 3.2.0 and documented the required three-asset visual standard for every future hosted essay.
 
 ## 2026-07-14: DevEx is a Growth Discipline Essay Update
 

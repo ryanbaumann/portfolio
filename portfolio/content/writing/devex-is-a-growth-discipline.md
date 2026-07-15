@@ -18,31 +18,29 @@ order: 1
 
 DevX is a growth discipline. The job is not to publish more documentation. The job is to find the friction that stops a builder, fix it in the product or experience, put that fix where people work, and prove that it improved an outcome.
 
-That outcome might be more successful first runs, faster time to value, higher activation, or stronger retention. The metric depends on the product. The operating loop does not: find the constraint, ship a better path, distribute it, measure the result, and repeat.
+From March 2025 to March 2026, our Google Maps Platform open-source client libraries grew unique active users 300% and API engagement approximately 200%. During that period, I led the team's client-library and AI distribution strategy across React, Compose, AI Studio, Lovable, and Replit. We treated product, distribution, and measurement as one system without confusing presence in a workflow with proof of adoption.
 
 ## Own the friction
 
 Developer friction shows up everywhere: failed first runs, abandoned evaluations, support tickets, GitHub issues, field conversations, and user research. DevX needs one view across those signals. More importantly, DevX needs to own what happens next.
 
-Ownership means more than filing a product request. If onboarding is broken, fix onboarding. If the API shape creates repeat failures, improve the product. If the sample sends builders down the wrong path, replace it. Ship the new experience, then stay accountable for whether it worked.
+Our [Voice of Developer program](/work/voice-of-developer/) groups repeated friction from Discord, Stack Overflow, GitHub issues, support, field work, and dogfood sessions into ranked product opportunities. That makes the constraint visible. DevX ownership starts there: choose what to solve, ship the change, and measure what happened.
 
-AI expands both the audience and the feedback loop. Builders can now produce working software without understanding every layer underneath it. Some of those builders are people. Some are agents acting for people. DevX has to design for both.
+Some builders now work through coding agents instead of reading every platform layer themselves. DevX has to design for the person making the decision and the agent acting inside the task.
 
 ## Distribution is key
 
 A great experience has no impact if builders never encounter it. Documentation is one distribution surface, not the whole strategy. The path also needs to appear in the editor, agent, search result, sample, template, or tool where the work begins.
 
-That changes the artifact. In the last platform era, DevX teams shipped SDKs and open-source libraries for the most-used languages and frameworks. In the AI era, we also need portable context: skills, tools, examples, and evaluations that help an agent produce the same high-quality path wherever a builder starts.
-
-I have seen what that distribution can move. From March 2025 to March 2026, our Google Maps Platform open-source client libraries grew unique active users 300% and API engagement approximately 200%. We treated the libraries, AI integrations, and the paths into them as one [distribution system](/work/agentic-growth/).
+Client libraries distribute executable product behavior. [Code Assist](/work/code-assist/) now distributes current documentation and samples inside Claude Code, Cursor, Antigravity, Gemini CLI, and other MCP clients. [Agent skills](/work/agent-skills/) distribute versioned, repeatable workflows across Web, Android, iOS, and Web Services. We gate each skill with task-based evals before it ships.
 
 Distribution cannot be an afterthought. Design the experience so it can travel, then make it the default in the workflows that already have reach.
 
 ## Measure and own outcomes
 
-Traditional feedback loops are slow. Interviews, support themes, and developer surveys remain useful, but they can take weeks to turn into a clear product decision. Agent evaluations can shorten that loop. A simulated user or coding agent can attempt the journey continuously, expose the exact point of failure, and score whether a change improved the result.
+Traditional feedback loops are slow. Interviews, support themes, and developer surveys remain useful, but they can take weeks to turn into a clear product decision. [Agent evaluations](/work/agentic-evals/) shorten one part of that loop. A coding agent attempts a representative task. Its trace shows where it stalled or chose the wrong path. A rubric scores the result against a no-context baseline and informs a ship-or-hold decision.
 
-Evals do not replace user research. They let a DevX team test a specific hypothesis before waiting for the next round of qualitative signal. Pair them with product telemetry and direct user evidence. Measure whether builders found the experience, completed the task, and returned.
+Evals do not replace user research. An eval delta tests whether the experience can complete the task. Product telemetry shows whether builders found it, completed the journey, and returned. Direct research explains why people behaved that way. Together, those signals let a DevX team test a specific hypothesis without pretending one score explains the user.
 
 ![An agentic evaluation loop from task to agent run to score to a ship-or-hold decision.](/img/work/agentic-evals.svg)
 

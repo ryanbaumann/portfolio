@@ -139,6 +139,9 @@ function validateEntry(collection, entry, seenSlugs) {
         }
       }
     }
+    if (meta.external || !hasDetailPage(entry)) {
+      failValidation(`${id}: aliases require a generated internal detail page`);
+    }
   }
   for (const field of ['title', 'summary']) {
     if (!meta[field] || typeof meta[field] !== 'string') failValidation(`${id}: missing required ${field}`);
@@ -152,6 +155,12 @@ function validateEntry(collection, entry, seenSlugs) {
   if (collection.name === 'writing' && !isValidIsoDate(meta.date)) failValidation(`${id}: writing date must be YYYY-MM-DD`);
   for (const field of ['external', 'canonical']) {
     if (meta[field] && !isValidUrl(meta[field])) failValidation(`${id}: ${field} must be an https, mailto, or root-relative URL`);
+  }
+  if (!WRITER_MODE && meta.canonical && !meta.external && hasDetailPage(entry) && meta.canonical.startsWith(site.siteUrl)) {
+    const expectedCanonical = absoluteUrl(entryUrl(collection.name, entry));
+    if (meta.canonical !== expectedCanonical) {
+      failValidation(`${id}: same-site canonical must match the generated detail URL: ${expectedCanonical}`);
+    }
   }
   if (meta.image) {
     if (!meta.imageAlt) failValidation(`${id}: imageAlt is required when image is set`);
@@ -1349,13 +1358,28 @@ function robotsTxt() {
 }
 
 function permanentRedirects(collections) {
+  if (WRITER_MODE) return {};
   const redirects = {};
+  const canonicalPaths = new Set(['/', '/demos/', ...COLLECTIONS.filter((item) => item.listPage).map((item) => `/${item.name}/`)]);
   for (const collection of COLLECTIONS) {
     for (const entry of collections[collection.name]) {
+      if (hasDetailPage(entry)) canonicalPaths.add(entryUrl(collection.name, entry));
+    }
+  }
+  const pagesDir = join(CONTENT_DIR, 'pages');
+  if (existsSync(pagesDir)) {
+    for (const file of readdirSync(pagesDir)) {
+      if (file.endsWith('.md') && !file.startsWith('_')) canonicalPaths.add(`/${file.replace(/\.md$/, '')}/`);
+    }
+  }
+  for (const collection of COLLECTIONS) {
+    for (const entry of collections[collection.name]) {
+      if (!hasDetailPage(entry) || entry.meta.external) continue;
       const target = entryUrl(collection.name, entry);
       for (const alias of entry.meta.aliases || []) {
         if (alias === target) failValidation(`${collection.name}/${entry.slug}: alias duplicates its canonical path: ${alias}`);
         if (redirects[alias]) failValidation(`${collection.name}/${entry.slug}: duplicate alias: ${alias}`);
+        if (canonicalPaths.has(alias)) failValidation(`${collection.name}/${entry.slug}: alias collides with a generated canonical path: ${alias}`);
         redirects[alias] = target;
       }
     }

@@ -465,14 +465,6 @@ const server = createServer(async (request, response) => {
 
     const app = findAppForPath(pathname);
     if (app) {
-      const permanentRedirect = app.redirects?.[pathname];
-      if (permanentRedirect) {
-        applySecurityHeaders(response);
-        response.writeHead(308, { Location: permanentRedirect + requestUrl.search });
-        response.end();
-        return;
-      }
-
       // Redirect the trailing-slash-less form (`/aqi-map`) to the canonical
       // directory URL (`/aqi-map/`). Apps use root-relative or
       // directory-relative asset URLs that assume they're served from
@@ -504,6 +496,15 @@ const server = createServer(async (request, response) => {
           response.end(loginPageHtml(app));
           return;
         }
+      }
+
+      const redirectPath = pathname.endsWith('/') ? pathname : `${pathname}/`;
+      const permanentRedirect = app.redirects?.[redirectPath];
+      if (permanentRedirect) {
+        applySecurityHeaders(response);
+        response.writeHead(308, { Location: permanentRedirect + requestUrl.search });
+        response.end();
+        return;
       }
 
       if (!app.available) {
