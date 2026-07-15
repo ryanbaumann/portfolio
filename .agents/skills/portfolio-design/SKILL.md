@@ -41,6 +41,10 @@ description: How Ryan designs. Use before changing style.css, page layouts in bu
 - `prefers-reduced-motion` kills all transitions.
 - Contrast: text tokens must hold ≥4.5:1 against `--bg` in both schemes: check both when touching tokens.
 
+## Review gate
+
+Run the `portfolio-review` skill for every public visual change. Verify file signatures and dimensions rather than trusting extensions, inspect desktop and mobile renders, and use an independent visual reviewer. For generated essay visuals, archive the final prompt and settings; the header, social preview, and inline evidence image must have distinct jobs.
+
 ## Lessons
 
 A past UI pass added a Google Fonts import, 3D tilt card hovers, gradient hero text, and scroll-reveal animations. None of that matched this skill: system fonts, a simple border-and-lift hover, novelty spent on writing, not chrome. It got pulled back out. Read this skill before touching `style.css` or page layouts. If you want to deviate on purpose, update this skill in the same PR, don't just drift from it.

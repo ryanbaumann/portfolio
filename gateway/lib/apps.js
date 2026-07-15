@@ -37,6 +37,27 @@ function hasIndexHtml(dir) {
   return existsSync(dir) && existsSync(join(dir, 'index.html'));
 }
 
+function loadRedirects(dir) {
+  if (!dir) return {};
+  const redirectsPath = join(dir, 'redirects.json');
+  if (!existsSync(redirectsPath)) return {};
+  let redirects;
+  try {
+    redirects = JSON.parse(readFileSync(redirectsPath, 'utf8'));
+  } catch (error) {
+    throw new Error(`Failed to parse redirects.json at ${redirectsPath}: ${error.message}`);
+  }
+  if (!redirects || typeof redirects !== 'object' || Array.isArray(redirects)) {
+    throw new Error(`Invalid redirects.json at ${redirectsPath}.`);
+  }
+  for (const [source, target] of Object.entries(redirects)) {
+    if (!/^\/[a-z0-9/-]+\/$/.test(source) || source.includes('//') || !/^\/[a-z0-9/-]+\/$/.test(target) || target.includes('//')) {
+      throw new Error(`Invalid redirect in ${redirectsPath}: ${source} -> ${target}`);
+    }
+  }
+  return redirects;
+}
+
 /**
  * @returns {{ apps: Array<object>, manifestPath: string|null, appsRoot: string }}
  */
@@ -77,6 +98,7 @@ export function loadApps(env = process.env) {
       dir,
       source,
       available: Boolean(dir),
+      redirects: loadRedirects(dir),
     };
   });
 

@@ -1,5 +1,16 @@
 # Changelog
 
+## 2026-07-15: DevX essay rewrite and durable URL redirects
+
+- Renamed the first essay route from `devex` to `devx`, updated its canonical metadata, and added an HTTP 308 alias so existing links keep working with query strings intact.
+- Rewrote the essay around owning developer friction, distributing improvements into builder workflows, and measuring outcomes with product evidence and agent evaluations.
+- Replaced the oversized text-heavy hero with a 16:9 growth-loop diagram, added a separate 1200×627 social card, and embedded a purpose-built agent-evaluation loop in the article.
+- Added reusable front-matter aliases for future detail-page renames and documented the workflow in the portfolio content skill.
+- Hardened aliases against slashless duplicates, canonical-page collisions, private-route disclosure, stale canonicals, external targets, and bodyless entries.
+- Installed Infographic Agent 3.2.0 and documented the required three-asset visual standard for every future hosted essay.
+- Archived the exact final image prompts and settings, including Gemini 3.1 Flash Image at 1K with high thinking, so all three visuals can be reproduced.
+- Added a mandatory portfolio review workflow for every publishable content change: deterministic copy, claim, link, URL, image, metadata, and browser checks plus a bounded independent maker/checker loop.
+
 ## 2026-07-14: DevEx is a Growth Discipline Essay Update
 
 - Published the rewritten "DevEx is a Growth Discipline" essay, focusing on the "builder experience" and scaling AI agents context deliverables.

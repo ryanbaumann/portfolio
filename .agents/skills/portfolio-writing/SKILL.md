@@ -32,6 +32,10 @@ Three sections, in order, each 1–2 short paragraphs:
 - Evidence from real work — link the artifact every time.
 - End with what to do about it, not a summary.
 
+## Review gate
+
+Before calling public prose ready, run the `portfolio-review` skill. Inventory every material claim, verify it against `docs/PORTFOLIO_EVIDENCE_LEDGER.md` or a primary source, check attribution and causality, then use an independent copy/claims reviewer. Unsupported copy is removed or qualified, never polished into plausibility.
+
 ## Syndicating a post to Substack
 
 Posts live here first. This site owns the canonical URL, has an RSS feed at

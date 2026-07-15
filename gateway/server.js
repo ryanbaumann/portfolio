@@ -498,6 +498,15 @@ const server = createServer(async (request, response) => {
         }
       }
 
+      const redirectPath = pathname.endsWith('/') ? pathname : `${pathname}/`;
+      const permanentRedirect = app.redirects?.[redirectPath];
+      if (permanentRedirect) {
+        applySecurityHeaders(response);
+        response.writeHead(308, { Location: permanentRedirect + requestUrl.search });
+        response.end();
+        return;
+      }
+
       if (!app.available) {
         sendHtml(request, response, 503, errorPageHtml({
           title: 'Demo not built',

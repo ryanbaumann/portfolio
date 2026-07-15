@@ -1,5 +1,12 @@
 # Learnings
 
+## 2026-07-15: Published content renames need server redirects, not duplicate pages
+
+Context: The first essay used `devex` in its public URL, while the preferred term and future title are `DevX`.
+Learning: Changing a slug and canonical tag is not enough. Published links need one declarative alias that the static build validates and the runtime turns into a permanent redirect. Rendering HTML at both paths creates duplicate content and does not guarantee an HTTP redirect.
+Evidence: The build now emits `redirects.json` from front-matter aliases, the gateway returns HTTP 308 while preserving the query string, and tests cover the runtime behavior.
+Use next time: When renaming a work, writing, or talk detail page, set the new `slug`, append the previous path to `aliases`, update `canonical`, and verify both the new 200 response and old 308 response.
+
 ## 2026-07-14: Light/Dark theme compatibility in SVG graphics using native CSS variables
 
 Context: Redesigning artifact cards (thumbnails) to look consistent in both light and dark modes without maintaining multiple static assets.
@@ -208,3 +215,17 @@ Context: The `portable-infographic-architect` script generated a very tall, vert
 Learning: Large language models default to vertical stacking (flex-direction: column) when generating HTML/CSS cards for infographics unless explicitly constrained otherwise. A long vertical image works on Pinterest but fails catastrophically as a hero image or embedded asset in an essay.
 Evidence: The initial DevX essay thumbnail was unreadably tall. Passing "WIDESCREEN LANDSCAPE 16:9 ASPECT RATIO REQUIRED. Arrange items horizontally side-by-side, NOT vertically." to the script's `--text` parameter successfully forced the LLM to generate a horizontal layout that fit perfectly within the blog design without stretching.
 Use next time: When using the `portable-infographic-architect` for blog thumbnails, hero images, or essay embeds, explicitly command the script to use a landscape/widescreen layout and horizontal item arrangement in the prompt. Do not leave the aspect ratio up to the model.
+
+## 2026-07-15: Image-generation settings can outpace an installed SDK
+
+Context: The DevX essay visual pass required Gemini 3.1 Flash Image at 1K with high thinking, but the locally installed Python SDK did not expose `image_size` or `thinking_level` in its typed configuration objects.
+Learning: Model support and client-library support can land at different times. Feature-detect optional SDK fields, and use the official REST request shape when a required generation setting is supported by the model but absent from the installed client.
+Evidence: Compatibility helpers keep the infographic skill runnable on the current SDK, while the successful final image requests used `imageConfig.imageSize: "1K"` and `thinkingConfig.thinkingLevel: "high"` through the Gemini API.
+Use next time: Confirm required image settings against the live client types before a render loop. Archive the exact model, request configuration, prompt, and uncropped source beside the finished asset.
+
+## 2026-07-15: Content quality needs separate deterministic and judgment gates
+
+Context: The DevX essay passed copy, redirect, and visual review, but an independent final check still found JPEG bytes stored behind a `.png` extension after the composition itself looked complete.
+Learning: A polished render cannot prove its file contract, and a green build cannot prove voice, causality, or taste. Public content needs deterministic checks for facts that tools can establish, plus independent reviewers for copy, claims, URL ownership, and visual judgment.
+Evidence: File-signature inspection caught the mislabeled social source; build and HTTP checks proved canonicals and 308 aliases; desktop/mobile captures exposed the actual reading experience; separate reviewers found issues the maker pass missed.
+Use next time: Run the `portfolio-review` maker/checker loop for every publishable change. Inventory claims and assets, verify mechanically first, split independent review by surface, correct one focused set of findings, and stop within three rounds or ask Ryan to decide.

@@ -106,3 +106,6 @@ ${publishAt ? `publishAt: ${publishAt}\n` : ''}${external ? `external: ${externa
 console.log(`[new-post] created portfolio/content/writing/${slug}.md`);
 console.log('[new-post] preview:  cd portfolio && node build.mjs && node serve.mjs');
 console.log('[new-post] voice:    .agents/skills/portfolio-writing/SKILL.md');
+if (!external) {
+  console.log('[new-post] visuals: replace the generic preview before publishing with a dedicated 1200x675 header, distinct 1200x627 social card, and at least one 1200x675 inline evidence image');
+}

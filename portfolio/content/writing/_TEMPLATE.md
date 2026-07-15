@@ -20,9 +20,13 @@ order: 99
 
 State the claim in the first paragraph and explain what a developer can do differently after reading.
 
+Before publishing, replace every placeholder with three distinct visuals: a 1200×675 thesis header, a 1200×627 raster social card, and at least one 1200×675 inline mechanism or evidence image. Give each image specific alt text. Do not reuse a generic title card.
+
 ## The evidence
 
 Use real work, public artifacts, and attributable metrics. Link the artifact every time. Credit the team when the work was shared.
+
+![Describe the specific mechanism or evidence shown.](/img/writing/post-title-evidence.png)
 
 ## What changed
 

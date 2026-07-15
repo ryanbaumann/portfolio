@@ -204,6 +204,7 @@ Use these repo-local skills when the task matches their scope:
 - `.agents/skills/google-maps-js-2d/SKILL.md` for focused Maps JavaScript API 2D Maps work: loader/imports, vector maps, Advanced Markers, overlays, deck.gl, WebGLOverlayView, Places widgets, and Mapbox-to-Google migration work.
 - `.agents/skills/google-maps-environment-apis/SKILL.md` for Google Maps Platform Environment APIs: Air Quality, Pollen, Solar, Weather, environmental heatmap tiles, quota, caching, source labeling, and environmental-data migrations.
 - `.agents/skills/frontend-responsive-design/SKILL.md` for responsive layout, accessibility, CSS architecture, Tailwind utility usage, and visual QA work.
+- `.agents/skills/portfolio-review/SKILL.md` for the mandatory pre-publication audit of copy, claims, links, canonicals, redirects, images, metadata, accessibility, and rendered desktop/mobile output.
 
 ## The agentic loop
 
@@ -212,6 +213,8 @@ Use these repo-local skills when the task matches their scope:
 3. Run the narrowest validation first, then the app build, then `node scripts/smoke.mjs` for gateway/apps.json changes.
 4. Before finishing, update `CHANGELOG.md` (every user-visible or behavioral change) and `LEARNINGS.md` (every surprise, root-caused bug, or environment gotcha, using the Context/Learning/Evidence/Use next time format).
 5. If a learning is durable, fold it into the matching skill in the same PR. The changelog records what happened, the learning log records why, and skills encode what to do next time.
+
+Every publishable portfolio content change must also run the `portfolio-review` skill. Use a maker/checker loop with at least one independent read-only reviewer; essays and multi-surface pages should separate copy/claims, links/URL ownership, and visual/rendered QA when agents are available. Deterministic checks run before and after each correction pass. Stop after at most three review rounds, stop earlier when all lanes are clean, and escalate unresolved evidence or taste decisions to Ryan instead of self-approving.
 
 ## Pull Request Expectations
 

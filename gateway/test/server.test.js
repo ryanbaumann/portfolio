@@ -127,7 +127,10 @@ test('server enforces public, unlisted, and private manifest behavior before sta
     mkdirSync(dir);
     writeFileSync(join(dir, 'index.html'), `${name} index`);
     writeFileSync(join(dir, 'asset.js'), `${name} asset`);
-    return { name, title: name, description: name, path: `/${name}/`, visibility, auth, dir, available: true };
+    return {
+      name, title: name, description: name, path: `/${name}/`, visibility, auth, dir, available: true,
+      redirects: name === 'public-demo' ? { '/public-demo/old/': '/public-demo/new/' } : {},
+    };
   };
   const injected = [
     makeApp('public-demo', 'public'),
@@ -145,6 +148,12 @@ test('server enforces public, unlisted, and private manifest behavior before sta
 
   try {
     assert.equal((await request(port, '/public-demo/')).res.statusCode, 200);
+    const redirect = await request(port, '/public-demo/old/?source=essay');
+    assert.equal(redirect.res.statusCode, 308);
+    assert.equal(redirect.res.headers.location, '/public-demo/new/?source=essay');
+    const slashlessRedirect = await request(port, '/public-demo/old?source=essay');
+    assert.equal(slashlessRedirect.res.statusCode, 308);
+    assert.equal(slashlessRedirect.res.headers.location, '/public-demo/new/?source=essay');
     assert.equal((await request(port, '/unlisted-demo/')).res.statusCode, 200);
     assert.equal((await request(port, '/private-demo/')).res.statusCode, 401);
     assert.equal((await request(port, '/private-demo/asset.js')).res.statusCode, 401);

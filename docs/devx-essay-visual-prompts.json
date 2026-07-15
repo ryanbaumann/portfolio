@@ -1,0 +1,34 @@
+{
+  "generator": "Gemini API generateContent",
+  "researchModel": "gemini-3.5-flash",
+  "iterationModel": "gemini-3.1-flash-lite-image",
+  "finalModel": "gemini-3.1-flash-image",
+  "finalConfig": {
+    "aspectRatio": "16:9",
+    "imageSize": "1K",
+    "thinkingLevel": "high",
+    "includeThoughts": true
+  },
+  "visuals": [
+    {
+      "role": "article header",
+      "output": "portfolio/static/assets/devx-growth-header.png",
+      "postProcess": "Removed the model's duplicated lower label row without altering the diagram, center-cropped to 16:9, and resized to 1200x675.",
+      "prompt": "Generate a professional infographic image for the header of an essay arguing that DevX is a growth discipline. Show one continuous operating system: observed developer friction becomes a shipped product improvement, that correct path is distributed inside editor and agent workflows, outcomes are measured, and the evidence feeds the next iteration. Human builders and AI coding agents both participate. The visual must reveal the system rather than repeat the essay title. Final production render in Ryan Baumann's presentation style: demo-first, one idea, visual evidence over words, clean system diagram. Edge-to-edge composition with little empty padding. Neutral warm paper background, charcoal ink, one restrained blue accent. No essay title. Use ONLY these text labels verbatim: 'Friction', 'Ship', 'Distribute', 'Measure'. Render each of those four labels exactly once, in one top row, directly above its corresponding stage. Never repeat a label below an icon. Four stages left to right with a feedback arrow. Friction shows an abstract failed-task signal using lines and a red error mark, with no readable code. Ship shows an abstract corrected product or code path using shapes and a blue check, with no readable code. Distribute shows abstract editor and coding-agent surfaces, with no interface text. Measure shows clearly rising unlabeled bars or an upward trend, with NO numeric value. Never invent a metric. No other words, pseudo-code, tiny text, gradients, neon, glassmorphism, stock art, decorative 3D, fake logos, or watermark.",
+      "refinementPrompt": "Edit the provided infographic image. Remove the duplicate bottom row of the labels 'Friction', 'Ship', 'Distribute', and 'Measure'. Keep only the single top row of those four labels. Preserve the icons, upward measurement chart, blue and red accents, outer feedback arrows, warm background, line weights, spacing, and every other part of the composition unchanged. Add no new text, symbols, or decoration."
+    },
+    {
+      "role": "social preview source",
+      "output": "portfolio/static/social/devx-growth-discipline-final-source.png",
+      "finalOutput": "portfolio/static/social/devx-growth-discipline.png",
+      "postProcess": "Center-cropped the uncropped source to the Open Graph ratio and resized to 1200x627; scripts/social-cards.mjs reproduces this crop.",
+      "prompt": "Generate a professional infographic image as the social preview for the essay 'DevX Is a Growth Discipline'. The visual hook is that DevX owns measurable business outcomes, not documentation output. Show a compact product-distribution-measurement system on the left and two separately grouped observed outcomes from Google Maps Platform open-source client libraries on the right. Do not imply that the operating-system diagram proves the strategy caused the metrics. Between March 2025 and March 2026, unique active users grew 300%, and API engagement grew approximately 200%. Final production social composition, distinct from the header, optimized for thumbnail legibility. Use exactly this title: 'DevX Is a Growth Discipline'. Use exactly this subtitle: 'Own outcomes, not documentation output'. Use exactly these metric labels: '300% unique active user growth' and '~200% API engagement growth'. Include exactly 'Observed Mar 2025–Mar 2026'. The left group is a minimal three-node loop labeled only 'Product', 'Distribution', 'Measurement'. The right group is labeled 'Observed outcomes'. Separate the groups visually with no causal arrow between them. Warm neutral paper, charcoal, restrained blue. No other words, case-study claim, URL, paragraph, tiny footer, gradients, neon, glass, stock art, fake logos, or watermark."
+    },
+    {
+      "role": "inline eval mechanism",
+      "output": "portfolio/static/assets/devx-eval-loop.png",
+      "postProcess": "Center-cropped to 16:9 and resized to 1200x675.",
+      "prompt": "Generate a professional infographic image that explains the agent evaluation evidence loop in a DevX essay. A representative developer task is attempted by a coding agent; the trace reveals a stall or wrong path; a rubric scores the result against a no-context baseline; the team makes a ship-or-hold decision; product telemetry and direct research answer different questions; the next product iteration begins. This visual must teach the mechanism, not advertise it. Final production render in Ryan Baumann's demo-first visual style. One left-to-right mechanism with an explicit feedback arrow, recognizable abstract trace and score artifacts, minimal exact labels. Use ONLY these labels verbatim: 'Task', 'Agent run', 'Trace', 'Rubric vs. baseline', 'Ship or hold', 'Telemetry', 'Research', 'Repeat'. Use abstract lines, nodes, bars, and decision shapes. Do not render pseudo-code, table contents, numeric scores, user-study labels, or any other text. Warm neutral background, charcoal ink, restrained blue accent. No title wall, generic card grid, paragraph, tiny text, gradients, neon, glass, stock art, decorative 3D, fake logos, or watermark."
+    }
+  ]
+}

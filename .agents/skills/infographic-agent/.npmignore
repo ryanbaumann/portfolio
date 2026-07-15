@@ -1,0 +1,4 @@
+# Exclude everything not needed in the published package
+node_modules/
+*.log
+.DS_Store
