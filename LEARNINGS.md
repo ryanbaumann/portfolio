@@ -1,5 +1,12 @@
 # Learnings
 
+## 2026-07-15 — Cloud Build ignores nested markdown files due to recursive ignore pattern
+
+Context: Static site content pages (`/about/`, `/contact/`, and other work/writing detail pages) returned 404 in production, while running successfully locally and passing the local gateway unit/smoke tests.
+Learning: `gcloud builds submit` respects `.gcloudignore`. If a generic pattern like `*.md` is specified, it matches recursively across all directories, excluding all content markdown files from the Cloud Build source context. This causes the static site generator to compile successfully but with zero CMS entries or standalone pages, producing 404s for any page other than the static directories.
+Evidence: The Cloud Build build logs showed `[portfolio] built 5 pages` instead of the expected 26. Changing `.gcloudignore` to use the anchored `/*.md` pattern matches only root markdown files and resolves the missing content in the built image.
+Use next time: Anchor file-type ignore patterns (like `*.md` or `*.json`) in `.gcloudignore` with a leading slash (`/*.md`) to prevent ignoring content and config files nested in nested directories.
+
 ## 2026-07-15: Published content renames need server redirects, not duplicate pages
 
 Context: The first essay used `devex` in its public URL, while the preferred term and future title are `DevX`.

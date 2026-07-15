@@ -8,5 +8,5 @@ gha-creds-*.json
 **/*.log
 apps/
 docs/
-*.md
+/*.md
 !.labs-artifacts/**

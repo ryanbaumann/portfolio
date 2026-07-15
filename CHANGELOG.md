@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-07-15: Fix recursive markdown ignore in Cloud Build
+
+- Fixed a bug where `.gcloudignore` used a recursive `*.md` pattern, which blocked all portfolio content pages (`about.md`, `contact.md`, and other work/writing/talks markdown files) from being uploaded to Google Cloud Build.
+- Anchored the pattern to the root (`/*.md`) to ensure only root-level markdown documentation is ignored, while nested CMS content builds correctly in the deployed image.
+
 ## 2026-07-15: DevX essay rewrite and durable URL redirects
 
 - Renamed the first essay route from `devex` to `devx`, updated its canonical metadata, and added an HTTP 308 alias so existing links keep working with query strings intact.
