@@ -47,7 +47,7 @@
     "source": { "type": "external" },
     "api": { "type": "none" },
     "tags": ["gemini-api", "agents"],
-    "preview": null
+    "preview": "/previews/infographic-agent.jpg"
   },
   {
     "name": "real-world-reasoning-agent",
@@ -57,7 +57,7 @@
     "source": { "type": "external" },
     "api": { "type": "none" },
     "tags": ["gemini-api", "agents", "google-maps-platform"],
-    "preview": null
+    "preview": "/previews/real-world-reasoning-agent.jpg"
   },
   {
     "name": "aqi-map",
