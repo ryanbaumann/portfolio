@@ -119,6 +119,8 @@ jobs:
           push: false
           load: true
           tags: ryan-baumann-portfolio
+          build-args: |
+            VITE_STRAVA_CLIENT_ID=smoke-test-placeholder-client-id
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
