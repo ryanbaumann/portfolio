@@ -13,6 +13,9 @@ picture.
   repo; portable portfolio workflows live under `.agents/skills/portfolio-*`
   for content, writing, design, and presenting. Its build reads the root `apps.json` (when present) to render
   the homepage Demos section and nav.
+- `agent-scripts/`: reusable, vendor-neutral system prompts, role overlays, and
+  behavioral evals. Each script is a self-contained GitHub package; public
+  summaries live in `portfolio/content/scripts/`.
 - `demos/strava-explorer/`: Vite app for exploring Strava activities on Google Maps Platform 3D Maps.
 - `demos/aqi-map/`: Vite app rendering Air Quality API heatmap tiles and point conditions on a 2D Google map.
 - `demos/isochrones/`: Vite + Node app for reachability analysis using Google Maps Platform Isochrones.
@@ -35,6 +38,10 @@ picture.
 - **Add a blog post:** `npm run new:post -- "Post title"` (add
   `--external <url>` for a link-out entry). Voice guidance:
   `.agents/skills/portfolio-writing/SKILL.md`.
+- **Add an agent script:** copy `agent-scripts/_TEMPLATE/` to a kebab-case
+  folder, add eval cases before tuning the prompt, then add the reader-facing
+  entry under `portfolio/content/scripts/`. Keep model IDs out of evergreen
+  prompt text.
 - **Schedule an essay:** `npm run new:post -- "Post title" --schedule 2026-07-14T16:00:00Z`. Preview and manage drafts at the private `/writer/` app. See `docs/WRITER_WORKFLOW.md`; public-repo drafts are not confidential.
 - **Regenerate demo screenshots:** `npm run previews` (uses
   strava-explorer's Playwright; `BASE_URL=https://www.ryanbaumann-portfolio.com`

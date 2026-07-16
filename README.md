@@ -9,6 +9,7 @@ The live site is https://www.ryanbaumann-portfolio.com/.
 ## What is inside
 
 * **Portfolio site** at `/`: a zero-dependency static site over a flat-file markdown CMS. It covers work, Field Notes, talks, and demos with only small inline theme and consent helpers.
+* **[Agent scripts](agent-scripts/README.md)**: reusable, vendor-neutral prompts, role contracts, and behavioral evals for software agents.
 * **Demo lab** under app paths: Strava 3D Explorer, Air Quality Map, and Isochrones, each built as a self-contained app.
 * **Gateway** in `gateway/`: a zero-npm-dependency Node server that serves the site, mounts each demo, and keeps secret-bearing API calls behind same-origin `/api/*` routes.
 * **Cloud Run container**: one deployable artifact for the site and every demo.
@@ -30,6 +31,7 @@ The portfolio narrative is intentionally grounded: solution architecture, develo
 ## Apps
 
 * **[Site / Portfolio](portfolio/README.md)**, served at `/`: Ryan's home page, work, writing, talks, and demo index.
+* **[Agent scripts](agent-scripts/README.md)**: copyable system prompts and role overlays with versioned regression cases.
 * **[Strava 3D Explorer](demos/strava-explorer/README.md)**: visualize Strava routes, endpoints, and photos in Google Maps Platform Photorealistic 3D.
 * **[Air Quality Map](demos/aqi-map/README.md)**: inspect live Air Quality API heatmap tiles and point conditions on a 2D Google map.
 * **[Isochrones](demos/isochrones/README.md)**: analyze delivery, commute, and response reachability with live-regenerating isochrone bands.

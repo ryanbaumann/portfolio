@@ -313,8 +313,8 @@ async function main() {
       }
     });
 
-    await check('site sections (/work/, /writing/, /talks/, /demos/, /about/) return 200', async () => {
-      for (const path of ['/work/', '/writing/', '/talks/', '/demos/', '/about/']) {
+    await check('site sections (/work/, /writing/, /scripts/, /talks/, /demos/, /about/) return 200', async () => {
+      for (const path of ['/work/', '/writing/', '/scripts/', '/talks/', '/demos/', '/about/']) {
         const response = await fetch(`${baseUrl}${path}`);
         if (response.status !== 200) throw new Error(`${path} returned ${response.status}`);
       }

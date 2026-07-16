@@ -36,6 +36,7 @@ if (Number.isNaN(BUILD_TIME.valueOf())) {
 const COLLECTIONS = [
   { name: 'work', label: 'Work', listPage: true, detailPages: true },
   { name: 'writing', label: 'Field Notes', listPage: true, detailPages: true },
+  { name: 'scripts', label: 'Agent Scripts', listPage: true, detailPages: true },
   { name: 'talks', label: 'Talks', listPage: true, detailPages: true },
 ];
 
@@ -152,7 +153,9 @@ function validateEntry(collection, entry, seenSlugs) {
   if (meta.draft === true && meta.noindex !== true) failValidation(`${id}: drafts must set noindex: true`);
   if (meta.publishAt && !isValidIsoTimestamp(meta.publishAt)) failValidation(`${id}: publishAt must be a UTC ISO-8601 timestamp ending in Z`);
   if (meta.draft !== true && meta.noindex === true && meta.canonical) failValidation(`${id}: published noindex entries should not also set canonical`);
-  if (collection.name === 'writing' && !isValidIsoDate(meta.date)) failValidation(`${id}: writing date must be YYYY-MM-DD`);
+  if (['writing', 'scripts'].includes(collection.name) && !isValidIsoDate(meta.date)) {
+    failValidation(`${id}: ${collection.name} date must be YYYY-MM-DD`);
+  }
   for (const field of ['external', 'canonical']) {
     if (meta[field] && !isValidUrl(meta[field])) failValidation(`${id}: ${field} must be an https, mailto, or root-relative URL`);
   }
@@ -461,6 +464,7 @@ function layout({ title, description, content, active = '', canonical, ogImage, 
   const navItems = [
     { href: `${BASE}work/`, label: 'Work', key: 'work' },
     { href: `${BASE}writing/`, label: 'Field Notes', key: 'writing' },
+    { href: `${BASE}scripts/`, label: 'Agent Scripts', key: 'scripts' },
     ...(demos.length ? [{ href: `${BASE}demos/`, label: 'Lab', key: 'demos' }] : []),
     { href: `${BASE}about/`, label: 'About', key: 'about' },
     { href: `${BASE}resume/`, label: 'Resume', key: 'resume' },
@@ -547,7 +551,7 @@ ${WRITER_MODE ? '<div class="writer-banner" role="status">Private writer preview
   <div class="site-branding">
   <a class="site-name" href="${BASE}">${escapeHtml(site.name)}</a>
   </div>
-  <nav class="site-nav">
+  <nav class="site-nav" aria-label="Primary">
   ${nav}
   </nav>
   <div class="header-actions">
@@ -565,6 +569,7 @@ ${content}
     <a href="${site.links.linkedin}" target="_blank" rel="noopener noreferrer">LinkedIn</a>
     ${site.links.x ? `<a href="${site.links.x}" target="_blank" rel="noopener noreferrer">X</a>` : ''}
     ${site.links.substack ? `<a href="${site.links.substack}" target="_blank" rel="noopener noreferrer">Substack</a>` : ''}
+    <a href="${BASE}scripts/">Agent Scripts</a>
     <a href="${BASE}talks/">Talks</a>
     <a href="${BASE}resume/">Resume</a>
     <a href="${BASE}privacy/">Privacy</a>
@@ -906,6 +911,8 @@ function jsonLdCreativeWork(entry, pageUrl) {
     url: pageUrl,
     author: { '@type': 'Person', name: site.name, url: absoluteUrl('/') },
   };
+  if (entry.meta.date) ld.datePublished = `${entry.meta.date}T00:00:00Z`;
+  if (entry.meta.updated) ld.dateModified = `${entry.meta.updated}T00:00:00Z`;
   if (entry.meta.org) ld.sourceOrganization = { '@type': 'Organization', name: entry.meta.org };
   if (entry.meta.image) ld.image = absoluteUrl(entry.meta.image);
   return ld;
@@ -942,10 +949,11 @@ function detailPage(collection, entry, activeKey) {
   const isWriting = collection.name === 'writing';
   const isTalk = collection.name === 'talks';
   const isWork = collection.name === 'work';
+  const isScript = collection.name === 'scripts';
 
   let jsonLd;
   if (isWriting) jsonLd = jsonLdBlogPosting(entry, pageUrl);
-  else if (isWork) jsonLd = jsonLdCreativeWork(entry, pageUrl);
+  else if (isWork || isScript) jsonLd = jsonLdCreativeWork(entry, pageUrl);
   else if (isTalk) jsonLd = jsonLdArticle(entry, pageUrl);
 
   const content = `<article class="prose">
@@ -1030,6 +1038,7 @@ function buildHome(collections) {
   const selectedWork = ['code-assist', 'agent-skills', 'agentic-growth']
     .map((slug) => bySlug('work', slug)).filter(Boolean);
   const writingEntries = collections.writing.slice(0, 2);
+  const scriptEntries = collections.scripts.slice(0, 2);
   const homeDemos = demos.filter(d => !d.hideOnHome);
   const demosSection = homeDemos.length
     ? `
@@ -1079,6 +1088,12 @@ function buildHome(collections) {
 <section>
   ${sectionHeader('Field Notes', 'Ideas you can use', `${BASE}writing/`, 'All field notes')}
   ${fieldNotesBody}
+</section>
+
+<section>
+  ${sectionHeader('Agent Scripts', 'Instructions you can fork', `${BASE}scripts/`, 'All agent scripts')}
+  <p class="section-note">${escapeHtml(site.sectionIntros?.scripts || '')}</p>
+  <ul class="rows">${scriptEntries.map((entry) => listRow('scripts', entry)).join('\n')}</ul>
 </section>
 
 <section>

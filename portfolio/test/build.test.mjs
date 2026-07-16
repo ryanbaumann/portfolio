@@ -19,7 +19,7 @@ function fixture() {
   const staticDir = join(root, 'static');
   const dist = join(root, 'dist');
   const manifest = join(root, 'apps.json');
-  for (const collection of ['work', 'writing', 'talks', 'pages']) mkdirSync(join(content, collection), { recursive: true });
+  for (const collection of ['work', 'writing', 'talks', 'scripts', 'pages']) mkdirSync(join(content, collection), { recursive: true });
   write(join(staticDir, 'share.svg'), '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630"></svg>');
   write(join(content, 'site.json'), JSON.stringify({
     name: 'Test Person',
@@ -32,7 +32,7 @@ function fixture() {
     aboutTeaser: 'A short background.',
     positioning: 'Build things.',
     answerEngineSummary: 'Test Person builds things.',
-    sectionIntros: { work: 'Work.', writing: 'Writing.', talks: 'Talks.', demos: 'Demos.' },
+    sectionIntros: { work: 'Work.', writing: 'Writing.', talks: 'Talks.', scripts: 'Reusable agent instructions.', demos: 'Demos.' },
     links: { github: 'https://github.com/example', linkedin: 'https://www.linkedin.com/in/example/' },
     siteUrl: 'https://example.com/',
     canonicalHost: 'example.com',
@@ -159,6 +159,25 @@ test('build lists public demos without disclosing private demos', () => {
   const demos = readFileSync(join(paths.dist, 'demos', 'index.html'), 'utf8');
   assert.match(demos, /Public demo/);
   assert.doesNotMatch(demos, /Private demo/);
+});
+
+test('build publishes agent scripts in navigation, homepage, index, and sitemap', () => {
+  const paths = fixture();
+  write(join(paths.content, 'scripts', 'coding-agent.md'), `---\ntitle: Loop Engineering Coding Agent\nsummary: A tested operating contract for coding agents.\ntype: System prompt\ndate: 2026-07-16\n---\n## Use it\n\nCopy the prompt.`);
+  const result = build(paths);
+  assert.equal(result.status, 0, result.stderr);
+  const home = readFileSync(join(paths.dist, 'index.html'), 'utf8');
+  const index = readFileSync(join(paths.dist, 'scripts', 'index.html'), 'utf8');
+  const detail = readFileSync(join(paths.dist, 'scripts', 'coding-agent', 'index.html'), 'utf8');
+  const sitemap = readFileSync(join(paths.dist, 'sitemap.xml'), 'utf8');
+  assert.match(home, /href="\/scripts\/">Agent Scripts<\/a>/);
+  assert.match(home, /Loop Engineering Coding Agent/);
+  assert.match(index, /Reusable agent instructions/);
+  assert.match(index, /Loop Engineering Coding Agent/);
+  assert.match(detail, /Copy the prompt/);
+  assert.match(detail, /"datePublished":"2026-07-16T00:00:00Z"/);
+  assert.match(detail, /aria-label="Primary"/);
+  assert.match(sitemap, /https:\/\/example\.com\/scripts\/coding-agent\//);
 });
 
 test('build rejects impossible ISO dates and unsafe drafts', () => {

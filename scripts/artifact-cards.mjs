@@ -125,6 +125,13 @@ const CARDS = [
 
 const FLOWS = [
   {
+    file: 'scripts/coding-agent-loop.svg',
+    eyebrow: 'BOUNDED ENGINEERING LOOP',
+    lead: 'Evidence turns agent work into an outcome',
+    steps: ['Contract', 'Observe', 'Change', 'Verify', 'Integrate', 'Learn or stop'],
+    footer: 'one orchestrator · scoped workers · explicit terminal state',
+  },
+  {
     file: 'writing/agent-session-header.svg',
     eyebrow: 'PLATFORM INTERFACE',
     lead: 'Developer intent becomes grounded action',
