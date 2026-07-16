@@ -11,6 +11,7 @@ All notable changes to this project will be documented in this file.
 - Added Agent Scripts to the portfolio navigation, homepage, sitemap, metadata, and a dedicated `/scripts/` collection with deterministic artifact and social visuals.
 
 ### Changed
+- Rewrote the Loop Engineering Coding Agent page for a more direct, evidence-based explanation of its boundaries, package contents, and evaluation limits.
 - Reviewed copy and claims across the site for a humble, durable dev-brand voice: qualitative framing for recent internal growth figures, generalized third-party agent tools to first-party surfaces, and team-credited leader-practitioner phrasing.
 - Encoded the copy taste rules into `portfolio-writing`, `portfolio-review`, and the evidence ledger so future work follows them.
 
