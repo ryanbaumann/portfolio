@@ -28,8 +28,8 @@ require 'Do not claim overall completion' 'worker completion boundary'
 require 'COMPLETE_NEEDS_VERIFICATION' 'unverified terminal state'
 
 bytes=$(wc -c < "$prompt")
-if (( bytes > 16000 )); then
-  printf 'FAIL prompt too large: %s bytes (limit 16000)\n' "$bytes"
+if (( bytes > 12000 )); then
+  printf 'FAIL prompt too large: %s bytes (limit 12000)\n' "$bytes"
   fail=1
 else
   printf 'PASS prompt size: %s bytes\n' "$bytes"
