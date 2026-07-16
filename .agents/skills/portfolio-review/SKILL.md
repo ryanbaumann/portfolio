@@ -18,8 +18,10 @@ Treat review as a bounded evidence loop, not a vibe check. Read the portfolio wr
 
 - Lead with the outcome and concrete work. Cut throat-clearing, generic summaries, repeated conclusions, and unsupported superlatives.
 - Check every number, date range, attribution, role, causal statement, and current product fact against a primary source, checked-in artifact, or Ryan-approved internal evidence.
+- Apply the metric taste rule: real numbers are fine for public/verifiable stats, prior-company results, and aged or long-public current-employer work; recent internal current-employer usage or growth figures (Google Maps Platform users, API engagement) must use qualitative, understated framing, never a precise percentage.
 - Distinguish observed correlation from causation. Put unrelated evidence in separately labeled groups.
-- Credit team work accurately. Remove or qualify anything the evidence does not support.
+- Credit team work accurately. Default to "Our team built… I led the strategy," not solo credit, but do not dilute genuinely individual work. Remove or qualify anything the evidence does not support.
+- Generalize third-party tools: name first-party surfaces (AI Studio), never enumerate competitor AI products. Flag employer product-marketing tone that reads as selling the platform or looking for work elsewhere.
 - Verify that the opening states the thesis, each section advances it, and the ending tells the reader what to do.
 - Search the changed prose for banned voice patterns such as passive self-credit, hype adjectives, resume bullets, and em dashes; then perform a human-quality read because style cannot be proven by a regex.
 

@@ -1,11 +1,20 @@
 # Portfolio Evidence Ledger
 
-Last reviewed: 2026-07-14
+Last reviewed: 2026-07-16
 
 Use this ledger before publishing a material claim or adding a product artifact.
 The approved copy is the widest claim currently supported. Team work must credit
 the team. Public product evidence does not, by itself, prove Ryan's role or an
 internal business result.
+
+Metrics are a taste decision, not just a public-vs-internal one. Real numbers are
+fine for public, verifiable stats (npm downloads), prior-company results, and
+current-employer figures that are a couple of years old or publicly launched for
+at least several months. Recent internal current-employer usage or growth figures
+(Google Maps Platform unique active users, API engagement) read as internal and
+sales-pitchy: use qualitative, understated framing and do not publish precise
+percentages. Name first-party surfaces (AI Studio); do not enumerate third-party
+or competitor tools.
 
 Statuses:
 
@@ -20,16 +29,16 @@ Statuses:
 | Claim | Status | Approved copy | Source | Retrieved | Notes |
 |---|---|---|---|---|---|
 | Developer Experience organization size | `approved-internal` | Led a 20+ person organization. | Approved strategy | 2026-07-13 | Describe the disciplines without implying every person reports directly to Ryan. |
-| OSS unique active-user growth | `approved-internal` | From March 2025 to March 2026, our open-source client libraries grew unique active users 300%. | Approved strategy | 2026-07-13 | Keep the population, period, and team attribution. Do not assign the full increase to one integration. |
-| OSS API-engagement growth | `approved-internal` | From March 2025 to March 2026, API engagement for our open-source client libraries grew approximately 200%. | Approved strategy | 2026-07-13 | Keep separate from unique active users. Use `approximately` or `~`. |
+| OSS unique active-user growth | `approved-internal` | Between early 2025 and 2026, our open-source ecosystem more than doubled its unique active users. | Approved strategy | 2026-07-16 | Recent internal current-employer metric: use qualitative, understated framing ("more than doubled," "significant growth"). Do not publish the precise percentage. Keep the period and team attribution; do not assign the increase to one integration. |
+| OSS API-engagement growth | `approved-internal` | Over the same period, API engagement for our open-source client libraries grew strongly. | Approved strategy | 2026-07-16 | Recent internal current-employer metric: use qualitative framing ("strong growth"). Do not publish the precise percentage. Keep separate from unique active users. |
 | `@vis.gl/react-google-maps` weekly downloads | `public-source` | `1M+ weekly downloads` on durable surfaces. | [npm downloads API](https://api.npmjs.org/downloads/point/last-week/%40vis.gl%2Freact-google-maps) | 2026-07-15 | API returned 1,444,054 downloads for 2026-07-08 through 2026-07-14. Verify again before using a newer dated value. |
 | Google Maps Platform reach | `public-source` | Google Maps Platform powers more than 10 million websites and apps. | [Google Maps Platform](https://mapsplatform.google.com/resources/blog/build-smarter-and-faster-new-ai-products-and-tools-from-google-maps-platform/) | 2026-07-13 | Platform scale, not a Ryan-attributed outcome. |
-| Code Assist product | `public-source` | The team shipped Code Assist, a Google-hosted remote MCP service that retrieves official Google Maps Platform documentation and samples for AI coding agents. | [Documentation](https://developers.google.com/maps/ai/code-assist), [launch post](https://mapsplatform.google.com/resources/blog/announcing-code-assist-toolkit-bring-google-maps-platform-expertise-to-your-ai-coding-assistant/) | 2026-07-13 | `I led the team` is separately `approved-internal`. |
+| Code Assist product | `public-source` | Our team shipped Code Assist, a hosted remote MCP service that retrieves official Google Maps Platform documentation and samples for AI coding agents. | [Documentation](https://developers.google.com/maps/ai/code-assist), [launch post](https://mapsplatform.google.com/resources/blog/announcing-code-assist-toolkit-bring-google-maps-platform-expertise-to-your-ai-coding-assistant/) | 2026-07-16 | `Google-hosted` is publicly accurate but prefer plain `hosted` in prose to avoid over-branding. Prefer "Our team shipped… I led the strategy"; `I led the team` is separately `approved-internal`. |
 | Code Assist reduces hallucinations | `qualify` | Agents retrieve current official documentation instead of relying only on training-data memory. | [Code Assist documentation](https://developers.google.com/maps/ai/code-assist) | 2026-07-13 | Do not say `far fewer hallucinations` without a publishable eval delta. |
-| Agent Skills product and installation | `public-source` | Google Maps Platform Agent Skills are portable workflow modules installed from the public repository with one command. | [GitHub](https://github.com/googlemaps/agent-skills), [documentation](https://developers.google.com/maps/ai/agent-skills) | 2026-07-13 | Verify the supported-agent list against current docs when naming individual clients. `I led the launch` is `approved-internal`. |
+| Agent Skills product and installation | `public-source` | Google Maps Platform Agent Skills are portable workflow modules installed from the public repository with one command. | [GitHub](https://github.com/googlemaps/agent-skills), [documentation](https://developers.google.com/maps/ai/agent-skills) | 2026-07-16 | Do not enumerate individual third-party clients: say installs "in AI Studio and other compatible agent environments." Prefer "Our team launched" / "I led the strategy" framing; `I led the launch` is `approved-internal`. |
 | Skills use eval release gates | `approved-internal` | We use evals as a release gate for agent skills. | Approved strategy | 2026-07-13 | Do not publish internal traces, tasks, or dashboards. |
 | Agentic eval suite | `approved-internal` | My team and I built task-based evals and benchmark launches against a no-context baseline. | Approved strategy | 2026-07-13 | Avoid the absolute `every launch` unless its exact scope is approved. |
-| AI Studio, Lovable, and Replit distribution | `qualify` | I led the team's client-library and AI distribution strategy across React, Compose, AI Studio, Lovable, and Replit. | Approved strategy | 2026-07-13 | Do not say `default connectors` until each default placement has a public source. Do not attach an unverified growth share to one partner. |
+| Client-library and AI distribution | `qualify` | I helped lead distribution strategy across major UI frameworks and agent environments, including AI Studio, working with teams across product, engineering, UX, DevX, DRE, technical writing, and field engineering. | Approved strategy | 2026-07-16 | Name first-party surfaces (AI Studio); do not enumerate third-party or competitor agent products. Say "compatible agent environments," not a name-brand list. Do not say `default connectors` or attach an unverified growth share to one partner. |
 | Agent-influenced adoption funnel | `approved-internal` | We measure skill installs and tool calls as adoption signals. | Approved strategy | 2026-07-13 | Do not expose internal dashboards or conversion data. |
 | AI-driven Voice of Developer | `approved-internal` | I created and lead a program that turns developer signals into evidence-backed roadmap priorities. | Ryan approval required for implementation | 2026-07-13 | Keep support tickets, customer data, rankings, and roadmap outputs private. Qualify `five-plus products`, `ten times the size`, and affordability absolutes unless separately approved. |
 | Geo Architecture Center | `public-source` | The Google Maps Platform Architecture Center publishes reference architectures, design patterns, guidance, and best practices. | [Architecture Center](https://developers.google.com/maps/architecture) | 2026-07-13 | Ryan's founder/principal-author role is `approved-internal`. Count the live catalog before publishing `40+`. Do not claim it resolves thousands of support threads. |
