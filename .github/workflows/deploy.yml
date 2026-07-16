@@ -81,8 +81,10 @@ jobs:
             echo "- RESEND_API_KEY (optional)"
             echo "- GEMINI_API_KEY (optional)"
             echo "- CONTACT_TO_EMAIL (optional)"
-            echo "- PORTFOLIO_WRITER_PASSWORD (required for /writer/)"
+            echo "- GOOGLE_OAUTH_CLIENT_SECRET (required for /writer/)"
+            echo "- GOOGLE_OAUTH_SESSION_SECRET (required for /writer/)"
             echo "- GITHUB_CONTENT_TOKEN (required for writer publishing)"
+            echo "- GITHUB_REVIEW_TOKEN (required for writer agent reviews)"
             exit 1
           fi
 
@@ -135,9 +137,11 @@ jobs:
           #     --update-secrets=RESEND_API_KEY=resend-api-key:latest \
           #     --update-secrets=GEMINI_API_KEY=gemini-api-key:latest \
           #     --update-secrets=CONTACT_TO_EMAIL=contact-to-email:latest \
-          #     --update-secrets=PORTFOLIO_WRITER_PASSWORD=portfolio-writer-password:latest \
+          #     --update-secrets=GOOGLE_OAUTH_CLIENT_SECRET=google-oauth-client-secret:latest \
+          #     --update-secrets=GOOGLE_OAUTH_SESSION_SECRET=google-oauth-session-secret:latest \
           #     --update-secrets=GITHUB_CONTENT_TOKEN=github-content-token:latest \
-          #     --set-env-vars=STRAVA_CLIENT_ID=<your Strava app's client id>,CONTACT_FROM_EMAIL=<verified sender>
+          #     --update-secrets=GITHUB_REVIEW_TOKEN=github-review-token:latest \
+          #     --set-env-vars=STRAVA_CLIENT_ID=<your Strava app's client id>,CONTACT_FROM_EMAIL=<verified sender>,GOOGLE_OAUTH_CLIENT_ID=<oauth-client-id>,WRITER_PUBLIC_ORIGIN=https://ryanbaumann-dashboardfolio.admin.com
           #
           # STRAVA_CLIENT_ID isn't secret on its own (it's public in the
           # OAuth authorize URL), so plain --set-env-vars is fine for it.

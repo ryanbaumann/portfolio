@@ -21,7 +21,8 @@ import {
 } from './lib/auth.js';
 import { handleStravaApi } from './lib/strava.js';
 import { handleIsochronesApi } from './lib/isochrones.js';
-import { publishWritingUpdate } from './lib/writer.js';
+import { publishWritingUpdate, requestWritingReview, saveWritingDraft } from './lib/writer.js';
+import { beginGoogleLogin, finishGoogleLogin, googleLoginPage, hasGoogleSession } from './lib/googleAuth.js';
 import { classifyContactSubmission } from './lib/contactSpam.js';
 import { errorPageHtml } from './lib/errorPage.js';
 import { proxyUpstream } from './lib/upstream.js';
@@ -236,8 +237,10 @@ async function handleWriterPublishRequest(request, response) {
     return;
   }
   const writerApp = appsByPathLength.find((app) => app.name === 'portfolio-writer');
-  const secret = writerApp?.auth?.envVar ? process.env[writerApp.auth.envVar] : null;
-  if (!writerApp || !secret || !verifyAuthCookie(request, writerApp.name, secret)) {
+  const authenticated = writerApp?.auth?.type === 'google-oauth'
+    ? hasGoogleSession(request)
+    : writerApp?.auth?.envVar && verifyAuthCookie(request, writerApp.name, process.env[writerApp.auth.envVar]);
+  if (!writerApp || !authenticated) {
     sendJson(request, response, 401, { error: 'Writer authentication required.' });
     return;
   }
@@ -272,6 +275,34 @@ async function handleWriterPublishRequest(request, response) {
   } catch (error) {
     sendJson(request, response, error.statusCode || 502, { error: error.message });
   }
+}
+
+async function handleWriterSaveRequest(request, response) {
+  if (request.method !== 'POST') return sendJson(request, response, 405, { error: 'Method not allowed' });
+  const writerApp = appsByPathLength.find((app) => app.name === 'portfolio-writer');
+  if (!writerApp || !hasGoogleSession(request)) return sendJson(request, response, 401, { error: 'Writer authentication required.' });
+  try {
+    const origin = new URL(String(request.headers.origin || ''));
+    if (origin.host !== request.headers.host) throw new Error('origin mismatch');
+    const params = new URLSearchParams(await readTextBody(request, 32 * 1024));
+    const result = await saveWritingDraft({ sourceSlug: String(params.get('sourceSlug') || ''), markdown: String(params.get('markdown') || '') });
+    applySecurityHeaders(response); response.writeHead(303, { Location: `/writer/?saved=${encodeURIComponent(result.sourceSlug)}`, 'Cache-Control': 'no-store' }); response.end();
+  } catch (error) { sendJson(request, response, error.statusCode || 502, { error: error.message }); }
+}
+
+async function handleWriterReviewRequest(request, response) {
+  if (request.method !== 'POST') return sendJson(request, response, 405, { error: 'Method not allowed' });
+  const writerApp = appsByPathLength.find((app) => app.name === 'portfolio-writer');
+  if (!writerApp || !hasGoogleSession(request)) return sendJson(request, response, 401, { error: 'Writer authentication required.' });
+  try {
+    const origin = new URL(String(request.headers.origin || ''));
+    if (origin.host !== request.headers.host) throw new Error('origin mismatch');
+    const params = new URLSearchParams(await readTextBody(request));
+    const result = await requestWritingReview({ sourceSlug: String(params.get('sourceSlug') || ''), comment: String(params.get('comment') || '') });
+    applySecurityHeaders(response);
+    response.writeHead(303, { Location: `/writer/?review=${encodeURIComponent(result.sourceSlug)}&issue=${encodeURIComponent(result.issueUrl)}`, 'Cache-Control': 'no-store' });
+    response.end();
+  } catch (error) { sendJson(request, response, error.statusCode || 502, { error: error.message }); }
 }
 
 function readJsonBody(request) {
@@ -354,6 +385,14 @@ async function handleApi(request, response, pathname, searchParams) {
 
   if (pathname === '/api/writer/publish') {
     await handleWriterPublishRequest(request, response);
+    return;
+  }
+  if (pathname === '/api/writer/save') {
+    await handleWriterSaveRequest(request, response);
+    return;
+  }
+  if (pathname === '/api/writer/review') {
+    await handleWriterReviewRequest(request, response);
     return;
   }
 
@@ -450,6 +489,20 @@ const server = createServer(async (request, response) => {
   const { pathname, searchParams } = requestUrl;
 
   try {
+    if (pathname === '/auth/google') {
+      const location = beginGoogleLogin(request, response);
+      applySecurityHeaders(response);
+      response.writeHead(303, { Location: location, 'Cache-Control': 'no-store' });
+      response.end();
+      return;
+    }
+    if (pathname === '/auth/google/callback') {
+      await finishGoogleLogin(request, response, searchParams);
+      applySecurityHeaders(response);
+      response.writeHead(303, { Location: '/writer/', 'Cache-Control': 'no-store' });
+      response.end();
+      return;
+    }
     if (pathname === '/healthz' || pathname.startsWith('/api/')) {
       await handleApi(request, response, pathname, searchParams);
       return;
@@ -505,8 +558,16 @@ const server = createServer(async (request, response) => {
       // Authorization MUST be checked before serveFromDir so that
       // static assets are never leaked to unauthenticated visitors.
       if (appVisibility(app) === 'private') {
-        const secret = process.env[app.auth.envVar];
-        if (!secret) {
+        if (app.auth?.type === 'google-oauth') {
+          if (!hasGoogleSession(request)) {
+            applySecurityHeaders(response);
+            response.writeHead(401, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store' });
+            response.end(googleLoginPage());
+            return;
+          }
+        } else {
+          const secret = process.env[app.auth.envVar];
+          if (!secret) {
           // Password env var not configured — refuse to serve.
           sendHtml(request, response, 503, errorPageHtml({
             title: 'Demo not available',
@@ -514,11 +575,12 @@ const server = createServer(async (request, response) => {
           }));
           return;
         }
-        if (!verifyAuthCookie(request, app.name, secret)) {
+          if (!verifyAuthCookie(request, app.name, secret)) {
           applySecurityHeaders(response);
           response.writeHead(401, { 'Content-Type': 'text/html; charset=utf-8' });
           response.end(loginPageHtml(app));
-          return;
+            return;
+          }
         }
       }
 

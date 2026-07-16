@@ -433,9 +433,10 @@ function loadCollection(name) {
     .filter((file) => file.endsWith('.md') && !file.startsWith('_'))
     .map((file) => {
       const fileSlug = file.replace(/\.md$/, '');
-      const { meta, body } = parseFrontMatter(readFileSync(join(dir, file), 'utf8'));
+      const raw = readFileSync(join(dir, file), 'utf8');
+      const { meta, body } = parseFrontMatter(raw);
       const slug = meta.slug || fileSlug;
-      return { slug, sourceSlug: fileSlug, meta, body };
+      return { slug, sourceSlug: fileSlug, meta, body, raw };
     })
     .sort((a, b) => {
       const orderA = a.meta.order ?? Number.MAX_SAFE_INTEGER;
@@ -998,30 +999,52 @@ function writerDashboard(entries) {
     <p class="eyebrow">${escapeHtml(status)}</p>
     <h2><a href="${BASE}writing/${entry.slug}/">${escapeHtml(entry.meta.title)}</a></h2>
     <p>${escapeHtml(entry.meta.summary)}</p>
+    <p class="writer-preview"><a href="${BASE}writing/${entry.slug}/">Open private preview</a></p>
   </div>
-  <form class="writer-form" method="post" action="/api/writer/publish" data-writer-form>
-    <input type="hidden" name="sourceSlug" value="${escapeHtml(entry.sourceSlug)}" />
-    <input type="hidden" name="publishAt" value="${escapeHtml(entry.meta.publishAt || '')}" />
-    <label>Publish time in your timezone
-      <input type="datetime-local" name="publishAtLocal" data-publish-at="${escapeHtml(entry.meta.publishAt || '')}" />
-    </label>
-    <div class="writer-actions">
-      <button class="button" type="submit" name="action" value="draft">Keep draft</button>
-      <button class="button" type="submit" name="action" value="schedule">Schedule</button>
-      <button class="button" type="submit" name="action" value="publish-now">Publish now</button>
-    </div>
-  </form>
+  <details class="writer-edit">
+    <summary>Edit and review</summary>
+    <form class="writer-form" method="post" action="/api/writer/save">
+      <input type="hidden" name="sourceSlug" value="${escapeHtml(entry.sourceSlug)}" />
+      <label>Source Markdown
+        <textarea name="markdown" rows="18" required>${escapeHtml(entry.raw)}</textarea>
+      </label>
+      <button class="button" type="submit">Save draft</button>
+    </form>
+    <form class="writer-form writer-review" method="post" action="/api/writer/review">
+      <input type="hidden" name="sourceSlug" value="${escapeHtml(entry.sourceSlug)}" />
+      <label>Note for the review agent <span>Optional. Tell the agent what changed or what feels uncertain.</span>
+        <textarea name="comment" rows="4" maxlength="4000" placeholder="Check the opening claim and whether the examples support it."></textarea>
+      </label>
+      <p class="field-note">Save first. The agent reviews the committed draft against the writing, review, and design skills.</p>
+      <button class="button" type="submit">Request agent review</button>
+    </form>
+  </details>
+  <details class="writer-publish">
+    <summary>Publishing controls</summary>
+    <form class="writer-form" method="post" action="/api/writer/publish" data-writer-form>
+      <input type="hidden" name="sourceSlug" value="${escapeHtml(entry.sourceSlug)}" />
+      <input type="hidden" name="publishAt" value="${escapeHtml(entry.meta.publishAt || '')}" />
+      <label>Publish time in your timezone
+        <input type="datetime-local" name="publishAtLocal" data-publish-at="${escapeHtml(entry.meta.publishAt || '')}" />
+      </label>
+      <div class="writer-actions">
+        <button class="button" type="submit" name="action" value="draft">Keep draft</button>
+        <button class="button" type="submit" name="action" value="schedule">Schedule</button>
+        <button class="button" type="submit" name="action" value="publish-now">Publish now</button>
+      </div>
+    </form>
+  </details>
 </article>`;
   }).join('\n');
 
   const content = `<section class="writer-dashboard">
   <p class="eyebrow">Private publishing</p>
-  <h1>Writer dashboard</h1>
-  <p class="lede">Preview unfinished essays, publish immediately, or choose a publish time. Publishing creates a focused commit on <code>main</code>; the scheduled deploy makes due essays public within an hour.</p>
+  <h1>Release dashboard</h1>
+  <p class="lede">Edit a draft, save it, ask an agent for a structured review, then publish only when the preview is ready. Every save creates a focused commit on <code>main</code>; the next deploy shows the iteration here.</p>
   <p class="writer-status" hidden role="status"></p>
   ${rows || '<p class="empty-state">No drafts or scheduled essays.</p>'}
 </section>
-<script>(()=>{const updated=new URLSearchParams(location.search).get('updated');const status=document.querySelector('.writer-status');if(updated&&status){status.textContent='Saved '+updated+'. GitHub is starting the next deploy.';status.hidden=false}const localValue=(iso)=>{if(!iso)return'';const d=new Date(iso);const part=(value)=>String(value).padStart(2,'0');return d.getFullYear()+'-'+part(d.getMonth()+1)+'-'+part(d.getDate())+'T'+part(d.getHours())+':'+part(d.getMinutes())};document.querySelectorAll('[data-writer-form]').forEach((form)=>{const field=form.elements.publishAtLocal;field.value=localValue(field.dataset.publishAt);form.addEventListener('submit',(event)=>{const action=event.submitter?.value;if(action==='publish-now'&&!window.confirm('Publish this essay now? This commits directly to the publishing branch.')){event.preventDefault();return}if(action!=='schedule')return;const local=field.value;if(!local){event.preventDefault();field.focus();return}const scheduled=new Date(local);if(Number.isNaN(scheduled.valueOf())||scheduled.valueOf()<=Date.now()){event.preventDefault();field.setCustomValidity('Choose a future publish time.');field.reportValidity();return}field.setCustomValidity('');form.elements.publishAt.value=scheduled.toISOString()})})})();</script>`;
+<script>(()=>{const params=new URLSearchParams(location.search);const changed=params.get('updated')||params.get('saved');const status=document.querySelector('.writer-status');if(changed&&status){status.textContent='Saved '+changed+'. GitHub is starting the next deploy.';status.hidden=false}const review=params.get('review');const issue=params.get('issue');if(review&&status){status.replaceChildren('Review requested for '+review+'. ');if(issue){const link=document.createElement('a');link.href=issue;link.textContent='Open review request';link.rel='noopener';status.append(link)}status.hidden=false}const localValue=(iso)=>{if(!iso)return'';const d=new Date(iso);const part=(value)=>String(value).padStart(2,'0');return d.getFullYear()+'-'+part(d.getMonth()+1)+'-'+part(d.getDate())+'T'+part(d.getHours())+':'+part(d.getMinutes())};document.querySelectorAll('[data-writer-form]').forEach((form)=>{const field=form.elements.publishAtLocal;field.value=localValue(field.dataset.publishAt);form.addEventListener('submit',(event)=>{const action=event.submitter?.value;if(action==='publish-now'&&!window.confirm('Publish this essay now? This commits directly to the publishing branch.')){event.preventDefault();return}if(action!=='schedule')return;const local=field.value;if(!local){event.preventDefault();field.focus();return}const scheduled=new Date(local);if(Number.isNaN(scheduled.valueOf())||scheduled.valueOf()<=Date.now()){event.preventDefault();field.setCustomValidity('Choose a future publish time.');field.reportValidity();return}field.setCustomValidity('');form.elements.publishAt.value=scheduled.toISOString()})})})();</script>`;
 
   writePage('index.html', layout({
     title: `Writer dashboard - ${site.name}`,

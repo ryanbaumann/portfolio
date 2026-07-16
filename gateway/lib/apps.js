@@ -140,8 +140,10 @@ export function validateManifestEntries(entries) {
       throw new Error(`Invalid visibility for app ${entry.name}: ${visibility}`);
     }
     if (visibility === 'private') {
-      if (entry.auth?.type !== 'password' || !ENV_VAR_PATTERN.test(entry.auth?.envVar || '')) {
-        throw new Error(`Private app ${entry.name} requires password auth with a valid envVar.`);
+      const passwordAuth = entry.auth?.type === 'password' && ENV_VAR_PATTERN.test(entry.auth?.envVar || '');
+      const googleAuth = entry.auth?.type === 'google-oauth' && entry.auth?.envVar === undefined;
+      if (!passwordAuth && !googleAuth) {
+        throw new Error(`Private app ${entry.name} requires password auth or Google OAuth authentication.`);
       }
     } else if (entry.auth !== undefined) {
       throw new Error(`Only private apps may define auth metadata (${entry.name}).`);

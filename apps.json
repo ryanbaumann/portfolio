@@ -13,17 +13,14 @@
   },
   {
     "name": "portfolio-writer",
-    "title": "Writer preview",
-    "description": "Private draft previews and publishing controls.",
+    "title": "Dashboard",
+    "description": "Private release previews, edits, and publishing controls.",
     "path": "/writer/",
     "dev_build_dir": "portfolio/writer-dist",
     "source": { "type": "workspace", "package": "portfolio", "output": "writer-dist" },
     "api": { "type": "gateway", "path": "/api/writer/publish" },
     "visibility": "private",
-    "auth": {
-      "type": "password",
-      "envVar": "PORTFOLIO_WRITER_PASSWORD"
-    },
+    "auth": { "type": "google-oauth" },
     "tags": [],
     "preview": null
   },

@@ -829,10 +829,17 @@ main > section.hero { margin-bottom: clamp(0.75rem, 2vw, 1.5rem); }
   border-top: 1px solid var(--line);
 }
 .writer-entry h2 { margin-bottom: 0.25rem; }
+.writer-preview { margin: 0.5rem 0 0; font-size: 0.92rem; }
 .writer-form { display: grid; gap: 0.75rem; }
 .writer-form label { display: grid; gap: 0.35rem; color: var(--muted); font-weight: 650; }
 .writer-form input[type="datetime-local"] { min-height: 44px; padding: 0.6rem; border: 1px solid var(--line); border-radius: 0.6rem; background: var(--surface); color: var(--ink); font: inherit; }
 .writer-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.writer-edit, .writer-publish { border-top: 1px dashed var(--line); padding-top: 0.75rem; }
+.writer-edit summary, .writer-publish summary { cursor: pointer; color: var(--accent); font-weight: 650; }
+.writer-edit textarea { width: 100%; resize: vertical; padding: 0.75rem; border: 1px solid var(--line); border-radius: 0.6rem; background: var(--surface); color: var(--ink); font: 0.86rem/1.5 ui-monospace, "SF Mono", monospace; }
+.writer-review { margin-top: 1.25rem; padding-top: 1.25rem; border-top: 1px solid var(--line); }
+.writer-review label span { color: var(--muted); font-size: 0.88rem; font-weight: 400; }
+.writer-review textarea { width: 100%; resize: vertical; padding: 0.75rem; border: 1px solid var(--line); border-radius: 0.6rem; background: var(--surface); color: var(--ink); font: inherit; }
 
 @media (min-width: 760px) {
   .build-section { grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); }
