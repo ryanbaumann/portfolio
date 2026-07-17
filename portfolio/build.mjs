@@ -1162,7 +1162,7 @@ function buildHome(collections) {
       <p class="hero-location">${escapeHtml(site.location)}</p>
     </div>
   </div>
-  <p class="eyebrow">${escapeHtml(site.tagline)}</p>
+
   <h1>${escapeHtml(site.heroHeadline || site.name)}</h1>
   <p class="lede">${escapeHtml(site.intro)}</p>
   <p class="hero-actions">
