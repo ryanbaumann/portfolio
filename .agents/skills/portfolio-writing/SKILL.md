@@ -41,19 +41,16 @@ Before calling public prose ready, run the `portfolio-review` skill. Inventory e
 
 ## Syndicating a post to Substack
 
-Posts live here first. This site owns the canonical URL, has an RSS feed at
-`/feed.xml`, and lets Google credit the original. Substack has no reliable
-RSS auto-import, so mirroring is a manual copy either way. When cross-posting:
+Posts live here first. This site owns the canonical URL and RSS feed. Substack
+documents RSS archive import but does not document a reliable external
+canonical control or write API. For ongoing syndication:
 
-1. Publish here first: `npm run new:post -- "Title"`, write it, `node portfolio/build.mjs`.
-2. Paste the body into a new Substack post.
-3. In Substack, set the canonical URL to the post's URL on this site
-   (`https://www.ryanbaumann-portfolio.com/writing/<slug>/`) so search
-   engines credit the original, not the mirror.
-4. For a post that started on Substack, do the reverse: add a hosted-here
-   entry with `canonical` pointing at the Substack URL (see
-   `content/writing/vibing-with-maps.md`), or leave it as an `external`
-   link-out. Never let two live URLs claim the same canonical.
+1. Publish and verify the Field Note here first.
+2. Publish a short Substack excerpt or Note with a tracked link to the full post.
+3. Do not mirror the full body unless a verified Substack setting can point its
+   canonical URL back to this site.
+4. Keep subscriber ownership and campaign naming aligned with
+   `docs/SYNDICATION.md`.
 
 ## Things Ryan never writes
 

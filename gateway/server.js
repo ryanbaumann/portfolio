@@ -135,12 +135,11 @@ function formResponsePage(title, message, statusCode = 200, { backHref = '/conta
 const contactResponsePage = (title, message, statusCode = 200) => formResponsePage(title, message, statusCode);
 const subscribeResponsePage = (title, message, statusCode = 200) => formResponsePage(title, message, statusCode, { backHref: '/writing/', backLabel: 'Field Notes' });
 
-// POST /api/subscribe — add an email address to the Resend audience that
-// powers the field-notes email list. Sends (broadcasts) are composed and
-// scheduled from the Resend dashboard; this route only manages membership.
+// POST /api/subscribe — add an email address to the Resend global Contacts
+// model, the internal Field Notes segment, and its user-facing Topic. Sends
+// are composed and scheduled from the Resend dashboard.
 // Same anti-bot posture as the contact form: honeypot field + rate limit.
-// Resend deduplicates contacts by email within an audience, so repeat
-// submissions are safe and get the same success page.
+// Repeat submissions re-enable the Field Notes topic and segment membership.
 async function handleSubscribeRequest(request, response) {
   if (request.method !== 'POST') {
     sendJson(request, response, 405, { error: 'Method not allowed' });
@@ -175,31 +174,63 @@ async function handleSubscribeRequest(request, response) {
     return;
   }
 
-  const { apiKey: resendApiKey, audienceId } = resolveProvider('resend', process.env);
-  if (!resendApiKey || !audienceId) {
-    sendHtml(request, response, 503, subscribeResponsePage('Subscriptions are not configured yet', 'The backend route is live, but RESEND_API_KEY and RESEND_AUDIENCE_ID must be set before it can store subscribers.', 503));
+  const { apiKey: resendApiKey, segmentId, topicId } = resolveProvider('resend', process.env);
+  if (!resendApiKey || !segmentId || !topicId) {
+    sendHtml(request, response, 503, subscribeResponsePage('Subscriptions are not configured yet', 'The backend route is live, but RESEND_API_KEY, RESEND_SEGMENT_ID, and RESEND_TOPIC_ID must be set before it can store subscribers.', 503));
     return;
   }
 
   let upstream;
   try {
-    upstream = await fetch(`https://api.resend.com/audiences/${encodeURIComponent(audienceId)}/contacts`, {
+    upstream = await fetch('https://api.resend.com/contacts', {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${resendApiKey}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ email, unsubscribed: false }),
+      body: JSON.stringify({
+        email,
+        unsubscribed: false,
+        segments: [{ id: segmentId }],
+        topics: [{ id: topicId, subscription: 'opt_in' }],
+      }),
       signal: AbortSignal.timeout(10_000),
     });
+
+    if (upstream.status === 409) {
+      const encodedEmail = encodeURIComponent(email);
+      const providerHeaders = {
+        Authorization: `Bearer ${resendApiKey}`,
+        'Content-Type': 'application/json',
+      };
+      const [contactUpdate, topicUpdate, segmentUpdate] = await Promise.all([
+        fetch(`https://api.resend.com/contacts/${encodedEmail}`, {
+          method: 'PATCH',
+          headers: providerHeaders,
+          body: JSON.stringify({ unsubscribed: false }),
+          signal: AbortSignal.timeout(10_000),
+        }),
+        fetch(`https://api.resend.com/contacts/${encodedEmail}/topics`, {
+          method: 'PATCH',
+          headers: providerHeaders,
+          body: JSON.stringify([{ id: topicId, subscription: 'opt_in' }]),
+          signal: AbortSignal.timeout(10_000),
+        }),
+        fetch(`https://api.resend.com/contacts/${encodedEmail}/segments/${encodeURIComponent(segmentId)}`, {
+          method: 'POST',
+          headers: providerHeaders,
+          signal: AbortSignal.timeout(10_000),
+        }),
+      ]);
+      const segmentAccepted = segmentUpdate.ok || segmentUpdate.status === 409;
+      upstream = { ok: contactUpdate.ok && topicUpdate.ok && segmentAccepted, status: contactUpdate.status };
+    }
   } catch {
     sendHtml(request, response, 502, subscribeResponsePage('Not subscribed', 'The mail provider could not be reached. Please try again later.', 502));
     return;
   }
 
-  // 409 means the contact already exists in the audience — success for the
-  // visitor's purposes, so treat it the same as a fresh signup.
-  if (!upstream.ok && upstream.status !== 409) {
+  if (!upstream.ok) {
     sendHtml(request, response, 502, subscribeResponsePage('Not subscribed', 'The mail provider did not accept the address. Please try again later.', 502));
     return;
   }

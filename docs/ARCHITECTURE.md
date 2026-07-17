@@ -1,11 +1,12 @@
-# Ryan Baumann Portfolio — Single-Container Architecture
+# Ryan Baumann Portfolio and Lab Architecture
 
-One container, one Cloud Run service: Ryan Baumann's personal site (the
-static-built portfolio) at the root path, every demo app as static assets
-under its own path, and a tiny zero-dependency Node gateway that routes
-between them and brokers all secret-bearing API calls. The canonical public
-URL is `https://www.ryanbaumann-portfolio.com/`. No access tokens or API
-secrets ever reach the browser.
+One Cloud Run service hosts Ryan Baumann's static-built portfolio, its
+workspace Lab apps, and a zero-dependency Node gateway that routes between
+them and brokers secret-bearing API calls. The shared `apps.json` manifest
+can also list external experiments, which render as outbound links instead of
+shipping in the container. The canonical public URL is
+`https://www.ryanbaumann-portfolio.com/`. No access tokens or server API
+secrets belong in browser bundles.
 
 ```text
 ┌────────────────────────────────────────────────────────────────────┐
@@ -24,19 +25,20 @@ secrets ever reach the browser.
 │       └── /api/*           → secret proxy layer                    │
 │            ├── /api/strava/*      (OAuth broker + photo proxy)     │
 │            ├── /api/isochrones    (GMP server)                     │
-│            ├── /api/subscribe     (email list → Resend audience)   │
+│            ├── /api/subscribe     (Resend Contact + Segment/Topic) │
 │            └── /api/writer/publish (authenticated GitHub update)   │
 └────────────────────────────────────────────────────────────────────┘
                   ▲
   secrets via Cloud Run env / Secret Manager:
-  STRAVA_CLIENT_SECRET, GMP_SERVER_API_KEY, PORTFOLIO_WRITER_PASSWORD,
-  GITHUB_CONTENT_TOKEN
+  STRAVA_CLIENT_SECRET, GMP_SERVER_API_KEY, RESEND_API_KEY,
+  GOOGLE_OAUTH_CLIENT_SECRET, GOOGLE_OAUTH_SESSION_SECRET,
+  GITHUB_CONTENT_TOKEN, GITHUB_REVIEW_TOKEN
 ```
 
 Routing and builds are manifest-driven: `apps.json` lists each app's mount
-`path`, `source` (`workspace` or immutable private `artifact`), and `api`
+`path`, `source` (`workspace`, immutable private `artifact`, or `external`), and `api`
 (`none`, gateway-owned, or authenticated private upstream). The gateway matches the most specific path first, so
-the root-mounted portfolio (`path: "/"`) is the catch-all after every demo
+the root-mounted portfolio (`path: "/"`) is the catch-all after every hosted app
 path has had its chance.
 
 Manifest entries default to `visibility: "public"`. `unlisted` apps remain
@@ -59,7 +61,7 @@ plain-HTTP gateway development URL.
 1. **Apps are registered build outputs.** A workspace package has a `package.json` whose
    `npm run build` emits static output, plus an `apps.json` entry, is an
    app; the gateway serves it at its manifest `path`. The same manifest
-   feeds the homepage Demos section and nav (`portfolio/build.mjs`), the
+   feeds the homepage Ryan’s Lab section and nav (`portfolio/build.mjs`), the
    local staging build, and the smoke test. Adding a demo =
    `npm run labs:new -- <name>`; a reviewed public checkout uses
    `labs:import`; confidential source publishes a checksum-pinned artifact
@@ -77,16 +79,17 @@ plain-HTTP gateway development URL.
    URIs derive from `window.location.origin` unless explicitly overridden.
 4. **Smoke tests are dependency-free.** `scripts/smoke.mjs` uses plain `fetch`
    against a running gateway: route liveness, HTML sanity, navigation
-   invariants (every demo and every site page links back home), the
+   invariants (every hosted app and every site page links back home), the
    apps.json ↔ `/api/apps` contract, OAuth URL shape, and a leaked-secret
    grep over every built asset. No Playwright required; must pass keyless.
 5. **CI never hands secrets to forks.** PR jobs build + smoke with dummy env
    only. Deploy runs on `main` pushes via Workload Identity Federation.
-6. **Scheduled publishing rebuilds.** Public content is immutable static output. A future `publishAt` stays out of detail pages, lists, RSS, and sitemap until an hourly deploy rebuilds at or after that timestamp. `/writer/` is a separate private static build; its publishing endpoint can only update known writing files after the private cookie and same-origin checks pass.
+6. **Scheduled publishing rebuilds.** Public content is immutable static output. A future `publishAt` stays out of detail pages, lists, RSS, and sitemap until an hourly deploy rebuilds at or after that timestamp. `/writer/` is a separate private static build; its publishing endpoint can only update known content files after Google OAuth, allowlisted-email, session, and same-origin checks pass.
 7. **The portfolio stays extractable.** `portfolio/` is a self-contained,
-   zero-dependency static site (flat-file markdown CMS, zero client JS).
+   zero-dependency static site (flat-file markdown CMS with small inline
+   theme, analytics, and configured comments helpers).
    Its only tie to this repo is optional: when `../apps.json` exists, the
-   build renders the Demos section and nav item; when it doesn't, they
+   build renders the Ryan’s Lab section and nav item; when it doesn't, they
    disappear cleanly.
 
 ## Build
@@ -115,8 +118,9 @@ deploys to Cloud Run on pushes to `main`. Required repo configuration:
 | var     | `ANALYTICS_MEASUREMENT_ID` | Optional public GA4 `G-...` stream ID |
 
 Runtime secrets (`STRAVA_CLIENT_SECRET`, `GMP_SERVER_API_KEY`,
-`RESEND_API_KEY`, `RESEND_AUDIENCE_ID`, `CONTACT_TO_EMAIL`, `GEMINI_API_KEY`,
-`PORTFOLIO_WRITER_PASSWORD`, and `GITHUB_CONTENT_TOKEN`) are set on the Cloud Run service
+`RESEND_API_KEY`, `RESEND_SEGMENT_ID`, `RESEND_TOPIC_ID`, `CONTACT_TO_EMAIL`,
+`GEMINI_API_KEY`, `GOOGLE_OAUTH_CLIENT_SECRET`, `GOOGLE_OAUTH_SESSION_SECRET`,
+`GITHUB_CONTENT_TOKEN`, and `GITHUB_REVIEW_TOKEN`) are set on the Cloud Run service
 as Secret Manager references, never in the image or repo. `CONTACT_FROM_EMAIL`
 is optional non-secret sender configuration and must use a sender accepted by
 the mail provider. `GEMINI_API_KEY` is optional when contact classification is
@@ -133,7 +137,8 @@ a `VITE_GEMINI_API_KEY`: Vite would expose it in the browser bundle.
 | Attach private build | `npm run labs:attach -- my-demo --artifact <tgz> --uri <content-addressed-gs-uri> --release <id>` |
 | Add a blog post | `npm run new:post -- "Post title"` |
 | Set up the email list or comments | `docs/EMAIL_LIST_AND_COMMENTS.md` |
-| Schedule a blog post | `npm run new:post -- "Post title" --schedule 2026-07-14T16:00:00Z` |
+| Schedule a blog post | `npm run new:post -- "Post title" --schedule 2099-07-14T16:00:00Z` |
+| Syndicate a Field Note | follow `docs/SYNDICATION.md` |
 | Add a work entry / talk | copy the `_TEMPLATE.md` in `portfolio/content/<collection>/` |
 | Regenerate demo screenshots | `npm run previews` (or `BASE_URL=https://www.ryanbaumann-portfolio.com npm run previews`) |
 | Verify everything | `npm run build && npm run smoke` |

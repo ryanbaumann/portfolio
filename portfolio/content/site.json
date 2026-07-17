@@ -4,8 +4,8 @@
   "tagline": "BUILDER PLATFORMS \u00b7 DEVELOPER TOOLS \u00b7 AI CODING AGENTS",
   "location": "San Francisco, CA",
   "heroHeadline": "Growing builder platforms for humans & agents.",
-  "profileHeadline": "Head of DevX Engineering, Google Maps",
-  "intro": "I lead DevX engineering & product teams, learning from users at scale & shipping platform capabilities that drive distribution & GTM growth. My mission is to help every human become a builder and create their dream.",
+  "profileHeadline": "Head of Developer Experience, Google Maps Platform",
+  "intro": "I lead Developer Experience engineering and product teams. We turn recurring developer friction into tools, evals, and reference apps that help humans and agents reach working code.",
   "heroStats": [],
   "description": "Ryan Baumann leads Developer Experience Engineering and product for builder platforms, focusing on tools, evals, and AI coding agents.",
   "aboutTeaser": "I lead Developer Experience Engineering and product. I stay close to the code by reviewing traces, writing evals, and shipping apps.",
@@ -13,7 +13,7 @@
     "work": "Shipped tools, open-source libraries, and experiments — the problem and result behind each.",
     "writing": "Notes on builder platforms, AI coding agents, evals, and open source.",
     "talks": "Demo-first talks on developer tools, AI-assisted development, and reliable generated code.",
-    "demos": "Labs are where I learn in public and share open-source work."
+    "demos": "Ryan\u2019s Lab is where I learn in public through working reference apps and experiments."
   },
   "links": {
     "github": "https://github.com/ryanbaumann",

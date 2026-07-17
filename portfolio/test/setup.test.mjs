@@ -12,7 +12,8 @@ test('setup writes separate browser, server, and contact configuration', () => {
     RESEND_API_KEY: 'resend-key',
     CONTACT_TO_EMAIL: 'owner@example.com',
     CONTACT_FROM_EMAIL: 'Portfolio <sender@example.com>',
-    RESEND_AUDIENCE_ID: 'audience-id',
+    RESEND_SEGMENT_ID: 'segment-id',
+    RESEND_TOPIC_ID: 'topic-id',
     GOOGLE_OAUTH_CLIENT_ID: 'google-client',
     GOOGLE_OAUTH_CLIENT_SECRET: 'google-secret',
     GOOGLE_OAUTH_SESSION_SECRET: 'session-secret',
@@ -26,7 +27,8 @@ test('setup writes separate browser, server, and contact configuration', () => {
   assert.match(generated, /^GMP_SERVER_API_KEY=server-key$/m);
   assert.match(generated, /^RESEND_API_KEY=resend-key$/m);
   assert.match(generated, /^CONTACT_TO_EMAIL=owner@example\.com$/m);
-  assert.match(generated, /^RESEND_AUDIENCE_ID=audience-id$/m);
+  assert.match(generated, /^RESEND_SEGMENT_ID=segment-id$/m);
+  assert.match(generated, /^RESEND_TOPIC_ID=topic-id$/m);
   assert.match(generated, /^GOOGLE_OAUTH_CLIENT_ID=google-client$/m);
   assert.match(generated, /^GOOGLE_OAUTH_CLIENT_SECRET=google-secret$/m);
   assert.match(generated, /^GOOGLE_OAUTH_SESSION_SECRET=session-secret$/m);

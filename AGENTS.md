@@ -12,7 +12,7 @@ picture.
   writing (the blog), talks, demos, about. Staged for extraction into its own
   repo; portable portfolio workflows live under `.agents/skills/portfolio-*`
   for content, writing, design, and presenting. Its build reads the root `apps.json` (when present) to render
-  the homepage Demos section and nav.
+  the homepage Ryan’s Lab section and nav.
 - `agent-scripts/`: reusable, vendor-neutral system prompts, role overlays, and
   behavioral evals. Each script is a self-contained GitHub package; public
   summaries live in `portfolio/content/scripts/`.
@@ -20,7 +20,7 @@ picture.
 - `demos/aqi-map/`: Vite app rendering Air Quality API heatmap tiles and point conditions on a 2D Google map.
 - `demos/isochrones/`: Vite + Node app for reachability analysis using Google Maps Platform Isochrones.
 - `gateway/`: zero-npm-dependency Node server that serves the portfolio at
-  the root path, every demo app's static build (both routed via the root
+  the root path, every workspace demo app's static build (both routed via the root
   `apps.json` manifest, most-specific path first), and same-origin `/api/*`
   proxies for every secret-bearing call (Strava OAuth, Isochrones). This is
   what actually runs in production; the per-app dev servers above are for
@@ -42,7 +42,7 @@ picture.
   folder, add eval cases before tuning the prompt, then add the reader-facing
   entry under `portfolio/content/scripts/`. Keep model IDs out of evergreen
   prompt text.
-- **Schedule an essay:** `npm run new:post -- "Post title" --schedule 2026-07-14T16:00:00Z`. Preview and manage drafts at the private `/writer/` app. See `docs/WRITER_WORKFLOW.md`; public-repo drafts are not confidential.
+- **Schedule an essay:** `npm run new:post -- "Post title" --schedule 2099-07-14T16:00:00Z`. Preview and manage drafts at the private `/writer/` app. See `docs/WRITER_WORKFLOW.md`; public-repo drafts are not confidential.
 - **Regenerate demo screenshots:** `npm run previews` (uses
   strava-explorer's Playwright; `BASE_URL=https://www.ryanbaumann-portfolio.com`
   to shoot production).
@@ -134,7 +134,7 @@ Run commands from the app directory unless noted.
 ## Code Style
 
 - Use modern JavaScript modules in `demos/strava-explorer/src/`, `demos/aqi-map/src/`, and `demos/isochrones/src/`; preserve the existing no-framework Vite architecture unless explicitly asked to migrate.
-- Keep `portfolio/` dependency-free: its build is `node build.mjs`; client JavaScript is limited to small inline theme and consent-controlled analytics helpers (see `.agents/skills/portfolio-design/SKILL.md`).
+- Keep `portfolio/` dependency-free: its build is `node build.mjs`; client JavaScript is limited to small inline theme, privacy-limited analytics, and configured comments helpers (see `.agents/skills/portfolio-design/SKILL.md`).
 - Use descriptive names for geospatial values: `lat`, `lng`, `altitude`, `bounds`, `coordinates`, `polyline`, `featureCollection`.
 - Avoid broad rewrites, hidden formatting churn, and unrelated dependency upgrades.
 - Do not add `try`/`catch` blocks around imports.

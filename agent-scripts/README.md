@@ -31,8 +31,8 @@ agent-scripts/<script-name>/
    should act and cases where it must not act.
 5. Keep model IDs and vendor-specific configuration outside the evergreen
    prompt. Document optional adapters separately.
-6. Add the reader-facing entry under `portfolio/content/scripts/` and rebuild
-   the portfolio.
+6. Add an optional reader-facing field note under `portfolio/content/writing/`
+   and rebuild the portfolio.
 
 When several harnesses can consume the same prompt, include a short task packet
 that users can give their existing agent to install it. Tell that agent to use

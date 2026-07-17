@@ -1,6 +1,6 @@
 # Google Analytics setup
 
-The portfolio already implements consent-controlled GA4 loading. The Google tag is not requested until a visitor chooses **Allow analytics**, advertising signals stay denied, URLs are stripped to origin + path, and demos are not instrumented. Setup only requires a GA4 web stream and its public Measurement ID.
+The production portfolio loads GA4 by default when a Measurement ID is configured. Advertising storage and personalization signals stay denied. Page locations are stripped to origin and path, with only four validated campaign parameters sent separately. Ryan’s Lab applications are not instrumented by the portfolio tag. Setup requires a GA4 web stream and its public Measurement ID.
 
 ## 1. Create the GA4 property
 
@@ -19,7 +19,7 @@ Google requires an Editor role or higher to create a property. See [Add a GA4 pr
 4. Create the stream.
 5. In **Stream details**, copy the Measurement ID. It starts with `G-`. See [Find your Measurement ID](https://support.google.com/analytics/answer/12270356).
 
-Do not paste Google's manual tag snippet into the site. The portfolio build already owns tag loading and consent behavior.
+Do not paste Google's manual tag snippet into the site. The portfolio build already owns tag loading, privacy boundaries, and event behavior.
 
 ## 3. Give the deploy workflow the Measurement ID
 
@@ -32,23 +32,19 @@ Do not paste Google's manual tag snippet into the site. The portfolio build alre
 
 The workflow forwards the variable into the portfolio build. An empty value keeps Analytics disabled.
 
-## 4. Verify consent before looking at reports
+## 4. Verify collection before looking at reports
 
-1. Open the production site in a fresh private browsing window.
+1. Open the production site in a fresh private browsing window with content blockers disabled for this test.
 2. Open browser developer tools and filter Network requests for `googletagmanager`, `google-analytics`, and `collect`.
-3. Reload. Confirm there are no matching requests before making a consent choice.
-4. Select **No thanks**, reload, and confirm there are still no matching requests.
-5. Clear site data or use another private window. Select **Allow analytics**.
-6. Confirm `gtag/js?id=G-...` loads and a GA4 `page_view` request follows.
-7. Navigate to another portfolio page and check **Reports > Realtime** in GA4. Realtime data can take a few minutes to appear.
-
-The persistent **Analytics settings** control in the footer lets you change the stored choice.
+3. Reload. Confirm `gtag/js?id=G-...` loads and a GA4 `page_view` request follows.
+4. Open a URL containing the approved `utm_source`, `utm_medium`, `utm_campaign`, and `utm_content` fields. Confirm those values appear as campaign parameters while an arbitrary query parameter does not.
+5. Navigate to another portfolio page and check **Reports > Realtime** in GA4. Realtime data can take a few minutes to appear.
 
 ## 5. Mark a successful contact as a key event
 
 The site sends `generate_lead` only after the email provider confirms delivery and the browser reaches `/contact-success/?delivered=1`.
 
-1. With analytics allowed, submit a real test message through the production contact form.
+1. Submit a real test message through the production contact form.
 2. In GA4, open **Admin > Data display > Events**.
 3. Find `generate_lead` under recent events and select its star to mark it as a key event. If it has not appeared yet, wait for event processing and retry.
 4. Verify it in **Reports > Realtime**, then delete or label the test message in the receiving inbox.
@@ -59,10 +55,13 @@ Marking an existing event affects reporting from that point forward and can take
 
 Start with the events already emitted by the site:
 
-- `page_view` after consent
+- `page_view` with sanitized campaign attribution
 - `select_content` for work, writing, talk, and demo links
 - `share` for article sharing links
 - `form_start` and `form_submit`
 - `generate_lead` after confirmed delivery
+- `sign_up` after a confirmed Field Notes subscription
 
 Do not add form text, names, email addresses, OAuth values, activity IDs, locations, coordinates, route geometry, photos, or raw errors to analytics parameters. The privacy boundary is documented in `portfolio/content/pages/privacy.md`.
+
+For the syndication naming convention and creative-comparison workflow, see [`docs/SYNDICATION.md`](SYNDICATION.md).

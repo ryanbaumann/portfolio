@@ -2,17 +2,17 @@
 
 ![Ryan Baumann Portfolio homepage screenshot](portfolio/static/previews/portfolio.jpg)
 
-This repo is the public home for Ryan Baumann's portfolio and demo lab. It is part personal site, part runnable reference architecture, and part proof that developer experience work should ship as real artifacts.
+This repo is the public home for Ryan Baumann's portfolio and Ryan’s Lab. It is part personal site, part runnable reference architecture, and part proof that developer experience work should ship as real artifacts.
 
 The live site is https://www.ryanbaumann-portfolio.com/.
 
 ## What is inside
 
-* **Portfolio site** at `/`: a zero-dependency static site over a flat-file markdown CMS. It covers work, Field Notes, talks, and demos with only small inline theme and consent helpers.
+* **Portfolio site** at `/`: a zero-dependency static site over a flat-file markdown CMS. It covers work, Field Notes, talks, and Ryan’s Lab with small inline theme and privacy-limited analytics helpers.
 * **[Agent scripts](agent-scripts/README.md)**: reusable, vendor-neutral prompts, role contracts, and behavioral evals for software agents.
-* **Demo lab** under app paths: Strava 3D Explorer, Air Quality Map, and Isochrones, each built as a self-contained app.
+* **Ryan’s Lab** at `/demos/`: workspace reference apps hosted with the portfolio plus selected external experiments.
 * **Gateway** in `gateway/`: a zero-npm-dependency Node server that serves the site, mounts each demo, and keeps secret-bearing API calls behind same-origin `/api/*` routes.
-* **Cloud Run container**: one deployable artifact for the site and every demo.
+* **Cloud Run container**: one deployable artifact for the site and its workspace apps. External Lab entries remain separate destinations.
 
 The portfolio narrative is intentionally grounded: solution architecture, developer experience, forward-deployed incubation at Google Maps Platform, and product growth leadership. The codebase backs that up with live apps, public docs, shipped links, tests, smoke checks, and a changelog.
 
@@ -24,17 +24,19 @@ The portfolio narrative is intentionally grounded: solution architecture, develo
 | Build the whole container locally | `npm run build` |
 | Run the production gateway locally | `npm start` |
 | Smoke-test routes, assets, proxies, and secret leaks | `npm run smoke` |
-| Add a demo app | `npm run new:demo -- my-demo --title "My Demo"` |
+| Add a Lab app | `npm run labs:new -- my-demo --template static` |
 | Add a blog post | `npm run new:post -- "Post title"` |
 | Regenerate demo screenshots | `npm run previews` |
 
 ## Apps
 
-* **[Site / Portfolio](portfolio/README.md)**, served at `/`: Ryan's home page, work, writing, talks, and demo index.
+* **[Site / Portfolio](portfolio/README.md)**, served at `/`: Ryan's home page, work, Field Notes, talks, and Ryan’s Lab index.
 * **[Agent scripts](agent-scripts/README.md)**: copyable system prompts and role overlays with versioned regression cases.
 * **[Strava 3D Explorer](demos/strava-explorer/README.md)**: visualize Strava routes, endpoints, and photos in Google Maps Platform Photorealistic 3D.
 * **[Air Quality Map](demos/aqi-map/README.md)**: inspect live Air Quality API heatmap tiles and point conditions on a 2D Google map.
 * **[Isochrones](demos/isochrones/README.md)**: analyze delivery, commute, and response reachability with live-regenerating isochrone bands.
+* **Infographic Agent**: an external portable-skill experiment linked from Ryan’s Lab.
+* **Atlas, Real World Reasoning Agent**: an external map-agent experiment linked from Ryan’s Lab.
 
 ## Local development
 
@@ -61,7 +63,7 @@ cd portfolio && node build.mjs && node serve.mjs
 
 ## Architecture in one paragraph
 
-`portfolio/` builds static HTML into `portfolio/dist/`. Each demo builds its own static bundle. `scripts/build-local.mjs` stages those outputs under `apps/<name>/`, matching the Docker runtime layout. `gateway/server.js` serves the portfolio at the root, mounts demo apps from `apps.json` by most-specific path first, and proxies secret-bearing calls through server-side routes. See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the full design.
+`portfolio/` builds static HTML into `portfolio/dist/`. Each workspace app builds its own static bundle. `scripts/build-local.mjs` stages those outputs under `apps/<name>/`, matching the Docker runtime layout. `gateway/server.js` serves the portfolio at the root, mounts workspace apps from `apps.json` by most-specific path first, and proxies secret-bearing calls through server-side routes. External manifest entries render as outbound Lab links. See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the full design.
 
 ## Security posture
 

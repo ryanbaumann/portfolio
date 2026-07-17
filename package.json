@@ -1,7 +1,7 @@
 {
   "name": "ryan-baumann-portfolio",
   "private": true,
-  "description": "Ryan Baumann portfolio container: site + demo lab. See docs/ARCHITECTURE.md.",
+  "description": "Ryan Baumann portfolio container and Ryan’s Lab. See docs/ARCHITECTURE.md.",
   "scripts": {
     "setup": "node scripts/setup.mjs",
     "build": "node scripts/build-local.mjs",

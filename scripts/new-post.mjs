@@ -10,7 +10,7 @@
 //   npm run new:post -- "Launch post" --external https://example.com/launch
 //   npm run new:post -- "My post" --summary "One-line summary for lists."
 //   npm run new:post -- "Ready to publish" --publish
-//   npm run new:post -- "Publish later" --schedule 2026-07-14T16:00:00Z
+//   npm run new:post -- "Publish later" --schedule 2099-07-14T16:00:00Z
 //
 // Voice and structure guidance: .agents/skills/portfolio-writing/SKILL.md
 

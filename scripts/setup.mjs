@@ -35,7 +35,8 @@ async function main() {
   const RESEND_API_KEY = await ask('   Resend API key');
   const CONTACT_TO_EMAIL = await ask('   Contact destination email');
   const CONTACT_FROM_EMAIL = await ask('   Verified sender', 'Portfolio Contact <onboarding@resend.dev>');
-  const RESEND_AUDIENCE_ID = await ask('   Resend audience ID (subscribe form)');
+  const RESEND_SEGMENT_ID = await ask('   Resend Field Notes segment ID');
+  const RESEND_TOPIC_ID = await ask('   Resend Field Notes topic ID');
 
   console.log('\n4. Private release dashboard (optional for local development)');
   const GOOGLE_OAUTH_CLIENT_ID = await ask('   Google OAuth client ID');
@@ -62,7 +63,8 @@ async function main() {
     RESEND_API_KEY,
     CONTACT_TO_EMAIL,
     CONTACT_FROM_EMAIL,
-    RESEND_AUDIENCE_ID,
+    RESEND_SEGMENT_ID,
+    RESEND_TOPIC_ID,
     GOOGLE_OAUTH_CLIENT_ID,
     GOOGLE_OAUTH_CLIENT_SECRET,
     GOOGLE_OAUTH_SESSION_SECRET,
@@ -94,7 +96,8 @@ VITE_ISOCHRONES_GMP_API_KEY=${values.VITE_ISOCHRONES_GMP_API_KEY}
 RESEND_API_KEY=${values.RESEND_API_KEY}
 CONTACT_TO_EMAIL=${values.CONTACT_TO_EMAIL}
 CONTACT_FROM_EMAIL=${values.CONTACT_FROM_EMAIL}
-RESEND_AUDIENCE_ID=${values.RESEND_AUDIENCE_ID || ''}
+RESEND_SEGMENT_ID=${values.RESEND_SEGMENT_ID || ''}
+RESEND_TOPIC_ID=${values.RESEND_TOPIC_ID || ''}
 
 # Private release dashboard
 GOOGLE_OAUTH_CLIENT_ID=${values.GOOGLE_OAUTH_CLIENT_ID || ''}

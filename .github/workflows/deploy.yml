@@ -2,12 +2,13 @@ name: Deploy to Cloud Run
 
 # Single-container deploy (see docs/ARCHITECTURE.md). This replaces the
 # previous two-part deploy (GCS bucket for strava-explorer's static build +
-# a separate Cloud Run OAuth broker): the gateway and every app's static
-# build now ship in one image, built with Cloud Build and deployed to one
-# Cloud Run service. There is no GCS step anymore.
+# a separate Cloud Run OAuth broker): the gateway and every workspace app's
+# static build ship in one image, built with Cloud Build and deployed to one
+# Cloud Run service. External Lab entries remain separate destinations.
 #
 # Runtime secrets (STRAVA_CLIENT_SECRET, GMP_SERVER_API_KEY, RESEND_API_KEY, GEMINI_API_KEY,
-# CONTACT_TO_EMAIL, PORTFOLIO_WRITER_PASSWORD, GITHUB_CONTENT_TOKEN) and public
+# CONTACT_TO_EMAIL, GOOGLE_OAUTH_CLIENT_SECRET, GOOGLE_OAUTH_SESSION_SECRET,
+# GITHUB_CONTENT_TOKEN, GITHUB_REVIEW_TOKEN) and public
 # config (STRAVA_CLIENT_ID) are set once on the Cloud Run
 # service, not passed through this workflow on every deploy — see the
 # comment above the `gcloud run deploy` step for the one-time setup
@@ -79,7 +80,8 @@ jobs:
             echo "- STRAVA_CLIENT_SECRET"
             echo "- GMP_SERVER_API_KEY"
             echo "- RESEND_API_KEY (optional)"
-            echo "- RESEND_AUDIENCE_ID (optional, email-list subscriptions)"
+            echo "- RESEND_SEGMENT_ID (optional, email-list subscriptions)"
+            echo "- RESEND_TOPIC_ID (optional, email-list preferences)"
             echo "- GEMINI_API_KEY (optional)"
             echo "- CONTACT_TO_EMAIL (optional)"
             echo "- GOOGLE_OAUTH_CLIENT_SECRET (required for /writer/)"
@@ -136,7 +138,8 @@ jobs:
           #     --update-secrets=STRAVA_CLIENT_SECRET=strava-client-secret:latest \
           #     --update-secrets=GMP_SERVER_API_KEY=gmp-server-api-key:latest \
           #     --update-secrets=RESEND_API_KEY=resend-api-key:latest \
-          #     --update-secrets=RESEND_AUDIENCE_ID=resend-audience-id:latest \
+          #     --update-secrets=RESEND_SEGMENT_ID=resend-segment-id:latest \
+          #     --update-secrets=RESEND_TOPIC_ID=resend-topic-id:latest \
           #     --update-secrets=GEMINI_API_KEY=gemini-api-key:latest \
           #     --update-secrets=CONTACT_TO_EMAIL=contact-to-email:latest \
           #     --update-secrets=GOOGLE_OAUTH_CLIENT_SECRET=google-oauth-client-secret:latest \

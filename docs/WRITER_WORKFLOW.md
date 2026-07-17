@@ -14,10 +14,10 @@ noindex: false
 # Public on the first scheduled deploy after this UTC time
 draft: false
 noindex: false
-publishAt: 2026-07-14T16:00:00Z
+publishAt: 2099-07-14T16:00:00Z
 ```
 
-Create a safe draft with `npm run new:post -- "Essay title"`. Use `--publish` for immediate publication or `--schedule 2026-07-14T16:00:00Z` to scaffold a scheduled essay.
+Create a safe draft with `npm run new:post -- "Essay title"`. Use `--publish` for immediate publication or `--schedule 2099-07-14T16:00:00Z` to scaffold a scheduled essay.
 
 ## Writer page
 

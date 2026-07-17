@@ -13,7 +13,8 @@ export const PROVIDER_REGISTRY = Object.freeze({
     apiKey: 'RESEND_API_KEY',
     toEmail: 'CONTACT_TO_EMAIL',
     fromEmail: 'CONTACT_FROM_EMAIL',
-    audienceId: 'RESEND_AUDIENCE_ID',
+    segmentId: 'RESEND_SEGMENT_ID',
+    topicId: 'RESEND_TOPIC_ID',
   }),
   gemini: Object.freeze({
     apiKey: 'GEMINI_API_KEY',

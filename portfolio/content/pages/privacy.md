@@ -1,10 +1,10 @@
 ---
 title: Privacy
 eyebrow: Privacy
-summary: How this portfolio handles contact details, optional analytics, demo data, and third-party services.
+summary: How this portfolio handles analytics, contact details, email subscriptions, Lab data, and third-party services.
 ---
 
-This portfolio collects as little data as practical. The public pages work without an account, advertising tags, or personalized tracking.
+Effective July 17, 2026. This portfolio collects as little data as practical. Public pages work without an account or personalized advertising.
 
 ## Contact
 
@@ -12,24 +12,26 @@ The contact form sends your selected intent, message, name, and email address to
 
 ## Email list
 
-The subscribe form stores your email address with a server-managed email provider so Ryan can send occasional updates about new essays, talks, and demos. The address is used for nothing else and is never published. Every email includes a one-click unsubscribe link, which removes the address from the list.
+The subscribe form sends your email address to Resend so Ryan can send occasional updates about new essays, talks, and Ryan’s Lab. Resend retains the contact, subscription status, and delivery history. Every marketing email includes an unsubscribe link. Unsubscribing changes your delivery preference; it does not necessarily delete the contact record. Only addresses that directly opt in, or that can be traced to a prior explicit opt-in, belong on this list.
 
 ## Comments
 
 Comments on field notes, where enabled, are GitHub Discussions rendered by the open-source [giscus](https://giscus.app) widget. Posting requires signing in to GitHub inside the widget; comments are public and stored by GitHub under its own [privacy practices](https://docs.github.com/site-policy/privacy-policies). This site never sees your GitHub credentials.
 
-## Optional portfolio analytics
+## Portfolio analytics
 
-Portfolio analytics are off until you explicitly allow them. If enabled, the site may measure page views and low-cardinality actions such as selecting a work item or completing the contact form. Analytics events must not contain names, email addresses, form text, OAuth values, activity IDs, place names, coordinates, route geometry, photos, or raw errors.
+Google Analytics is on by default on the production portfolio. It measures page paths, a sanitized internal referrer, approved campaign tags (`utm_source`, `utm_medium`, `utm_campaign`, and `utm_content`), and low-cardinality actions such as selecting a content item, subscribing, or completing the contact form. Advertising storage and personalization signals are disabled.
 
-You can change this choice at any time from the analytics settings control in the footer. The demo applications remain outside this analytics scope until each one passes a separate privacy review.
+Arbitrary query parameters are excluded. Analytics events must not contain names, email addresses, form text, OAuth values, activity IDs, place names, coordinates, route geometry, photos, or raw errors. Google may still receive normal request and device information, including an IP address and browser details, under [Google’s privacy policy](https://policies.google.com/privacy). Browser privacy controls and content blockers may limit this collection. Ryan’s Lab applications remain outside the portfolio analytics scope unless an individual app says otherwise.
 
-## Demo applications
+## Ryan’s Lab
 
-The Strava 3D Explorer, Air Quality Map, and Isochrones demos call third-party services to provide their core functionality. Strava Explorer can process account and activity data after you choose to connect Strava. Review the relevant provider terms and privacy policies before connecting an account or submitting a location.
+Same-origin Lab applications can call third-party services to provide their core functionality. Strava 3D Explorer can process account and activity data after you choose to connect Strava. Air Quality Map and Isochrones can send a selected location to their supporting APIs. Do not submit a location or connect an account unless you accept the relevant provider terms and privacy practices.
+
+Ryan’s Lab also links to experiments hosted outside this portfolio. Those destinations run separately and are governed by their own privacy notices and providers.
 
 ## Third-party links
 
-Links to GitHub, LinkedIn, Substack, YouTube, Google, npm, and other sites take you to services with their own privacy practices. This policy covers the portfolio and its same-origin demo applications, not those external sites.
+Links to GitHub, LinkedIn, Substack, X, YouTube, Google, npm, and other sites take you to services with their own privacy practices. This policy covers the portfolio and same-origin Lab applications, not external sites.
 
 Questions about this policy can be sent through [the contact form](/contact/).

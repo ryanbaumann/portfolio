@@ -114,6 +114,8 @@ test('build emits published aliases and omits redirects from writer previews', (
   let result = build(paths);
   assert.equal(result.status, 0, result.stderr);
   assert.deepEqual(JSON.parse(readFileSync(join(paths.dist, 'redirects.json'), 'utf8')), {
+    '/lab/': '/demos/',
+    '/labs/': '/demos/',
     '/writing/previous/': '/writing/current/',
   });
 
@@ -201,7 +203,19 @@ test('build omits the analytics script entirely when no measurement id is config
   assert.doesNotMatch(home, /Google tag \(gtag\.js\)/);
 });
 
-test('default social images keep their real alt text and resume renders its portrait', () => {
+test('configured analytics is host-gated, campaign-limited, and records subscriptions', () => {
+  const paths = fixture();
+  const result = build(paths, { ANALYTICS_MEASUREMENT_ID: 'G-TEST123' });
+  assert.equal(result.status, 0, result.stderr);
+  const home = readFileSync(join(paths.dist, 'index.html'), 'utf8');
+  assert.match(home, /hostAllowed/);
+  assert.match(home, /document\.createElement\('script'\)/);
+  assert.match(home, /campaign_source:cleanCampaignValue/);
+  assert.match(home, /campaign_content:cleanCampaignValue/);
+  assert.match(home, /event\('sign_up',\{method:'field_notes'\}\)/);
+});
+
+test('default social images keep their real alt text and resume stays compact without a portrait', () => {
   const paths = fixture();
   write(join(paths.staticDir, 'portrait.svg'), '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 460 460"></svg>');
   write(join(paths.content, 'pages', 'privacy.md'), `---\ntitle: Privacy\nsummary: Privacy page\n---\nPrivacy details.`);
@@ -213,7 +227,9 @@ test('default social images keep their real alt text and resume renders its port
   const home = readFileSync(join(paths.dist, 'index.html'), 'utf8');
   assert.match(home, /<meta property="og:image:alt" content="Test Person portfolio preview\."/);
   assert.match(privacy, /<meta property="og:image:alt" content="Test Person portfolio preview\."/);
-  assert.match(resume, /<img class="article-hero profile-portrait" src="\/portrait\.svg" alt="Test Person headshot\."/);
+  assert.doesNotMatch(resume, /article-hero profile-portrait/);
+  assert.match(resume, /class="hero-actions page-actions"/);
+  assert.match(resume, /Read Field Notes/);
 });
 
 test('build writes a styled 404 page with a link home', () => {

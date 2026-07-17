@@ -2,7 +2,7 @@
   {
     "name": "portfolio",
     "title": "Ryan Baumann",
-    "description": "Home: work, writing, talks, and the demo lab.",
+    "description": "Home: work, Field Notes, talks, and Ryan’s Lab.",
     "path": "/",
     "dev_build_dir": "portfolio/dist",
     "source": { "type": "workspace", "package": "portfolio", "output": "dist" },
@@ -39,7 +39,7 @@
   {
     "name": "infographic-agent",
     "title": "Infographic Agent",
-    "description": "A portable skill that generates accurate, visually stunning infographics from text using Gemini Flash and Playwright.",
+    "description": "A portable skill that turns source text into researched infographic PNGs using Gemini.",
     "path": "https://infographic-agent-gajikud3na-uc.a.run.app/",
     "source": { "type": "external" },
     "api": { "type": "none" },

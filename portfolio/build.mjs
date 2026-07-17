@@ -463,10 +463,8 @@ const CSS = readFileSync(join(ROOT, 'style.css'), 'utf8');
 function layout({ title, description, content, active = '', canonical, ogImage, ogImageAlt, shareTitle, shareSummary, ogType, articleDate, articleUpdated, robots, jsonLd, contactDelivery }) {
   const navItems = [
     { href: `${BASE}work/`, label: 'Work', key: 'work' },
-    { href: `${BASE}writing/`, label: 'Field Notes', key: 'writing' },
-    ...(demos.length ? [{ href: `${BASE}demos/`, label: 'Lab', key: 'demos' }] : []),
+    ...(demos.length ? [{ href: `${BASE}demos/`, label: 'Ryan\u2019s Lab', key: 'demos' }] : []),
     { href: `${BASE}about/`, label: 'About', key: 'about' },
-    { href: `${BASE}resume/`, label: 'Resume', key: 'resume' },
   ];
   const nav = navItems
     .map((item) => `<a href="${item.href}"${item.key === active ? ' aria-current="page"' : ''}>${item.label}</a>`)
@@ -556,7 +554,8 @@ ${WRITER_MODE ? '<div class="writer-banner" role="status">Private writer preview
   ${nav}
   </nav>
   <div class="header-actions">
-    <a class="header-cta${active === 'contact' ? ' is-active' : ''}" href="${BASE}contact/"${active === 'contact' ? ' aria-current="page"' : ''}>Contact</a>
+    <a class="header-cta${active === 'writing' ? ' is-active' : ''}" href="${BASE}writing/"${active === 'writing' ? ' aria-current="page"' : ''}>Field Notes</a>
+    <a class="header-contact${active === 'contact' ? ' is-active' : ''}" href="${BASE}contact/"${active === 'contact' ? ' aria-current="page"' : ''}>Contact</a>
     <button class="theme-toggle" type="button" aria-label="Color theme: system. Activate to use light."><span aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="13" rx="2"></rect><path d="M8 21h8M12 17v4"></path></svg></span></button>
   </div>
 </header>
@@ -571,6 +570,7 @@ ${content}
     ${site.links.x ? `<a href="${site.links.x}" target="_blank" rel="noopener noreferrer">X</a>` : ''}
     ${site.links.substack ? `<a href="${site.links.substack}" target="_blank" rel="noopener noreferrer">Substack</a>` : ''}
     <a href="${BASE}talks/">Talks</a>
+    ${demos.length ? `<a href="${BASE}demos/">Ryan\u2019s Lab</a>` : ''}
     <a href="${BASE}resume/">Resume</a>
     <a href="${BASE}privacy/">Privacy</a>
     <a href="${BASE}contact/">Contact</a>
@@ -588,17 +588,20 @@ function analyticsMarkup() {
   if (!measurementId) return '';
   const canonicalHost = String(site.canonicalHost || '');
   return `<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=${measurementId}"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
 
   const canonicalHost=${JSON.stringify(canonicalHost)};
   const debug=new URLSearchParams(location.search).get('analytics_debug')==='1';
   const hostAllowed=location.hostname===canonicalHost||debug;
 
   if (hostAllowed) {
+    const analyticsScript=document.createElement('script');
+    analyticsScript.async=true;
+    analyticsScript.src='https://www.googletagmanager.com/gtag/js?id=${measurementId}';
+    document.head.appendChild(analyticsScript);
+    gtag('js', new Date());
     gtag('consent','default',{ad_storage:'denied',ad_user_data:'denied',ad_personalization:'denied',analytics_storage:'granted'});
     gtag('set','ads_data_redaction',true);
     gtag('config', '${measurementId}', {send_page_view:false,allow_google_signals:false,allow_ad_personalization_signals:false});
@@ -610,13 +613,22 @@ function analyticsMarkup() {
     const sanitizedLocation=location.origin+location.pathname;
     const sanitizedReferrer=()=>{try{const value=new URL(document.referrer);return value.origin===location.origin?value.origin+value.pathname:''}catch{return ''}};
     const event=(name,params)=>{if(window.gtag)window.gtag('event',name,params||{})};
+    const cleanCampaignValue=(value)=>/^[a-z0-9][a-z0-9_-]{0,63}$/i.test(value||'')?value.toLowerCase():'';
+    const query=new URLSearchParams(location.search);
+    const campaign={campaign_source:cleanCampaignValue(query.get('utm_source')),campaign_medium:cleanCampaignValue(query.get('utm_medium')),campaign_name:cleanCampaignValue(query.get('utm_campaign')),campaign_content:cleanCampaignValue(query.get('utm_content'))};
+    for(const key of Object.keys(campaign)){if(!campaign[key])delete campaign[key]}
 
-    event('page_view',{page_location:sanitizedLocation,page_referrer:sanitizedReferrer()});
+    event('page_view',{page_location:sanitizedLocation,page_referrer:sanitizedReferrer(),...campaign});
 
     const delivered=document.querySelector('meta[name="contact-delivery"][content="success"]')&&new URLSearchParams(location.search).get('delivered')==='1';
     if(delivered&&!sessionStorage.getItem('contact-lead-recorded')){
       event('generate_lead',{currency:'USD',value:0});
       sessionStorage.setItem('contact-lead-recorded','1');
+    }
+    const subscribed=location.pathname.endsWith('/subscribed/')&&query.get('ok')==='1';
+    if(subscribed&&!sessionStorage.getItem('field-notes-sign-up-recorded')){
+      event('sign_up',{method:'field_notes'});
+      sessionStorage.setItem('field-notes-sign-up-recorded','1');
     }
 
     let formStarted=false;
@@ -807,7 +819,7 @@ function featuredNote(entry) {
   return `<a class="featured-note" href="${url}" data-analytics-type="writing" data-analytics-id="${escapeHtml(entry.slug)}"${external ? ' target="_blank" rel="noopener noreferrer"' : ''}>
   ${thumb}
   <div class="featured-note-body">
-    <p class="featured-note-meta">${longDate ? `Latest · ${escapeHtml(longDate)}` : 'Latest'}</p>
+    <p class="featured-note-meta">${longDate ? `Featured · ${escapeHtml(longDate)}` : 'Featured'}</p>
     <h3>${escapeHtml(meta.title)}${external ? ' ↗' : ''}</h3>
     <p>${escapeHtml(meta.summary || '')}</p>
     <span class="featured-note-action">Read the note →</span>
@@ -835,13 +847,13 @@ function shareLinks(pageUrl, title) {
 }
 
 // Email-list signup. Plain form POST to the gateway's /api/subscribe route
-// (Resend audience) — works with zero client JavaScript. Sends go out from
+// (Resend contact, segment, and topic) — works with zero client JavaScript. Sends go out from
 // the Resend dashboard whenever there is something worth announcing.
 function subscribeSection() {
   return `<section class="subscribe" aria-labelledby="subscribe-title">
   <p class="eyebrow">Email list</p>
   <h2 id="subscribe-title">Get new field notes by email</h2>
-  <p>One email when a new essay, talk, or demo ships. No noise, and every send has a one-click unsubscribe.</p>
+  <p>One email when a new essay, talk, or Ryan’s Lab project ships. No noise, and every send has a one-click unsubscribe.</p>
   <form class="subscribe-form" action="${BASE}api/subscribe" method="post">
     <label for="subscribe-email">Email address</label>
     <div class="subscribe-controls">
@@ -1130,11 +1142,11 @@ function buildHome(collections) {
   const selectedWork = ['code-assist', 'agent-skills', 'agentic-growth']
     .map((slug) => bySlug('work', slug)).filter(Boolean);
   const writingEntries = collections.writing.slice(0, 3);
-  const homeDemos = demos.filter(d => !d.hideOnHome);
+  const homeDemos = demos.filter(d => !d.hideOnHome).slice(0, 3);
   const demosSection = homeDemos.length
     ? `
 <section>
-  ${sectionHeader('The lab', '', `${BASE}demos/`, 'All demos')}
+  ${sectionHeader('Ryan\u2019s Lab', '', `${BASE}demos/`, 'Explore Ryan\u2019s Lab')}
   <p class="section-note">${escapeHtml(site.sectionIntros?.demos || '')}</p>
   <div class="grid demo-grid">
     ${homeDemos.map(demoCard).join('\n')}
@@ -1170,12 +1182,14 @@ function buildHome(collections) {
   <h1>${escapeHtml(site.heroHeadline || site.name)}</h1>
   <p class="lede">${escapeHtml(site.intro)}</p>
   <p class="hero-actions">
-    <a class="button button-primary" href="${BASE}work/">See selected work</a>
-    <a class="text-link" href="${BASE}writing/">Read the field notes →</a>
+    <a class="button button-primary" href="${BASE}writing/">Read Field Notes</a>
+    <a class="button button-secondary" href="${BASE}contact/">Start a conversation</a>
+    <a class="text-link" href="${BASE}work/">See selected work →</a>
   </p>
   ${stats}
 </section>
 
+${demosSection}
 <section>
   ${sectionHeader('Field Notes', 'Learnings from users', `${BASE}writing/`, 'All field notes')}
   ${fieldNotesBody}
@@ -1186,7 +1200,6 @@ function buildHome(collections) {
   <div class="grid home-work-grid">${selectedWork.map((entry) => gridCard('work', entry)).join('\n')}</div>
 </section>
 
-${demosSection}
 <section class="build-section home-close">
   <div>
     <p class="eyebrow">Start a conversation</p>
@@ -1213,17 +1226,17 @@ ${demosSection}
 function buildDemosPage() {
   if (!demos.length) return;
   const content = `<section>
-  <p class="eyebrow">Demos</p>
-  <h1>The lab</h1>
+  <p class="eyebrow">Ryan\u2019s Lab</p>
+  <h1>Ryan\u2019s Lab</h1>
   <p class="lede">${escapeHtml(site.sectionIntros?.demos || '')}</p>
   <div class="grid demo-grid">
     ${demos.map(demoCard).join('\n')}
   </div>
-  <p class="section-note">Every demo is open source. <a href="${site.links.github}/Portfolio" target="_blank" rel="noopener noreferrer">read the code</a>. One Ryan Baumann portfolio container, one Cloud Run service, and no server secrets shipped to the browser.</p>
+  <p class="section-note">Ryan’s Lab combines open-source reference apps hosted with this portfolio and selected external experiments. <a href="${site.links.github}/Portfolio" target="_blank" rel="noopener noreferrer">Read the portfolio source</a>.</p>
 </section>`;
 
   writePage(join('demos', 'index.html'), layout({
-    title: `Demos - ${site.name}`,
+    title: `Ryan\u2019s Lab - ${site.name}`,
     description: site.sectionIntros?.demos || site.description,
     content,
     active: 'demos',
@@ -1299,11 +1312,18 @@ function resumePageContent(meta, body) {
       <h1>${escapeHtml(site.name)}</h1>
       <p class="lede">${escapeHtml(site.positioning || site.role)}</p>
     </div>
-    <p class="resume-meta">${escapeHtml(site.location)}<br /><a href="${site.links.linkedin}" target="_blank" rel="noopener noreferrer">LinkedIn</a> · <a href="${site.links.github}" target="_blank" rel="noopener noreferrer">GitHub</a></p>
+    <p class="resume-meta">${escapeHtml(site.location)} · <a href="${site.links.linkedin}" target="_blank" rel="noopener noreferrer">LinkedIn</a> · <a href="${site.links.github}" target="_blank" rel="noopener noreferrer">GitHub</a></p>
   </div>
-  ${heroImage(meta, 'pages', ' profile-portrait')}
+  ${pageActions()}
   <div class="resume-body">${markdownToHtml(body)}</div>
 </section>`;
+}
+
+function pageActions() {
+  return `<p class="hero-actions page-actions">
+    <a class="button button-primary" href="${BASE}writing/">Read Field Notes</a>
+    <a class="button button-secondary" href="${BASE}contact/">Contact Ryan</a>
+  </p>`;
 }
 
 function contactPageContent(meta) {
@@ -1313,7 +1333,7 @@ function contactPageContent(meta) {
   <p class="lede">Choose what you want to discuss, then share enough context for a useful first reply.</p>
   <form id="contact-form" class="contact-form" action="${BASE}api/contact" method="post">
     <fieldset class="intent-options"><legend>What is this about?</legend>
-      ${['Consulting', 'Content collaboration', 'Speaking opportunity', 'Other'].map((intent) => `<label><input type="radio" name="intent" value="${intent}" required /> <span>${intent}</span></label>`).join('')}
+      ${['Developer platform discussion', 'Content collaboration', 'Speaking opportunity', 'Other'].map((intent) => `<label><input type="radio" name="intent" value="${intent}" required /> <span>${intent}</span></label>`).join('')}
     </fieldset>
     <label>What would you like to discuss?
       <textarea name="message" rows="6" required minlength="20" maxlength="5000" placeholder="A few sentences about the idea, audience, timing, and useful next step."></textarea>
@@ -1327,7 +1347,7 @@ function contactPageContent(meta) {
     <button class="button" type="submit">Send note</button>
   </form>
   <p class="section-note">The server uses your details only to deliver the note and reply. See <a href="${BASE}privacy/">Privacy</a>.</p>
-  <script>(()=>{const value=new URLSearchParams(location.search).get('intent');const intents={consulting:'Consulting',content:'Content collaboration',speaking:'Speaking opportunity',other:'Other'};const selected=intents[value];if(!selected)return;const input=[...document.querySelectorAll('input[name="intent"]')].find((item)=>item.value===selected);if(input)input.checked=true})();</script>
+  <script>(()=>{const value=new URLSearchParams(location.search).get('intent');const intents={platform:'Developer platform discussion',content:'Content collaboration',speaking:'Speaking opportunity',other:'Other'};const selected=intents[value];if(!selected)return;const input=[...document.querySelectorAll('input[name="intent"]')].find((item)=>item.value===selected);if(input)input.checked=true})();</script>
 </section>`;
 }
 
@@ -1354,6 +1374,7 @@ function buildStandalonePages(pages) {
   <p class="eyebrow">${escapeHtml(meta.eyebrow || site.name)}</p>
   <h1>${escapeHtml(meta.title)}</h1>
   ${meta.summary ? `<p class="lede">${escapeHtml(meta.summary)}</p>` : ''}
+  ${slug === 'about' ? pageActions() : ''}
   ${heroImage(meta, 'pages', slug === 'about' ? ' profile-portrait' : '')}
   ${markdownToHtml(body)}
 </article>`;
@@ -1384,7 +1405,7 @@ function buildNotFoundPage() {
     <a class="button button-primary" href="${BASE}">Home</a>
     <a href="${BASE}work/">Work</a>
     <a href="${BASE}writing/">Field Notes</a>
-    ${demos.length ? `<a href="${BASE}demos/">Lab</a>` : ''}
+    ${demos.length ? `<a href="${BASE}demos/">Ryan\u2019s Lab</a>` : ''}
   </p>
 </section>`;
   writePage('404.html', layout({
@@ -1484,7 +1505,7 @@ function robotsTxt() {
 
 function permanentRedirects(collections) {
   if (WRITER_MODE) return {};
-  const redirects = {};
+  const redirects = demos.length ? { '/lab/': '/demos/', '/labs/': '/demos/' } : {};
   const canonicalPaths = new Set(['/', '/demos/', ...COLLECTIONS.filter((item) => item.listPage).map((item) => `/${item.name}/`)]);
   for (const collection of COLLECTIONS) {
     for (const entry of collections[collection.name]) {
