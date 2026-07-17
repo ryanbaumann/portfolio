@@ -36,7 +36,6 @@ if (Number.isNaN(BUILD_TIME.valueOf())) {
 const COLLECTIONS = [
   { name: 'work', label: 'Work', listPage: true, detailPages: true },
   { name: 'writing', label: 'Field Notes', listPage: true, detailPages: true },
-  { name: 'scripts', label: 'Agent Scripts', listPage: true, detailPages: true },
   { name: 'talks', label: 'Talks', listPage: true, detailPages: true },
 ];
 
@@ -465,7 +464,6 @@ function layout({ title, description, content, active = '', canonical, ogImage, 
   const navItems = [
     { href: `${BASE}work/`, label: 'Work', key: 'work' },
     { href: `${BASE}writing/`, label: 'Field Notes', key: 'writing' },
-    { href: `${BASE}scripts/`, label: 'Agent Scripts', key: 'scripts' },
     ...(demos.length ? [{ href: `${BASE}demos/`, label: 'Lab', key: 'demos' }] : []),
     { href: `${BASE}about/`, label: 'About', key: 'about' },
     { href: `${BASE}resume/`, label: 'Resume', key: 'resume' },
@@ -570,7 +568,6 @@ ${content}
     <a href="${site.links.linkedin}" target="_blank" rel="noopener noreferrer">LinkedIn</a>
     ${site.links.x ? `<a href="${site.links.x}" target="_blank" rel="noopener noreferrer">X</a>` : ''}
     ${site.links.substack ? `<a href="${site.links.substack}" target="_blank" rel="noopener noreferrer">Substack</a>` : ''}
-    <a href="${BASE}scripts/">Agent Scripts</a>
     <a href="${BASE}talks/">Talks</a>
     <a href="${BASE}resume/">Resume</a>
     <a href="${BASE}privacy/">Privacy</a>
@@ -1129,7 +1126,6 @@ function buildHome(collections) {
   const selectedWork = ['code-assist', 'agent-skills', 'agentic-growth']
     .map((slug) => bySlug('work', slug)).filter(Boolean);
   const writingEntries = collections.writing.slice(0, 2);
-  const scriptEntries = collections.scripts.slice(0, 2);
   const homeDemos = demos.filter(d => !d.hideOnHome);
   const demosSection = homeDemos.length
     ? `
@@ -1179,12 +1175,6 @@ function buildHome(collections) {
 <section>
   ${sectionHeader('Field Notes', 'Ideas you can use', `${BASE}writing/`, 'All field notes')}
   ${fieldNotesBody}
-</section>
-
-<section>
-  ${sectionHeader('Agent Scripts', 'Instructions you can fork', `${BASE}scripts/`, 'All agent scripts')}
-  <p class="section-note">${escapeHtml(site.sectionIntros?.scripts || '')}</p>
-  <ul class="rows">${scriptEntries.map((entry) => listRow('scripts', entry)).join('\n')}</ul>
 </section>
 
 <section>
