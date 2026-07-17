@@ -299,8 +299,8 @@ main > section { margin-bottom: clamp(2rem, 5vw, 3.5rem); }
   padding: 0.12rem 0.6rem;
 }
 
-.work-card.has-thumb { padding: 0; overflow: hidden; }
-.work-card.has-thumb .card-body { padding: 1.15rem 1.35rem 1.35rem; display: flex; flex-direction: column; }
+.grid-card.has-thumb { padding: 0; overflow: hidden; }
+.grid-card.has-thumb .card-body { padding: 1.15rem 1.35rem 1.35rem; display: flex; flex-direction: column; }
 .card-thumb {
   height: auto;
   display: block;

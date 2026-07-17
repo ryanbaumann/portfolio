@@ -713,25 +713,26 @@ function getImageDimensions(imagePath) {
   return { width: 960, height: 600 };
 }
 
-function workCard(entry) {
+function gridCard(collection, entry) {
   const { meta } = entry;
   const imagePath = meta.image ? join(STATIC_DIR, meta.image.replace(/^\//, '')) : '';
   const imageSize = meta.image ? getImageDimensions(imagePath) : null;
-  const url = hasDetailPage(entry) ? entryUrl('work', entry) : rebase(meta.links?.[0]?.url || `${BASE}work/`);
+  const url = hasDetailPage(entry) ? entryUrl(collection, entry) : rebase(meta.links?.[0]?.url || `${BASE}${collection}/`);
   const external = !hasDetailPage(entry) && /^https?:/.test(url);
-  const cardMeta = `<p class="card-meta">${metaLine([meta.org, meta.period])}</p>
+  const formattedDate = meta.date ? formatLongDate(meta.date) : meta.period;
+  const cardMeta = `<p class="card-meta">${metaLine([meta.venue || meta.org, meta.type, formattedDate])}</p>
   <h3>${escapeHtml(meta.title)}</h3>
   <p>${escapeHtml(meta.summary || '')}</p>
   ${meta.tags ? `<p class="card-tags">${meta.tags.map((tag) => `<span>${escapeHtml(tag)}</span>`).join('')}</p>` : ''}`;
   if (meta.image) {
-    return `<a class="card work-card has-thumb" href="${url}" data-analytics-type="work" data-analytics-id="${escapeHtml(entry.slug)}"${external ? ' target="_blank" rel="noopener noreferrer"' : ''}>
+    return `<a class="card grid-card has-thumb" href="${url}" data-analytics-type="${escapeHtml(collection)}" data-analytics-id="${escapeHtml(entry.slug)}"${external ? ' target="_blank" rel="noopener noreferrer"' : ''}>
   <img class="card-thumb" src="${rebase(meta.image)}" alt="${escapeHtml(meta.imageAlt || meta.title)}" loading="lazy" width="${imageSize.width}" height="${imageSize.height}" />
   <div class="card-body">
   ${cardMeta}
   </div>
 </a>`;
   }
-  return `<a class="card" href="${url}" data-analytics-type="work" data-analytics-id="${escapeHtml(entry.slug)}"${external ? ' target="_blank" rel="noopener noreferrer"' : ''}>
+  return `<a class="card" href="${url}" data-analytics-type="${escapeHtml(collection)}" data-analytics-id="${escapeHtml(entry.slug)}"${external ? ' target="_blank" rel="noopener noreferrer"' : ''}>
   ${cardMeta}
 </a>`;
 }
@@ -1150,8 +1151,8 @@ function buildHome(collections) {
 
   const featured = writingEntries[0];
   const fieldNotesBody = featured
-    ? `${featuredNote(featured)}\n<ul class="rows">${writingEntries.slice(1).map((entry) => listRow('writing', entry)).join('\n')}</ul>`
-    : `<ul class="rows"></ul>`;
+    ? `${featuredNote(featured)}\n<div class="grid home-work-grid">${writingEntries.slice(1).map((entry) => gridCard('writing', entry)).join('\n')}</div>`
+    : `<div class="grid home-work-grid"></div>`;
 
   const content = `
 <section class="hero">
@@ -1173,13 +1174,13 @@ function buildHome(collections) {
 </section>
 
 <section>
-  ${sectionHeader('Field Notes', 'Ideas you can use', `${BASE}writing/`, 'All field notes')}
+  ${sectionHeader('Field Notes', 'Learnings from users', `${BASE}writing/`, 'All field notes')}
   ${fieldNotesBody}
 </section>
 
 <section>
-  ${sectionHeader('Selected work', 'Shipped tools and results', `${BASE}work/`, 'All work')}
-  <div class="grid home-work-grid">${selectedWork.map(workCard).join('\n')}</div>
+  ${sectionHeader('Selected work', '', `${BASE}work/`, 'All work')}
+  <div class="grid home-work-grid">${selectedWork.map((entry) => gridCard('work', entry)).join('\n')}</div>
 </section>
 
 ${demosSection}
@@ -1236,7 +1237,7 @@ function buildCollectionIndex(collection, entries) {
 
   let body;
   if (collection.name === 'work') {
-    body = `<div class="grid">${entries.map(workCard).join('\n')}</div>`;
+    body = `<div class="grid">${entries.map((entry) => gridCard('work', entry)).join('\n')}</div>`;
   } else if (collection.name === 'writing') {
     const owned = entries.filter((entry) => !entry.meta.external);
     const elsewhere = entries.filter((entry) => entry.meta.external);
