@@ -834,6 +834,63 @@ function shareLinks(pageUrl, title) {
 </p>`;
 }
 
+// Email-list signup. Plain form POST to the gateway's /api/subscribe route
+// (Resend audience) — works with zero client JavaScript. Sends go out from
+// the Resend dashboard whenever there is something worth announcing.
+function subscribeSection() {
+  return `<section class="subscribe" aria-labelledby="subscribe-title">
+  <p class="eyebrow">Email list</p>
+  <h2 id="subscribe-title">Get new field notes by email</h2>
+  <p>One email when a new essay, talk, or demo ships. No noise, and every send has a one-click unsubscribe.</p>
+  <form class="subscribe-form" action="${BASE}api/subscribe" method="post">
+    <label for="subscribe-email">Email address</label>
+    <div class="subscribe-controls">
+      <input id="subscribe-email" name="email" type="email" autocomplete="email" maxlength="200" placeholder="you@example.com" required />
+      <button class="button button-primary" type="submit">Subscribe</button>
+    </div>
+    <div class="contact-honeypot" aria-hidden="true">
+      <label>Company fax number <input name="company_fax_number" tabindex="-1" autocomplete="off" /></label>
+    </div>
+  </form>
+  <p class="section-note">The address is stored only to deliver these updates. See <a href="${BASE}privacy/">Privacy</a>.</p>
+</section>`;
+}
+
+// Reader comments on field notes via giscus, which stores each thread as a
+// GitHub Discussion on the portfolio repo — readers sign in with GitHub
+// inside the widget. Renders nothing until site.json's comments block has
+// the repoId/categoryId values from https://giscus.app, so the site stays
+// inert (and script-free) until comments are deliberately switched on.
+// This is the one sanctioned third-party embed; see the portfolio-design
+// skill before adding others. Skipped in the private writer preview.
+function commentsSection() {
+  const comments = site.comments || {};
+  const configured = comments.provider === 'giscus'
+    && comments.repo && comments.repoId && comments.category && comments.categoryId;
+  if (!configured || WRITER_MODE) return '';
+  const config = {
+    'data-repo': comments.repo,
+    'data-repo-id': comments.repoId,
+    'data-category': comments.category,
+    'data-category-id': comments.categoryId,
+    'data-mapping': 'pathname',
+    'data-strict': '1',
+    'data-reactions-enabled': '1',
+    'data-emit-metadata': '0',
+    'data-input-position': 'top',
+    'data-lang': 'en',
+    'data-loading': 'lazy',
+  };
+  const configJson = JSON.stringify(config).replaceAll('<', '\\u003c');
+  return `<section class="comments" aria-labelledby="comments-title">
+  <p class="eyebrow">Discussion</p>
+  <h2 id="comments-title">Comments</h2>
+  <p class="section-note">Comments are GitHub Discussions rendered by <a href="https://giscus.app" target="_blank" rel="noopener noreferrer">giscus</a>. Sign in with GitHub inside the widget to post or react.</p>
+  <div class="giscus"></div>
+  <script>(()=>{const config=${configJson};const theme=()=>({light:'light',dark:'dark'})[document.documentElement.dataset.theme]||'preferred_color_scheme';const mount=document.querySelector('.giscus');const script=document.createElement('script');script.src='https://giscus.app/client.js';script.async=true;script.crossOrigin='anonymous';for(const [key,value] of Object.entries(config))script.setAttribute(key,value);script.setAttribute('data-theme',theme());mount.appendChild(script);new MutationObserver(()=>{const frame=document.querySelector('iframe.giscus-frame');if(frame)frame.contentWindow.postMessage({giscus:{setConfig:{theme:theme()}}},'https://giscus.app')}).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']})})();</script>
+</section>`;
+}
+
 function jsonLdPerson() {
   return {
     '@context': 'https://schema.org',
@@ -962,16 +1019,11 @@ function detailPage(collection, entry, activeKey) {
   <h1>${escapeHtml(meta.title)}</h1>
   <p class="article-meta">${metaLine([meta.org || meta.venue, meta.role, meta.period || meta.date])}</p>
   ${linkChips(meta.links)}
-  ${(() => {
-    if (!meta.image) return '';
-    const imagePath = meta.image.startsWith('/') ? join(STATIC_DIR, meta.image.slice(1)) : join(CONTENT_DIR, collection.name, meta.image);
-    const { width, height } = getImageDimensions(imagePath);
-    return `<img class="article-hero" src="${rebase(meta.image)}" alt="${escapeHtml(meta.imageAlt || meta.title)}" loading="lazy" width="${width}" height="${height}" />`;
-  })()}
+  ${heroImage(meta, collection.name)}
   ${markdownToHtml(entry.body)}
   ${shareLinks(pageUrl, meta.title)}
   <p class="back"><a href="${BASE}${collection.name}/">← All ${collection.label.toLowerCase()}</a></p>
-</article>`;
+</article>${isWriting ? `\n${subscribeSection()}\n${commentsSection()}` : ''}`;
   writePage(join(collection.name, entry.slug, 'index.html'), layout({
     title: `${meta.title} - ${site.name}`,
     description: meta.summary || site.description,
@@ -1207,7 +1259,8 @@ ${elsewhere.length ? `<div class="collection-group">
   <h2>Elsewhere</h2>
   <p>Launch notes and experiments published with the teams and communities behind the work.</p>
   <ul class="rows">${elsewhere.map((entry) => listRow(collection.name, entry)).join('\n')}</ul>
-</div>` : ''}`;
+</div>` : ''}
+${subscribeSection()}`;
   } else {
     body = `<ul class="rows">${entries.map((entry) => listRow(collection.name, entry)).join('\n')}</ul>`;
   }
@@ -1233,11 +1286,15 @@ ${elsewhere.length ? `<div class="collection-group">
 }
 
 
-function pageImage(meta, extraClass = '') {
+// Shared hero-image renderer for detail pages and standalone pages. Relative
+// image paths resolve against the entry's own content folder; absolute paths
+// resolve against static/. Exact dimensions come from the file so the HTML
+// never causes layout shift (portfolio-design rule 6).
+function heroImage(meta, sourceDirName, extraClass = '') {
   if (!meta.image) return '';
-  const imagePath = meta.image.startsWith('/') ? join(STATIC_DIR, meta.image.slice(1)) : join(CONTENT_DIR, 'pages', meta.image);
+  const imagePath = meta.image.startsWith('/') ? join(STATIC_DIR, meta.image.slice(1)) : join(CONTENT_DIR, sourceDirName, meta.image);
   const { width, height } = getImageDimensions(imagePath);
-  return `<img class="article-hero${escapeHtml(extraClass)}" src="${rebase(meta.image)}" alt="${escapeHtml(meta.imageAlt)}" loading="lazy" width="${width}" height="${height}" />`;
+  return `<img class="article-hero${escapeHtml(extraClass)}" src="${rebase(meta.image)}" alt="${escapeHtml(meta.imageAlt || meta.title)}" loading="lazy" width="${width}" height="${height}" />`;
 }
 
 function resumePageContent(meta, body) {
@@ -1250,7 +1307,7 @@ function resumePageContent(meta, body) {
     </div>
     <p class="resume-meta">${escapeHtml(site.location)}<br /><a href="${site.links.linkedin}" target="_blank" rel="noopener noreferrer">LinkedIn</a> · <a href="${site.links.github}" target="_blank" rel="noopener noreferrer">GitHub</a></p>
   </div>
-  ${pageImage(meta, ' profile-portrait')}
+  ${heroImage(meta, 'pages', ' profile-portrait')}
   <div class="resume-body">${markdownToHtml(body)}</div>
 </section>`;
 }
@@ -1302,12 +1359,7 @@ function buildStandalonePages(pages) {
     const content = customContent || `<article class="prose">
   <p class="eyebrow">${escapeHtml(meta.eyebrow || site.name)}</p>
   <h1>${escapeHtml(meta.title)}</h1>
-  ${(() => {
-    if (!meta.image) return '';
-    const imagePath = meta.image.startsWith('/') ? join(STATIC_DIR, meta.image.slice(1)) : join(CONTENT_DIR, 'pages', meta.image);
-    const { width, height } = getImageDimensions(imagePath);
-    return `<img class="article-hero${slug === 'about' ? ' profile-portrait' : ''}" src="${rebase(meta.image)}" alt="${escapeHtml(meta.imageAlt || meta.title)}" loading="lazy" width="${width}" height="${height}" />`;
-  })()}
+  ${heroImage(meta, 'pages', slug === 'about' ? ' profile-portrait' : '')}
   ${markdownToHtml(body)}
 </article>`;
     writePage(join(slug, 'index.html'), layout({

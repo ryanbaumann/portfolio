@@ -79,6 +79,7 @@ jobs:
             echo "- STRAVA_CLIENT_SECRET"
             echo "- GMP_SERVER_API_KEY"
             echo "- RESEND_API_KEY (optional)"
+            echo "- RESEND_AUDIENCE_ID (optional, email-list subscriptions)"
             echo "- GEMINI_API_KEY (optional)"
             echo "- CONTACT_TO_EMAIL (optional)"
             echo "- GOOGLE_OAUTH_CLIENT_SECRET (required for /writer/)"
@@ -135,6 +136,7 @@ jobs:
           #     --update-secrets=STRAVA_CLIENT_SECRET=strava-client-secret:latest \
           #     --update-secrets=GMP_SERVER_API_KEY=gmp-server-api-key:latest \
           #     --update-secrets=RESEND_API_KEY=resend-api-key:latest \
+          #     --update-secrets=RESEND_AUDIENCE_ID=resend-audience-id:latest \
           #     --update-secrets=GEMINI_API_KEY=gemini-api-key:latest \
           #     --update-secrets=CONTACT_TO_EMAIL=contact-to-email:latest \
           #     --update-secrets=GOOGLE_OAUTH_CLIENT_SECRET=google-oauth-client-secret:latest \

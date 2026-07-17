@@ -125,11 +125,88 @@ function escapeHtml(value) {
     .replaceAll("'", '&#039;');
 }
 
-function contactResponsePage(title, message, statusCode = 200) {
+function formResponsePage(title, message, statusCode = 200, { backHref = '/contact/', backLabel = 'Contact' } = {}) {
   const delivered = statusCode >= 200 && statusCode < 300;
   const deliveryState = delivered ? 'success' : 'failure';
   const liveRole = delivered ? 'status' : 'alert';
-  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="contact-delivery" content="${deliveryState}"><title>${escapeHtml(title)}</title><style>body{font-family:system-ui,sans-serif;max-width:42rem;margin:4rem auto;padding:0 1.25rem;line-height:1.6;color:#111827;background:#faf9f6}a{color:inherit}</style></head><body><header><nav aria-label="Contact"><a href="/contact/">← Contact</a></nav></header><main data-contact-delivery="${deliveryState}"><h1>${escapeHtml(title)}</h1><p role="${liveRole}" aria-live="${delivered ? 'polite' : 'assertive'}">${escapeHtml(message)}</p></main></body></html>`;
+  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="contact-delivery" content="${deliveryState}"><title>${escapeHtml(title)}</title><style>body{font-family:system-ui,sans-serif;max-width:42rem;margin:4rem auto;padding:0 1.25rem;line-height:1.6;color:#111827;background:#faf9f6}a{color:inherit}</style></head><body><header><nav aria-label="${escapeHtml(backLabel)}"><a href="${escapeHtml(backHref)}">← ${escapeHtml(backLabel)}</a></nav></header><main data-contact-delivery="${deliveryState}"><h1>${escapeHtml(title)}</h1><p role="${liveRole}" aria-live="${delivered ? 'polite' : 'assertive'}">${escapeHtml(message)}</p></main></body></html>`;
+}
+
+const contactResponsePage = (title, message, statusCode = 200) => formResponsePage(title, message, statusCode);
+const subscribeResponsePage = (title, message, statusCode = 200) => formResponsePage(title, message, statusCode, { backHref: '/writing/', backLabel: 'Field Notes' });
+
+// POST /api/subscribe — add an email address to the Resend audience that
+// powers the field-notes email list. Sends (broadcasts) are composed and
+// scheduled from the Resend dashboard; this route only manages membership.
+// Same anti-bot posture as the contact form: honeypot field + rate limit.
+// Resend deduplicates contacts by email within an audience, so repeat
+// submissions are safe and get the same success page.
+async function handleSubscribeRequest(request, response) {
+  if (request.method !== 'POST') {
+    sendJson(request, response, 405, { error: 'Method not allowed' });
+    return;
+  }
+
+  let rawBody;
+  try {
+    rawBody = await readTextBody(request);
+  } catch (err) {
+    sendHtml(request, response, err.statusCode || 400, subscribeResponsePage('Not subscribed', err.message, err.statusCode || 400));
+    return;
+  }
+
+  const contentType = request.headers['content-type'] || '';
+  const params = contentType.includes('application/x-www-form-urlencoded')
+    ? new URLSearchParams(rawBody)
+    : new URLSearchParams();
+  const email = String(params.get('email') || '').trim().slice(0, 200);
+  const honeypot = String(params.get('company_fax_number') || '').trim();
+
+  if (!email || !email.includes('@') || email.startsWith('@') || email.endsWith('@')) {
+    sendHtml(request, response, 400, subscribeResponsePage('Not subscribed', 'Please enter a valid email address.', 400));
+    return;
+  }
+
+  if (honeypot) {
+    // Bots get the same success redirect as humans, without touching the list.
+    applySecurityHeaders(response);
+    response.writeHead(303, { Location: '/subscribed/', 'Cache-Control': 'no-store' });
+    response.end();
+    return;
+  }
+
+  const { apiKey: resendApiKey, audienceId } = resolveProvider('resend', process.env);
+  if (!resendApiKey || !audienceId) {
+    sendHtml(request, response, 503, subscribeResponsePage('Subscriptions are not configured yet', 'The backend route is live, but RESEND_API_KEY and RESEND_AUDIENCE_ID must be set before it can store subscribers.', 503));
+    return;
+  }
+
+  let upstream;
+  try {
+    upstream = await fetch(`https://api.resend.com/audiences/${encodeURIComponent(audienceId)}/contacts`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${resendApiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email, unsubscribed: false }),
+      signal: AbortSignal.timeout(10_000),
+    });
+  } catch {
+    sendHtml(request, response, 502, subscribeResponsePage('Not subscribed', 'The mail provider could not be reached. Please try again later.', 502));
+    return;
+  }
+
+  // 409 means the contact already exists in the audience — success for the
+  // visitor's purposes, so treat it the same as a fresh signup.
+  if (!upstream.ok && upstream.status !== 409) {
+    sendHtml(request, response, 502, subscribeResponsePage('Not subscribed', 'The mail provider did not accept the address. Please try again later.', 502));
+    return;
+  }
+
+  applySecurityHeaders(response);
+  response.writeHead(303, { Location: '/subscribed/?ok=1', 'Cache-Control': 'no-store' });
+  response.end();
 }
 
 async function handleContactRequest(request, response) {
@@ -231,19 +308,18 @@ async function handleContactRequest(request, response) {
   response.end();
 }
 
-async function handleWriterPublishRequest(request, response) {
-  if (request.method !== 'POST') {
-    sendJson(request, response, 405, { error: 'Method not allowed' });
-    return;
-  }
+// Shared plumbing for the three writer form endpoints (publish/save/review):
+// POST-only, authenticated writer session, same-origin form, urlencoded body,
+// then a 303 redirect back to /writer/ with the action's query string.
+// `allowPasswordCookie` exists because publish predates the Google login and
+// still honors the password-cookie session when the app is configured for it.
+async function handleWriterFormRequest(request, response, { allowPasswordCookie = false } = {}, action) {
+  if (request.method !== 'POST') return sendJson(request, response, 405, { error: 'Method not allowed' });
   const writerApp = appsByPathLength.find((app) => app.name === 'portfolio-writer');
-  const authenticated = writerApp?.auth?.type === 'google-oauth'
-    ? hasGoogleSession(request)
-    : writerApp?.auth?.envVar && verifyAuthCookie(request, writerApp.name, process.env[writerApp.auth.envVar]);
-  if (!writerApp || !authenticated) {
-    sendJson(request, response, 401, { error: 'Writer authentication required.' });
-    return;
-  }
+  const authenticated = allowPasswordCookie && writerApp?.auth?.type !== 'google-oauth'
+    ? writerApp?.auth?.envVar && verifyAuthCookie(request, writerApp.name, process.env[writerApp.auth.envVar])
+    : hasGoogleSession(request);
+  if (!writerApp || !authenticated) return sendJson(request, response, 401, { error: 'Writer authentication required.' });
   try {
     const origin = new URL(String(request.headers.origin || ''));
     if (origin.host !== request.headers.host) throw new Error('origin mismatch');
@@ -251,60 +327,44 @@ async function handleWriterPublishRequest(request, response) {
     sendJson(request, response, 403, { error: 'Invalid request origin.' });
     return;
   }
-
-  let params;
   try {
-    const rawBody = await readTextBody(request);
-    params = new URLSearchParams(rawBody);
-  } catch (error) {
-    sendJson(request, response, error.statusCode || 400, { error: error.message });
-    return;
-  }
-  try {
-    const result = await publishWritingUpdate({
-      collection: String(params.get('collection') || ''),
-      sourceSlug: String(params.get('sourceSlug') || ''),
-      action: String(params.get('action') || ''),
-      publishAt: String(params.get('publishAt') || ''),
-    });
+    const params = new URLSearchParams(await readTextBody(request));
+    const query = await action(params);
     applySecurityHeaders(response);
-    response.writeHead(303, {
-      Location: `/writer/?updated=${encodeURIComponent(result.sourceSlug)}`,
-      'Cache-Control': 'no-store',
-    });
+    response.writeHead(303, { Location: `/writer/?${query}`, 'Cache-Control': 'no-store' });
     response.end();
   } catch (error) {
     sendJson(request, response, error.statusCode || 502, { error: error.message });
   }
 }
 
-async function handleWriterSaveRequest(request, response) {
-  if (request.method !== 'POST') return sendJson(request, response, 405, { error: 'Method not allowed' });
-  const writerApp = appsByPathLength.find((app) => app.name === 'portfolio-writer');
-  if (!writerApp || !hasGoogleSession(request)) return sendJson(request, response, 401, { error: 'Writer authentication required.' });
-  try {
-    const origin = new URL(String(request.headers.origin || ''));
-    if (origin.host !== request.headers.host) throw new Error('origin mismatch');
-    const params = new URLSearchParams(await readTextBody(request, 32 * 1024));
-    const result = await saveWritingDraft({ collection: String(params.get('collection') || ''), sourceSlug: String(params.get('sourceSlug') || ''), markdown: String(params.get('markdown') || '') });
-    applySecurityHeaders(response); response.writeHead(303, { Location: `/writer/?saved=${encodeURIComponent(result.sourceSlug)}`, 'Cache-Control': 'no-store' }); response.end();
-  } catch (error) { sendJson(request, response, error.statusCode || 502, { error: error.message }); }
-}
+const handleWriterPublishRequest = (request, response) => handleWriterFormRequest(request, response, { allowPasswordCookie: true }, async (params) => {
+  const result = await publishWritingUpdate({
+    collection: String(params.get('collection') || ''),
+    sourceSlug: String(params.get('sourceSlug') || ''),
+    action: String(params.get('action') || ''),
+    publishAt: String(params.get('publishAt') || ''),
+  });
+  return `updated=${encodeURIComponent(result.sourceSlug)}`;
+});
 
-async function handleWriterReviewRequest(request, response) {
-  if (request.method !== 'POST') return sendJson(request, response, 405, { error: 'Method not allowed' });
-  const writerApp = appsByPathLength.find((app) => app.name === 'portfolio-writer');
-  if (!writerApp || !hasGoogleSession(request)) return sendJson(request, response, 401, { error: 'Writer authentication required.' });
-  try {
-    const origin = new URL(String(request.headers.origin || ''));
-    if (origin.host !== request.headers.host) throw new Error('origin mismatch');
-    const params = new URLSearchParams(await readTextBody(request));
-    const result = await requestWritingReview({ collection: String(params.get('collection') || ''), sourceSlug: String(params.get('sourceSlug') || ''), comment: String(params.get('comment') || '') });
-    applySecurityHeaders(response);
-    response.writeHead(303, { Location: `/writer/?review=${encodeURIComponent(result.sourceSlug)}&issue=${encodeURIComponent(result.issueUrl)}`, 'Cache-Control': 'no-store' });
-    response.end();
-  } catch (error) { sendJson(request, response, error.statusCode || 502, { error: error.message }); }
-}
+const handleWriterSaveRequest = (request, response) => handleWriterFormRequest(request, response, {}, async (params) => {
+  const result = await saveWritingDraft({
+    collection: String(params.get('collection') || ''),
+    sourceSlug: String(params.get('sourceSlug') || ''),
+    markdown: String(params.get('markdown') || ''),
+  });
+  return `saved=${encodeURIComponent(result.sourceSlug)}`;
+});
+
+const handleWriterReviewRequest = (request, response) => handleWriterFormRequest(request, response, {}, async (params) => {
+  const result = await requestWritingReview({
+    collection: String(params.get('collection') || ''),
+    sourceSlug: String(params.get('sourceSlug') || ''),
+    comment: String(params.get('comment') || ''),
+  });
+  return `review=${encodeURIComponent(result.sourceSlug)}&issue=${encodeURIComponent(result.issueUrl)}`;
+});
 
 function readJsonBody(request) {
   return new Promise((resolve, reject) => {
@@ -381,6 +441,11 @@ async function handleApi(request, response, pathname, searchParams) {
 
   if (pathname === '/api/contact') {
     await handleContactRequest(request, response);
+    return;
+  }
+
+  if (pathname === '/api/subscribe') {
+    await handleSubscribeRequest(request, response);
     return;
   }
 

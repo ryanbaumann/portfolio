@@ -8,7 +8,7 @@ description: How Ryan designs. Use before changing style.css, page layouts in bu
 ## Principles
 
 1. **Content-first, bare bones.** The design's job is to make the work legible, then get out of the way. No hero animations, no carousels, no decorative imagery.
-2. **Fast is a feature.** CSS is inlined at build time, fonts are the system stack, and client JavaScript is avoided by default. Tiny inline scripts are acceptable for explicit user-controlled color scheme and Basic Consent Mode analytics settings. The Google tag must not load before opt-in, must stay disabled on localhost/tests by default, and must never receive form text, identity, OAuth, activity, or location data. Keep every page lean. Any other client script or webfont needs a very good reason.
+2. **Fast is a feature.** CSS is inlined at build time, fonts are the system stack, and client JavaScript is avoided by default. Tiny inline scripts are acceptable for explicit user-controlled color scheme and Basic Consent Mode analytics settings. The Google tag must not load before opt-in, must stay disabled on localhost/tests by default, and must never receive form text, identity, OAuth, activity, or location data. Keep every page lean. Any other client script or webfont needs a very good reason. One such reason has been accepted: the giscus comments embed on field notes (`commentsSection` in `build.mjs`) — it is config-gated in `site.json`, loads lazily, renders only on writing detail pages, and stays out of the writer preview. Do not add further third-party scripts without updating this skill.
 3. **Boring is deliberate.** One accent color, one column, generous whitespace. Novelty budget is spent on the writing, not the chrome.
 4. **Both color schemes, always.** Light and dark are first-class via `prefers-color-scheme` and the token block at the top of `style.css`. Never hardcode a color in a component: add or use a token.
 5. **Show, don't tell.** Every narrative page carries at least one real image. Real screenshots first (previews, product shots). When no honest screenshot exists, generate an SVG artifact card with `scripts/artifact-cards.mjs`; cards state only facts already in the entry (real commands, real published stats). Never mock a product UI or fabricate a screenshot. Utility flows such as contact, privacy, confirmation, and error pages may omit imagery when it would be decorative.
@@ -32,6 +32,7 @@ description: How Ryan designs. Use before changing style.css, page layouts in bu
 - **Artifact cards**: generated SVGs (`scripts/artifact-cards.mjs`) for entries with no honest screenshot to show. State only facts already in the entry copy.
 - **Eyebrows** (`.eyebrow`) label every section in uppercase accent text.
 - **Empty states** (`.empty-state`) are designed, not apologetic: sections ship before their content does (see the writing section).
+- **Subscribe** (`.subscribe`) and **Comments** (`.comments`): quiet bordered-top sections at the end of writing pages. The subscribe form is a plain POST to `/api/subscribe` (no client JS); comments are the sanctioned giscus embed described in principle 2. See `docs/EMAIL_LIST_AND_COMMENTS.md`.
 
 ## Accessibility
 

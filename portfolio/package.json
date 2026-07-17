@@ -9,7 +9,7 @@
     "build:writer": "BASE_PATH=/writer/ PORTFOLIO_WRITER_MODE=true PORTFOLIO_DIST_DIR=writer-dist node build.mjs",
     "dev": "node build.mjs && node serve.mjs",
     "clean": "rm -rf dist",
-    "test": "node --test test/ && npm run build"
+    "test": "node --test test/*.test.mjs && npm run build"
   },
   "engines": {
     "node": ">=20"

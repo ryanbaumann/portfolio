@@ -31,10 +31,11 @@ async function main() {
   const VITE_ISOCHRONES_GMP_API_KEY = await ask('   Browser key for the Isochrones map', VITE_GMP_API_KEY);
   const GMP_SERVER_API_KEY = await ask('   Server key for gateway API calls');
 
-  console.log('\n3. Contact form (optional for local development)');
+  console.log('\n3. Contact form and email list (optional for local development)');
   const RESEND_API_KEY = await ask('   Resend API key');
   const CONTACT_TO_EMAIL = await ask('   Contact destination email');
   const CONTACT_FROM_EMAIL = await ask('   Verified sender', 'Portfolio Contact <onboarding@resend.dev>');
+  const RESEND_AUDIENCE_ID = await ask('   Resend audience ID (subscribe form)');
 
   console.log('\n4. Private release dashboard (optional for local development)');
   const GOOGLE_OAUTH_CLIENT_ID = await ask('   Google OAuth client ID');
@@ -61,6 +62,7 @@ async function main() {
     RESEND_API_KEY,
     CONTACT_TO_EMAIL,
     CONTACT_FROM_EMAIL,
+    RESEND_AUDIENCE_ID,
     GOOGLE_OAUTH_CLIENT_ID,
     GOOGLE_OAUTH_CLIENT_SECRET,
     GOOGLE_OAUTH_SESSION_SECRET,
@@ -88,10 +90,11 @@ GMP_SERVER_API_KEY=${values.GMP_SERVER_API_KEY}
 VITE_GMP_API_KEY=${values.VITE_GMP_API_KEY}
 VITE_ISOCHRONES_GMP_API_KEY=${values.VITE_ISOCHRONES_GMP_API_KEY}
 
-# Contact form
+# Contact form + email list
 RESEND_API_KEY=${values.RESEND_API_KEY}
 CONTACT_TO_EMAIL=${values.CONTACT_TO_EMAIL}
 CONTACT_FROM_EMAIL=${values.CONTACT_FROM_EMAIL}
+RESEND_AUDIENCE_ID=${values.RESEND_AUDIENCE_ID || ''}
 
 # Private release dashboard
 GOOGLE_OAUTH_CLIENT_ID=${values.GOOGLE_OAUTH_CLIENT_ID || ''}

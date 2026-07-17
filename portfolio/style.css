@@ -436,6 +436,32 @@ main > section { margin-bottom: clamp(2rem, 5vw, 3.5rem); }
   color: var(--faint);
 }
 
+/* ---- email list + comments ---- */
+
+.subscribe,
+.comments {
+  max-width: var(--prose);
+  margin-top: 2.5rem;
+  padding-top: 1.75rem;
+  border-top: 1px solid var(--line);
+}
+.subscribe p { color: var(--muted); max-width: var(--prose); }
+.subscribe-form { display: grid; gap: 0.35rem; margin: 1.1rem 0 0.75rem; }
+.subscribe-form label { color: var(--muted); font-weight: 650; font-size: 0.95rem; }
+.subscribe-controls { display: flex; flex-wrap: wrap; gap: 0.6rem; }
+.subscribe-controls input {
+  flex: 1 1 16rem;
+  border: 1px solid var(--line);
+  border-radius: 0.7rem;
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  padding: 0.7rem 0.8rem;
+}
+.subscribe .section-note,
+.comments .section-note { margin-bottom: 0; }
+.comments .giscus { margin-top: 1.25rem; }
+
 /* ---- states ---- */
 
 .empty-state {

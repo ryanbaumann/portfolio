@@ -303,6 +303,70 @@ test('contact delivery validates intent and marks only provider-confirmed succes
   }
 });
 
+test('subscribe route validates email, honors the honeypot, and requires provider config', async () => {
+  const previousEnv = {
+    RESEND_API_KEY: process.env.RESEND_API_KEY,
+    RESEND_AUDIENCE_ID: process.env.RESEND_AUDIENCE_ID,
+  };
+  const originalFetch = globalThis.fetch;
+  const stored = [];
+  process.env.RESEND_API_KEY = 'test-resend-key';
+  process.env.RESEND_AUDIENCE_ID = 'test-audience-id';
+  globalThis.fetch = async (url, options) => {
+    stored.push({ url: String(url), body: JSON.parse(options.body) });
+    return { ok: true, status: 201 };
+  };
+  server.listen(0);
+  const port = server.address().port;
+
+  try {
+    const methodNotAllowed = await request(port, '/api/subscribe');
+    assert.equal(methodNotAllowed.res.statusCode, 405);
+
+    const invalidEmail = await postForm(port, '/api/subscribe', { email: 'not-an-email' });
+    assert.equal(invalidEmail.res.statusCode, 400);
+    assert.match(invalidEmail.body, /valid email address/);
+    assert.equal(stored.length, 0);
+
+    const honeypotHit = await postForm(port, '/api/subscribe', {
+      email: 'bot@example.com',
+      company_fax_number: '555-0100',
+    }, { 'x-forwarded-for': '4.4.4.1, proxy' });
+    assert.equal(honeypotHit.res.statusCode, 303);
+    assert.equal(honeypotHit.res.headers.location, '/subscribed/');
+    assert.equal(stored.length, 0);
+
+    const success = await postForm(port, '/api/subscribe', { email: 'ada@example.com' }, { 'x-forwarded-for': '4.4.4.2, proxy' });
+    assert.equal(success.res.statusCode, 303);
+    assert.equal(success.res.headers.location, '/subscribed/?ok=1');
+    assert.equal(stored.length, 1);
+    assert.equal(stored[0].url, 'https://api.resend.com/audiences/test-audience-id/contacts');
+    assert.deepEqual(stored[0].body, { email: 'ada@example.com', unsubscribed: false });
+
+    globalThis.fetch = async () => ({ ok: false, status: 409 });
+    const alreadySubscribed = await postForm(port, '/api/subscribe', { email: 'ada@example.com' }, { 'x-forwarded-for': '4.4.4.3, proxy' });
+    assert.equal(alreadySubscribed.res.statusCode, 303);
+    assert.equal(alreadySubscribed.res.headers.location, '/subscribed/?ok=1');
+
+    globalThis.fetch = async () => ({ ok: false, status: 500 });
+    const providerError = await postForm(port, '/api/subscribe', { email: 'ada@example.com' }, { 'x-forwarded-for': '4.4.4.4, proxy' });
+    assert.equal(providerError.res.statusCode, 502);
+    assert.match(providerError.body, /data-contact-delivery="failure"/);
+
+    delete process.env.RESEND_AUDIENCE_ID;
+    const keyless = await postForm(port, '/api/subscribe', { email: 'ada@example.com' }, { 'x-forwarded-for': '4.4.4.5, proxy' });
+    assert.equal(keyless.res.statusCode, 503);
+    assert.match(keyless.body, /RESEND_AUDIENCE_ID/);
+  } finally {
+    globalThis.fetch = originalFetch;
+    for (const [key, value] of Object.entries(previousEnv)) {
+      if (value === undefined) delete process.env[key];
+      else process.env[key] = value;
+    }
+    await new Promise((resolve) => server.close(resolve));
+  }
+});
+
 test('unknown static path serves a styled HTML 404 with a home link', async () => {
   // The portfolio app is mounted at "/", so it matches every pathname and an
   // unknown path normally 404s inside that app. In CI the portfolio isn't

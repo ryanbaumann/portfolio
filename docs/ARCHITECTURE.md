@@ -24,6 +24,7 @@ secrets ever reach the browser.
 │       └── /api/*           → secret proxy layer                    │
 │            ├── /api/strava/*      (OAuth broker + photo proxy)     │
 │            ├── /api/isochrones    (GMP server)                     │
+│            ├── /api/subscribe     (email list → Resend audience)   │
 │            └── /api/writer/publish (authenticated GitHub update)   │
 └────────────────────────────────────────────────────────────────────┘
                   ▲
@@ -114,7 +115,7 @@ deploys to Cloud Run on pushes to `main`. Required repo configuration:
 | var     | `ANALYTICS_MEASUREMENT_ID` | Optional public GA4 `G-...` stream ID |
 
 Runtime secrets (`STRAVA_CLIENT_SECRET`, `GMP_SERVER_API_KEY`,
-`RESEND_API_KEY`, `CONTACT_TO_EMAIL`, `GEMINI_API_KEY`,
+`RESEND_API_KEY`, `RESEND_AUDIENCE_ID`, `CONTACT_TO_EMAIL`, `GEMINI_API_KEY`,
 `PORTFOLIO_WRITER_PASSWORD`, and `GITHUB_CONTENT_TOKEN`) are set on the Cloud Run service
 as Secret Manager references, never in the image or repo. `CONTACT_FROM_EMAIL`
 is optional non-secret sender configuration and must use a sender accepted by
@@ -131,6 +132,7 @@ a `VITE_GEMINI_API_KEY`: Vite would expose it in the browser bundle.
 | Import public source | `npm run labs:import -- my-demo --from ../checkout --source-url <https-url> --ref <sha> --confirm-source-public` |
 | Attach private build | `npm run labs:attach -- my-demo --artifact <tgz> --uri <content-addressed-gs-uri> --release <id>` |
 | Add a blog post | `npm run new:post -- "Post title"` |
+| Set up the email list or comments | `docs/EMAIL_LIST_AND_COMMENTS.md` |
 | Schedule a blog post | `npm run new:post -- "Post title" --schedule 2026-07-14T16:00:00Z` |
 | Add a work entry / talk | copy the `_TEMPLATE.md` in `portfolio/content/<collection>/` |
 | Regenerate demo screenshots | `npm run previews` (or `BASE_URL=https://www.ryanbaumann-portfolio.com npm run previews`) |

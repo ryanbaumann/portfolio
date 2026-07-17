@@ -50,6 +50,7 @@ export function clientIp(request) {
 export const RATE_LIMIT_POLICIES = Object.freeze({
   auth: Object.freeze({ windowMs: 60_000, max: 5 }),
   contact: Object.freeze({ windowMs: 60_000, max: 5 }),
+  subscribe: Object.freeze({ windowMs: 60_000, max: 5 }),
   writer: Object.freeze({ windowMs: 60_000, max: 5 }),
   oauth: Object.freeze({ windowMs: 60_000, max: 20 }),
   isochrones: Object.freeze({ windowMs: 60_000, max: 30 }),
@@ -58,6 +59,7 @@ export const RATE_LIMIT_POLICIES = Object.freeze({
 
 export function rateLimitPolicyForPath(pathname) {
   if (pathname === '/api/contact') return 'contact';
+  if (pathname === '/api/subscribe') return 'subscribe';
   if (pathname === '/api/writer/publish') return 'writer';
   if (pathname === '/api/isochrones') return 'isochrones';
   if (pathname === '/api/photo-proxy' || pathname === '/api/strava/photo') return 'photo';
