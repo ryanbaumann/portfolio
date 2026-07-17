@@ -10,7 +10,7 @@ shareSummary: Developer Experience Engineering leader shipping tools, evals, and
 shareImageAlt: Ryan Baumann beside his focus on tools, evals, and AI coding agents.
 ---
 
-I build growth systems for developer platforms. I lead Developer Experience Engineering and product. I ship products and GTM that drive reach and engagement growth, building tools and workflows where humans & agents make decisions.
+I build growth systems for developer platforms. I lead builder platform engineering & product teams, driving product & GTM growth where humans and AI agents make decisions. My mission is to help every human become a builder and create their dream.
 
 Today I lead Developer Experience Engineering for Google Maps Platform, where my team ships [Code Assist](https://developers.google.com/maps/ai/code-assist), [agent skills](https://github.com/googlemaps/agent-skills), evals, architecture guidance, and open-source client libraries.
 
