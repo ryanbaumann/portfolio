@@ -28,7 +28,7 @@ Our [Voice of Developer program](/work/voice-of-developer/) groups repeated fric
 
 When builders work through coding agents instead of reading every platform layer themselves, DevX has to design for the person making the decision and the agent acting inside the task.
 
-## Distribution is key
+## Ship the fix where builders work
 
 A great experience has no impact if builders never encounter it. Documentation is one distribution surface, not the whole strategy. The path also needs to appear in the editor, agent, search result, sample, template, or tool where the work begins.
 
@@ -44,4 +44,4 @@ Evals do not replace user research. An eval delta tests whether the experience c
 
 ![An agent evaluation loop moves from a representative task through an agent trace and rubric comparison to a ship-or-hold decision, then repeats using telemetry and research.](/assets/devx-eval-loop.png)
 
-This is the discipline: own the friction, solve it, improve the product, ship the better experience into the workflow, and measure the impact. Then run the loop again.
+This is the discipline: own the friction, solve it, improve the product, ship the better experience into the workflow, and measure the impact. Then run the loop again. We are still experimenting with every part of it, and that is the point.

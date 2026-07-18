@@ -15,9 +15,9 @@ draft: false
 noindex: false
 ---
 
-The best model will change. So will the agent wrapped around it. A builder platform cannot build its strategy around either one. It needs to own the feedback loop that keeps its critical developer journeys working as models and agents change.
+The best model will change. So will the agent wrapped around it. A builder platform cannot anchor its strategy to either one. It needs to own the feedback loop that keeps its critical developer journeys working as models and agents change.
 
-This is a growth problem, not just an AI quality problem. When a developer asks an agent to build with your platform, that session becomes part of your activation funnel. If the agent chooses the wrong API, misses an authentication step, or produces code that does not compile, the developer experiences that failure as your platform.
+This is a growth problem, not just an AI quality problem. When a developer asks an agent to build with your platform, that session becomes part of your activation funnel. I see it in the traces our team reviews: when the agent chooses the wrong API, misses an authentication step, or produces code that does not compile, the developer experiences that failure as your platform.
 
 ## The model is not the strategy
 
@@ -38,9 +38,7 @@ Evals test the context. Distribution puts the tested path in more hands, while o
 
 ## Why verifiers matter
 
-Pretraining gives a model broad capability by learning patterns across text and code. Post-training turns that capability toward a job through supervised fine-tuning on examples, reinforcement learning from rewards, or a combination of the two. The [instruction-following research](https://arxiv.org/abs/2203.02155) behind this pattern combined demonstrations with human preferences.
-
-Coding makes some reward signals unusually concrete: a compiler can check the build, tests can check specified behavior, and static analysis can catch some security and API errors. Reinforcement learning from verifiable rewards, or RLVR, can use those checks as its reward signal. [DeepSeekMath](https://arxiv.org/abs/2402.03300) introduced GRPO, which learns from the relative rewards of multiple attempts at the same task.
+Pretraining gives a model broad capability. Post-training turns that capability toward a job, through [human demonstrations and preferences](https://arxiv.org/abs/2203.02155) or through rewards, and coding makes some rewards unusually concrete: a compiler can check the build, tests can check specified behavior, and static analysis can catch some security and API errors. Reinforcement learning from verifiable rewards, or RLVR, trains directly against those checks.
 
 ![Pretraining produces a base model, post-training can shape it with supervised examples and preference or verifiable rewards, and the model operates inside a harness with platform context, tools, and an execution environment.](/img/writing/agent-feedback-loop-training.svg)
 
@@ -50,7 +48,7 @@ Coding makes some reward signals unusually concrete: a compiler can check the bu
 
 ## Start with deterministic checks
 
-For each critical user journey, define the checks that can be objective:
+For each critical developer journey, define the checks that can be objective:
 
 - Does the project install and compile?
 - Does it complete the task with the current API?
@@ -75,7 +73,7 @@ Do not collect raw source code or private conversations by default. Keep only th
 
 ## Distribution makes the learning compound
 
-Our team uses this pattern for Google Maps Platform through [portable agent skills](/work/agent-skills/) and a [task-based eval suite](/work/agentic-evals/). I led the strategy for both, and we use eval results to guide launch and distribution decisions.
+Our team is running a version of this loop for Google Maps Platform through [portable agent skills](/work/agent-skills/) and a [task-based eval suite](/work/agentic-evals/). I led the strategy for both, we use eval results to guide launch and distribution decisions, and we are still learning what works.
 
 Ship versioned context in a portable form, and run the same tasks in the tools, prompts, and execution boundaries developers receive. Treat every new model or harness as another row in the test matrix, not a reason to restart the strategy.
 
@@ -91,4 +89,4 @@ Start with ten critical developer journeys. For each one:
 4. Test it across representative model and harness versions.
 5. Measure outcomes and review failures. Reuse traces only when they are authorized and cleared through privacy and security review.
 
-Run it again. Models and harnesses will move. Your loop should get better every time they do.
+Run it again. Models and harnesses will move, and nobody has this figured out yet, including us. Keep learning, keep experimenting, keep shipping, and let the loop get better every time they do.
