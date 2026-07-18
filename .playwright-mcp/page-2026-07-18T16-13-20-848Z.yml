@@ -1,0 +1,505 @@
+- generic [active] [ref=e1]:
+  - banner:
+    - generic [ref=e2]:
+      - link "Skip to main content":
+        - /url: "#main"
+      - generic [ref=e4]:
+        - link "OpenAI Home" [ref=e5] [cursor=pointer]:
+          - /url: /
+        - generic [ref=e10]:
+          - generic [ref=e12]:
+            - button "Open Search" [ref=e14] [cursor=pointer]
+            - button "Close Search" [ref=e17] [cursor=pointer]
+          - generic [ref=e20]:
+            - generic [ref=e21]:
+              - button "Log in" [ref=e22] [cursor=pointer]
+              - link "Try ChatGPT (opens in a new window)" [ref=e25] [cursor=pointer]:
+                - /url: https://chatgpt.com/
+                - text: Try ChatGPT
+                - generic [ref=e28]: (opens in a new window)
+            - button "Open mobile navigation" [ref=e29] [cursor=pointer]
+      - dialog:
+        - generic:
+          - generic:
+            - generic:
+              - generic:
+                - list:
+                  - listitem:
+                    - button: Research
+                  - listitem:
+                    - button: Products
+                  - listitem:
+                    - button: Business
+                  - listitem:
+                    - button: Developers
+                  - listitem:
+                    - button: Company
+                  - listitem:
+                    - link:
+                      - /url: https://openaifoundation.org
+                      - text: Foundation
+                      - generic: (opens in a new window)
+                - generic:
+                  - link:
+                    - /url: https://chatgpt.com/
+                    - text: Try ChatGPT
+                    - generic: (opens in a new window)
+                  - button: Login
+  - generic [ref=e32]:
+    - main [ref=e33]:
+      - generic [ref=e34]: OpenAI
+      - article [ref=e35]:
+        - generic [ref=e36]:
+          - generic [ref=e40]:
+            - generic [ref=e41]:
+              - paragraph [ref=e42]: July 8, 2026
+              - link "Research" [ref=e43] [cursor=pointer]:
+                - /url: /news/research/
+              - link "Publication" [ref=e44] [cursor=pointer]:
+                - /url: /research/index/publication/
+            - heading "Separating signal from noise in coding evaluations" [level=1] [ref=e45]
+            - paragraph [ref=e47]: Through a detailed audit, we find widespread task issues in SWE-Bench Pro and estimate that ~30% of the tasks are broken.
+          - generic [ref=e51]:
+            - generic [ref=e54]:
+              - button "Play audio of page text" [disabled] [ref=e55]
+              - generic [ref=e58]: Loading…
+            - button "Share" [ref=e63] [cursor=pointer]
+        - generic [ref=e67]:
+          - navigation "Table of contents" [ref=e68]:
+            - list [ref=e69]:
+              - listitem [ref=e70]:
+                - link "Methodology" [ref=e72] [cursor=pointer]:
+                  - /url: "#methodology"
+              - listitem [ref=e73]:
+                - link "Human-supervised agent review" [ref=e75] [cursor=pointer]:
+                  - /url: "#human-supervised-agent-review"
+              - listitem [ref=e76]:
+                - link "Human annotation campaign" [ref=e78] [cursor=pointer]:
+                  - /url: "#human-annotation-campaign"
+              - listitem [ref=e79]:
+                - link "Discussion" [ref=e81] [cursor=pointer]:
+                  - /url: "#discussion"
+          - generic [ref=e82]:
+            - paragraph [ref=e84]:
+              - text: Accurately measuring our models’ capabilities is important for sound deployment and safety decisions, including decisions under OpenAI’s
+              - link "Preparedness Framework⁠ (opens in a new window)" [ref=e85] [cursor=pointer]:
+                - /url: https://cdn.openai.com/pdf/18a02b5d-6b67-4cec-ab64-68cdfbddebcd/preparedness-framework-v2.pdf
+                - text: Preparedness Framework⁠
+                - generic [ref=e86]: (opens in a new window)
+              - text: . With each model release, we report results for a variety of external and internal benchmarks to track model progress. When evaluations have flaws that affect results, they can give a false understanding of capabilities, misrepresenting safety cases and affecting research priorities.
+            - paragraph [ref=e88]:
+              - text: We
+              - link "recently investigated" [ref=e89] [cursor=pointer]:
+                - /url: /index/why-we-no-longer-evaluate-swe-bench-verified/
+              - text: how one of the most widely used coding benchmarks, SWE-bench Verified, had fundamental design and contamination issues, and found that the eval no longer provided meaningful signal on software development capabilities. At the time, we encouraged the wider community to switch to SWE-Bench Pro.
+            - paragraph [ref=e91]:
+              - link "SWE-Bench Pro⁠ (opens in a new window)" [ref=e92] [cursor=pointer]:
+                - /url: https://scale.com/blog/swe-bench-pro
+                - generic [ref=e93]: SWE-Bench Pro
+                - text: ⁠
+                - generic [ref=e94]: (opens in a new window)
+              - text: was designed to improve on SWE-bench Verified by testing models on longer horizons and more realistic coding tasks to better track agentic coding capabilities. As in SWE-bench Verified, tasks are sourced programmatically from the history of feature changes in a set of public and private repositories. Models are required to implement a solution that passes new tests for a feature, without breaking existing functionality. On the 731-task public split, frontier models improved from a pass rate of 23.3% to 80.3% in eight months.
+            - paragraph [ref=e96]: We’ve since performed a similar audit on SWE-Bench Pro, reviewing the dataset using a datapoint analysis pipeline. The pipeline reviewed model attempts at the task, task metadata, and failure traces to flag likely evaluation flaws. Each flagged task was then assessed through multiple investigator-agent passes and independently reviewed by five experienced software engineers, with disagreements escalated for further investigation.
+            - figure [ref=e98]:
+              - paragraph [ref=e107]: We find evidence of breaking issues in a significant portion of the dataset. Our datapoint analysis pipeline flagged 200 (27.4%) broken tasks, while the human annotation campaign identified 249 (34.1%).
+            - paragraph [ref=e109]: "The issues primarily fell into four categories:"
+            - list [ref=e111]:
+              - listitem [ref=e112]:
+                - generic [ref=e113]: Overly strict tests
+                - superscript [ref=e114]:
+                  - link "1" [ref=e116] [cursor=pointer]:
+                    - /url: "#citation-bottom-1"
+                - text: enforce specific implementation details not specified in the prompt, invalidating many functionally correct submissions.
+              - listitem [ref=e117]:
+                - generic [ref=e118]: Underspecified prompts
+                - superscript [ref=e119]:
+                  - link "2" [ref=e121] [cursor=pointer]:
+                    - /url: "#citation-bottom-2"
+                - text: omit requirements that hidden tests enforce and that are not reasonably inferable.
+              - listitem [ref=e122]:
+                - generic [ref=e123]: Low-coverage tests
+                - text: under check the requested feature, so incomplete fixes can pass.
+              - listitem [ref=e124]:
+                - text: A
+                - generic [ref=e125]: misleading prompt
+                - text: points models toward the wrong behavior or contradicts what tests require.
+            - paragraph [ref=e127]: Our findings point to the difficulty of curating hard but fair benchmarks and the growing utility of agents for scalable data quality checks. In light of these results, we estimate that ~30% of SWE-bench Pro tasks are broken, and advise that model developers carefully examine results.
+            - heading "Methodology" [level=2] [ref=e131]
+            - paragraph [ref=e133]: Our aim is to ensure that task failures reflect genuine model limitations, and task successes reflect complete and valid solutions to the prompt requirements. To check the quality of the data used in the evaluation, we created a quality assurance pipeline to assess whether each datapoint accurately reflects model capabilities.
+            - figure [ref=e135]:
+              - generic [ref=e136]:
+                - img "Quality assurance workflow combining automated screening and human review to assess task quality." [ref=e143]
+                - paragraph [ref=e150]: An initial data quality pipeline flags problems for review. We validate with a deeper agent-assisted audit of flagged tasks and a human annotation campaign working with experienced engineers.
+            - paragraph [ref=e152]: "An initial automated filter reviews the instructions given to the model, attempts by the model to solve the task, and the tests used to grade these attempts to flag likely broken or problematic examples. This filter flagged 286 potentially broken tasks. We then conducted a deeper review of that subset in two ways: a human-supervised agent review, which conducts extensive checks with investigator agents and a final human judgment; and a human annotation campaign working with experienced software developers."
+            - heading "Human-supervised agent review" [level=2] [ref=e156]
+            - paragraph [ref=e158]: Each flagged problem is audited with Codex-based investigator agents that were given access to the task repository and environment. This helps them distinguish reasonable task ambiguity, which can often be resolved by studying nearby code and repository conventions, from true underspecification. The agent can run tests, inspect files in the repo, and investigate model attempts and their common failure modes on the task. After several independent repeats of these deeper audits, a researcher reviewed the summaries, made a final judgment, and labeled the likely issues.
+            - heading "Human annotation campaign" [level=2] [ref=e162]
+            - paragraph [ref=e164]: In parallel, we ran a human annotation campaign over the flagged subset. We worked with experienced software engineers who were trained on the benchmark goals, issue taxonomy, and edge cases before reviewing tasks. Each task was reviewed by five engineers.
+            - paragraph [ref=e166]: Reviewers formed an independent judgment from the visible problem statement, test cases, and the ground-truth reference solution (known as the gold patch) before using the pipeline analysis or transcript as supporting context. The reviewers then assigned a label and severity rating based on concrete evidence, and escalated disagreements or low-confidence cases for further review.
+            - paragraph [ref=e168]: Human reviewers were more likely than the investigator agents to mark tasks as broken. There was also some disagreement on categories between the two review paths, but in no flagged task was “not broken” the most common human label. Of the categories the agent pipeline flagged, reviewers’ judgments overlapped in 74% of cases.
+            - paragraph [ref=e170]: "Compared with the agent pipeline, the human reviewers were also more likely to select multiple labels for a task, indicating that they found tasks to be broken in multiple ways or did not fit cleanly into a single category. This suggests the agent-plus-reviewer pipeline resulted in conservative labeling: it captured the same broad failure modes humans identified, while undercounting cases where reviewers saw additional or overlapping issues. The largest difference was in low-coverage tests, which humans selected as the most common issue for 9.4% of the benchmark compared with 4.1% from the agent pipeline."
+            - generic [ref=e172]:
+              - heading "Failure modes" [level=3] [ref=e176]
+              - tablist "Tabs" [ref=e179]:
+                - generic [ref=e182]:
+                  - tab "Misleading prompt" [selected] [ref=e183] [cursor=pointer]
+                  - tab "Overly strict tests" [ref=e185] [cursor=pointer]
+                  - tab "Underspecified prompt" [ref=e187] [cursor=pointer]
+                  - tab "Low-coverage tests" [ref=e189] [cursor=pointer]
+              - tabpanel "Misleading prompt" [ref=e192]:
+                - generic [ref=e195]:
+                  - paragraph [ref=e198]: In several cases the task prompt prescribed a specific implementation, but the hidden test cases expected different behavior.
+                  - generic [ref=e203]:
+                    - button "Select conversation" [ref=e206] [cursor=pointer]:
+                      - heading "OpenLibrary-77c16d5" [level=2] [ref=e207]
+                    - generic [ref=e219]:
+                      - paragraph [ref=e220]:
+                        - text: This task involves normalizing table-of-contents entries and rendering them back to Markdown via
+                        - code [ref=e221]: TocEntry.to_markdown()
+                        - text: . The task prompt specifies serialization down to character-level spacing, describing how exact spacing and pipes are enforced, and gives examples such as
+                        - code [ref=e222]: "\" | Chapter 1 | 1\""
+                        - text: and
+                        - code [ref=e223]: "\"** | Chapter 1 | 1\""
+                        - text: ":"
+                      - generic [ref=e227]:
+                        - generic [ref=e228]:
+                          - heading "None" [level=4] [ref=e229]
+                          - button "Copy code block" [ref=e230] [cursor=pointer]
+                        - code [ref=e234]:
+                          - generic [ref=e235]:
+                            - generic [ref=e236]:
+                              - generic [ref=e237]: "1"
+                              - generic [ref=e238]: "\"[space]| Chapter 1 | 1\""
+                            - generic [ref=e239]:
+                              - generic [ref=e240]: "2"
+                              - generic [ref=e241]: "\"**[space]| Chapter 1 | 1\""
+                            - generic [ref=e242]:
+                              - generic [ref=e243]: "3"
+                              - generic [ref=e244]: "\"[space]| Just title | \""
+                      - paragraph [ref=e245]:
+                        - text: The hidden
+                        - code [ref=e246]: test_to_markdown
+                        - text: assertions instead require
+                        - code [ref=e247]: "\" | Chapter 1 | 1\""
+                        - text: and
+                        - code [ref=e248]: "\"** | Chapter 1 | 1\""
+                        - text: ":"
+                      - generic [ref=e252]:
+                        - generic [ref=e253]:
+                          - heading "None" [level=4] [ref=e254]
+                          - button "Copy code block" [ref=e255] [cursor=pointer]
+                        - code [ref=e259]:
+                          - generic [ref=e260]:
+                            - generic [ref=e261]:
+                              - generic [ref=e262]: "1"
+                              - generic [ref=e263]: "\"[space][space]| Chapter 1 | 1\""
+                            - generic [ref=e264]:
+                              - generic [ref=e265]: "2"
+                              - generic [ref=e266]: "\"**[space][space]| Chapter 1 | 1\""
+                            - generic [ref=e267]:
+                              - generic [ref=e268]: "3"
+                              - generic [ref=e269]: "\"[space][space]| Just title | \""
+                      - paragraph [ref=e270]: There are two leading spaces in the hidden tests, but the example given to the model only contains one leading space. If a model rightly follows the given prompt, that one-character difference would fail the hidden test cases and the task would be marked incorrect.
+            - heading "Discussion" [level=2] [ref=e274]
+            - paragraph [ref=e276]:
+              - text: The issues we have identified, coupled with similar cases in
+              - link "SWE-bench Verified" [ref=e277] [cursor=pointer]:
+                - /url: /index/why-we-no-longer-evaluate-swe-bench-verified/
+              - text: ", highlight the importance of rigorously checking benchmarks. Issues and pull requests from open-source repositories were originally created for human collaboration, often through long back-and-forths between maintainers and contributors. As a result, problem descriptions, merged code, and unit tests do not always line up to form clean, isolated tasks for evaluating models reliably. In particular, tests included in pull requests can be overly strict because they are written to validate a specific change, rather than to define an implementation-agnostic standard for solving the task."
+            - paragraph [ref=e279]: At the same time, evaluation flaws are easier to detect now than they would have been even a short time ago. As model capabilities improve, we can use those models to inspect prompts, tests, patches, traces, and edge cases with much greater depth and consistency, helping surface benchmark issues that were previously costly or impractical to find at scale.
+            - paragraph [ref=e281]: We hope the wider evaluation community will develop new benchmarks built by experienced software developers specifically to test model capabilities. That approach can preserve the high bar and realism we want to measure model capabilities, and allows for better human oversight throughout the process. Given the issues uncovered in this analysis, we retract our earlier recommendation to adopt SWE-Bench Pro.
+            - paragraph [ref=e283]: Ultimately, an eval should provide meaningful signal through benchmarks that are hard to game, easy to trust, and genuinely reflective of model capability or alignment. Because these results inform OpenAI’s deployment and safety decisions, the evals we track need to be valid and informative.
+        - generic [ref=e286]:
+          - list [ref=e288]:
+            - listitem [ref=e289]:
+              - link "2026" [ref=e290] [cursor=pointer]:
+                - /url: /news/?tags=2026
+            - listitem [ref=e291]:
+              - link "Software & Engineering" [ref=e292] [cursor=pointer]:
+                - /url: /news/?tags=software-engineering
+          - generic [ref=e293]:
+            - heading "Author" [level=2] [ref=e294]
+            - generic [ref=e295]: OpenAI
+          - generic [ref=e296]:
+            - heading "Footnotes" [level=2] [ref=e297]
+            - list [ref=e299]:
+              - listitem [ref=e300]:
+                - generic [ref=e301]: "1"
+                - paragraph [ref=e303]:
+                  - text: We
+                  - link "previously⁠" [ref=e304] [cursor=pointer]:
+                    - /url: https://openai.com/index/why-we-no-longer-evaluate-swe-bench-verified/
+                  - text: referred to this category as narrow tests.
+                  - button "Scroll to citation 1 reference" [ref=e306] [cursor=pointer]
+              - listitem [ref=e309]:
+                - generic [ref=e310]: "2"
+                - paragraph [ref=e312]:
+                  - text: We previously referred to this category as wide tests.
+                  - button "Scroll to citation 2 reference" [ref=e314] [cursor=pointer]
+        - generic [ref=e317]:
+          - generic [ref=e318]:
+            - heading "Keep reading" [level=2] [ref=e320]
+            - link "View all" [ref=e321] [cursor=pointer]:
+              - /url: /news/
+          - generic [ref=e324]:
+            - generic [ref=e326]:
+              - img "GPT-Red art card" [ref=e332]
+              - 'link "GPT-Red: Unlocking Self-Improvement for Robustness - Safety - Jul 15, 2026" [ref=e333] [cursor=pointer]':
+                - /url: /index/unlocking-self-improvement-gpt-red/
+                - generic [ref=e334]:
+                  - generic [ref=e335]: "GPT-Red: Unlocking Self-Improvement for Robustness"
+                  - paragraph [ref=e336]:
+                    - generic [ref=e337]: Safety
+                    - time [ref=e339]: Jul 15, 2026
+            - generic [ref=e341]:
+              - img "Introducing GeneBench-Pro > Cover image" [ref=e347]
+              - link "Introducing GeneBench-Pro - Research - Jun 30, 2026" [ref=e348] [cursor=pointer]:
+                - /url: /index/introducing-genebench-pro/
+                - generic [ref=e349]:
+                  - generic [ref=e350]: Introducing GeneBench-Pro
+                  - paragraph [ref=e351]:
+                    - generic [ref=e352]: Research
+                    - time [ref=e354]: Jun 30, 2026
+            - generic [ref=e356]:
+              - img "A near-autonomous AI chemist improves a challenging reaction" [ref=e362]
+              - link "A near-autonomous AI chemist improves a challenging reaction in medicinal chemistry - Research - Jun 17, 2026" [ref=e363] [cursor=pointer]:
+                - /url: /index/ai-chemist-improves-reaction/
+                - generic [ref=e364]:
+                  - generic [ref=e365]: A near-autonomous AI chemist improves a challenging reaction in medicinal chemistry
+                  - paragraph [ref=e366]:
+                    - generic [ref=e367]: Research
+                    - time [ref=e369]: Jun 17, 2026
+    - contentinfo [ref=e370]:
+      - generic [ref=e372]:
+        - generic [ref=e373]:
+          - generic [ref=e374]:
+            - heading "Research" [level=2] [ref=e375]
+            - list [ref=e376]:
+              - listitem [ref=e377]:
+                - link "Research Index" [ref=e378] [cursor=pointer]:
+                  - /url: /research/index/
+              - listitem [ref=e379]:
+                - link "Research Overview" [ref=e380] [cursor=pointer]:
+                  - /url: /research/
+              - listitem [ref=e381]:
+                - link "Economic Research" [ref=e382] [cursor=pointer]:
+                  - /url: /signals/
+          - generic [ref=e383]:
+            - heading "Latest Advancements" [level=2] [ref=e384]
+            - list [ref=e385]:
+              - listitem [ref=e386]:
+                - link "GPT-5.6" [ref=e387] [cursor=pointer]:
+                  - /url: /index/gpt-5-6/
+              - listitem [ref=e388]:
+                - link "GPT-5.5" [ref=e389] [cursor=pointer]:
+                  - /url: /index/introducing-gpt-5-5/
+              - listitem [ref=e390]:
+                - link "GPT-5.4" [ref=e391] [cursor=pointer]:
+                  - /url: /index/introducing-gpt-5-4/
+          - generic [ref=e392]:
+            - heading "Safety" [level=2] [ref=e393]
+            - list [ref=e394]:
+              - listitem [ref=e395]:
+                - link "Safety Approach" [ref=e396] [cursor=pointer]:
+                  - /url: /safety/
+              - listitem [ref=e397]:
+                - link "Deployment Safety (opens in a new window)" [ref=e398] [cursor=pointer]:
+                  - /url: https://deploymentsafety.openai.com/
+                  - text: Deployment Safety
+                  - generic [ref=e401]: (opens in a new window)
+              - listitem [ref=e402]:
+                - link "Security & Privacy" [ref=e403] [cursor=pointer]:
+                  - /url: /security-and-privacy/
+              - listitem [ref=e404]:
+                - link "Trust & Transparency" [ref=e405] [cursor=pointer]:
+                  - /url: /trust-and-transparency/
+        - generic [ref=e406]:
+          - generic [ref=e407]:
+            - heading "Products" [level=2] [ref=e408]
+            - list [ref=e409]:
+              - listitem [ref=e410]:
+                - link "ChatGPT (opens in a new window)" [ref=e411] [cursor=pointer]:
+                  - /url: https://chatgpt.com/
+                  - text: ChatGPT
+                  - generic [ref=e414]: (opens in a new window)
+              - listitem [ref=e415]:
+                - link "ChatGPT Business (opens in a new window)" [ref=e416] [cursor=pointer]:
+                  - /url: https://chatgpt.com/business/
+                  - text: ChatGPT Business
+                  - generic [ref=e419]: (opens in a new window)
+              - listitem [ref=e420]:
+                - link "ChatGPT Enterprise (opens in a new window)" [ref=e421] [cursor=pointer]:
+                  - /url: https://chatgpt.com/business/enterprise/
+                  - text: ChatGPT Enterprise
+                  - generic [ref=e424]: (opens in a new window)
+              - listitem [ref=e425]:
+                - link "ChatGPT for Education (opens in a new window)" [ref=e426] [cursor=pointer]:
+                  - /url: https://chatgpt.com/business/education/
+                  - text: ChatGPT for Education
+                  - generic [ref=e429]: (opens in a new window)
+              - listitem [ref=e430]:
+                - link "Codex" [ref=e431] [cursor=pointer]:
+                  - /url: /codex/
+              - listitem [ref=e432]:
+                - link "Release Notes" [ref=e433] [cursor=pointer]:
+                  - /url: /products/release-notes/
+          - generic [ref=e434]:
+            - heading "API Platform" [level=2] [ref=e435]
+            - list [ref=e436]:
+              - listitem [ref=e437]:
+                - link "Overview" [ref=e438] [cursor=pointer]:
+                  - /url: /api/
+              - listitem [ref=e439]:
+                - link "API Log In (opens in a new window)" [ref=e440] [cursor=pointer]:
+                  - /url: https://platform.openai.com/login
+                  - text: API Log In
+                  - generic [ref=e443]: (opens in a new window)
+              - listitem [ref=e444]:
+                - link "Docs (opens in a new window)" [ref=e445] [cursor=pointer]:
+                  - /url: https://developers.openai.com/api/docs
+                  - text: Docs
+                  - generic [ref=e448]: (opens in a new window)
+        - generic [ref=e449]:
+          - generic [ref=e450]:
+            - heading "Business" [level=2] [ref=e451]
+            - list [ref=e452]:
+              - listitem [ref=e453]:
+                - link "Overview" [ref=e454] [cursor=pointer]:
+                  - /url: /business/
+              - listitem [ref=e455]:
+                - link "Solutions" [ref=e456] [cursor=pointer]:
+                  - /url: /solutions/
+              - listitem [ref=e457]:
+                - link "Resources" [ref=e458] [cursor=pointer]:
+                  - /url: /business/learn/
+              - listitem [ref=e459]:
+                - link "Customer Stories" [ref=e460] [cursor=pointer]:
+                  - /url: /business/customer-stories/
+              - listitem [ref=e461]:
+                - link "Partner Network" [ref=e462] [cursor=pointer]:
+                  - /url: /business/partners/
+              - listitem [ref=e463]:
+                - link "Contact Sales" [ref=e464] [cursor=pointer]:
+                  - /url: /contact-sales/
+          - generic [ref=e465]:
+            - heading "Developers" [level=2] [ref=e466]
+            - list [ref=e467]:
+              - listitem [ref=e468]:
+                - link "Apps SDK (opens in a new window)" [ref=e469] [cursor=pointer]:
+                  - /url: https://developers.openai.com/apps-sdk
+                  - text: Apps SDK
+                  - generic [ref=e472]: (opens in a new window)
+              - listitem [ref=e473]:
+                - link "Open Models" [ref=e474] [cursor=pointer]:
+                  - /url: /open-models/
+              - listitem [ref=e475]:
+                - link "Docs (opens in a new window)" [ref=e476] [cursor=pointer]:
+                  - /url: https://developers.openai.com/
+                  - text: Docs
+                  - generic [ref=e479]: (opens in a new window)
+              - listitem [ref=e480]:
+                - link "Resources (opens in a new window)" [ref=e481] [cursor=pointer]:
+                  - /url: https://developers.openai.com/learn
+                  - text: Resources
+                  - generic [ref=e484]: (opens in a new window)
+              - listitem [ref=e485]:
+                - link "Developer Forum (opens in a new window)" [ref=e486] [cursor=pointer]:
+                  - /url: https://community.openai.com/
+                  - text: Developer Forum
+                  - generic [ref=e489]: (opens in a new window)
+        - generic [ref=e490]:
+          - generic [ref=e491]:
+            - heading "Company" [level=2] [ref=e492]
+            - list [ref=e493]:
+              - listitem [ref=e494]:
+                - link "About Us" [ref=e495] [cursor=pointer]:
+                  - /url: /about/
+              - listitem [ref=e496]:
+                - link "Our Charter" [ref=e497] [cursor=pointer]:
+                  - /url: /charter/
+              - listitem [ref=e498]:
+                - link "Careers" [ref=e499] [cursor=pointer]:
+                  - /url: /careers/
+              - listitem [ref=e500]:
+                - link "News" [ref=e501] [cursor=pointer]:
+                  - /url: /news/
+          - generic [ref=e502]:
+            - heading "Support" [level=2] [ref=e503]
+            - list [ref=e504]:
+              - listitem [ref=e505]:
+                - link "Help Center (opens in a new window)" [ref=e506] [cursor=pointer]:
+                  - /url: https://help.openai.com/
+                  - text: Help Center
+                  - generic [ref=e509]: (opens in a new window)
+        - generic [ref=e510]:
+          - generic [ref=e511]:
+            - heading "More" [level=2] [ref=e512]
+            - list [ref=e513]:
+              - listitem [ref=e514]:
+                - link "Stories" [ref=e515] [cursor=pointer]:
+                  - /url: /stories/
+              - listitem [ref=e516]:
+                - link "Academy" [ref=e517] [cursor=pointer]:
+                  - /url: /academy/
+              - listitem [ref=e518]:
+                - link "Supply Co." [ref=e519] [cursor=pointer]:
+                  - /url: /supply/
+              - listitem [ref=e520]:
+                - link "Livestreams" [ref=e521] [cursor=pointer]:
+                  - /url: /live/
+              - listitem [ref=e522]:
+                - link "Podcast" [ref=e523] [cursor=pointer]:
+                  - /url: /podcast/
+              - listitem [ref=e524]:
+                - link "RSS" [ref=e525] [cursor=pointer]:
+                  - /url: https://openai.com/news/rss.xml
+          - generic [ref=e526]:
+            - heading "Terms & Policies" [level=2] [ref=e527]
+            - list [ref=e528]:
+              - listitem [ref=e529]:
+                - link "Terms of Use" [ref=e530] [cursor=pointer]:
+                  - /url: /policies/terms-of-use/
+              - listitem [ref=e531]:
+                - link "Privacy Policy" [ref=e532] [cursor=pointer]:
+                  - /url: /policies/privacy-policy/
+              - listitem [ref=e533]:
+                - link "Other Policies" [ref=e534] [cursor=pointer]:
+                  - /url: /policies/
+      - generic [ref=e535]:
+        - generic [ref=e536]:
+          - link "X" [ref=e537] [cursor=pointer]:
+            - /url: https://x.com/OpenAI
+            - generic [ref=e540]: (opens in a new window)
+          - link "YouTube" [ref=e541] [cursor=pointer]:
+            - /url: https://www.youtube.com/OpenAI
+            - generic [ref=e544]: (opens in a new window)
+          - link "LinkedIn" [ref=e545] [cursor=pointer]:
+            - /url: https://www.linkedin.com/company/openai
+            - generic [ref=e548]: (opens in a new window)
+          - link "GitHub" [ref=e549] [cursor=pointer]:
+            - /url: https://github.com/openai
+            - generic [ref=e552]: (opens in a new window)
+          - link "Instagram" [ref=e553] [cursor=pointer]:
+            - /url: https://www.instagram.com/openai/
+            - generic [ref=e556]: (opens in a new window)
+          - link "TikTok" [ref=e557] [cursor=pointer]:
+            - /url: https://www.tiktok.com/@openai
+            - generic [ref=e560]: (opens in a new window)
+          - link "Discord" [ref=e561] [cursor=pointer]:
+            - /url: https://discord.gg/openai
+            - generic [ref=e564]: (opens in a new window)
+        - generic [ref=e565]:
+          - generic [ref=e566]: OpenAI © 2015–2026
+          - button "Your privacy choices" [ref=e567] [cursor=pointer]
+        - generic [ref=e573]:
+          - button "Change language" [ref=e574] [cursor=pointer]:
+            - generic [ref=e579]:
+              - text: English
+              - generic [ref=e580]: United States
+          - generic:
+            - generic:
+              - generic:
+                - generic:
+                  - generic:
+                    - textbox "Search locales by name or region":
+                      - /placeholder: Search

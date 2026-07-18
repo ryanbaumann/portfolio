@@ -63,7 +63,7 @@ Add human judgment where the task needs it. Start with a human-written rubric fo
 
 *The eval: deterministic checks and calibrated judgment lead to a ship, improve, or hold decision. Held-out tasks stay outside tuning.*
 
-Keep a meaningful slice of tasks and answers out of the context and tuning loop. Otherwise the system can learn the test instead of the job. Recent [audits of public coding benchmarks](https://openai.com/index/separating-signal-from-noise-coding-evaluations/) show how broken tests and contamination can hollow out a familiar score. Audit the eval before blaming the model.
+Keep a meaningful slice of tasks and answers out of the context and tuning loop. Otherwise the system can learn the test instead of the job. Recent [audits of public coding benchmarks](https://openai.com/index/separating-signal-from-noise-coding-evaluations/) show how broken tasks and gameable tests can hollow out a familiar score. Audit the eval before blaming the model.
 
 ## First-party signals close the product loop
 

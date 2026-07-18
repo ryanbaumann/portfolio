@@ -23,7 +23,7 @@ Treat review as a bounded evidence loop, not a vibe check. Read the portfolio wr
 - Credit team work accurately. Default to "Our team built… I led the strategy," not solo credit, but do not dilute genuinely individual work. Remove or qualify anything the evidence does not support.
 - Generalize third-party tools: name first-party surfaces (AI Studio), never enumerate competitor AI products. Flag employer product-marketing tone that reads as selling the platform or looking for work elsewhere.
 - Verify that the opening states the thesis, each section advances it, and the ending tells the reader what to do.
-- Search the changed prose for banned voice patterns such as passive self-credit, hype adjectives, resume bullets, and em dashes. Also flag three or more adjacent sentences that repeat the same subject-verb structure, especially glossary definitions and metric sequences. Read the copy aloud for varied rhythm and conversational flow because style cannot be proven by a regex.
+- Search the changed prose for banned voice patterns such as passive self-credit, hype adjectives, resume bullets, and em dashes. Also flag three or more adjacent sentences that repeat the same subject-verb structure, especially glossary definitions and metric sequences. Read the copy aloud for varied rhythm and conversational flow because style cannot be proven by a regex, and compare the rhythm against the hand-written calibration reference linked in the writing skill.
 
 ## 3. Audit links and URL ownership
 

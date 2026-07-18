@@ -147,7 +147,7 @@ const CARDS = [
     file: 'developer-platforms-need-to-own-the-agent-feedback-loop.png',
     eyebrow: 'FIELD NOTES · DEVELOPER EXPERIENCE',
     title: 'Own the Agent Feedback Loop',
-    summary: 'Context · Evals · Outcomes · Distribution',
+    summary: 'Context · Evals · Distribution · Outcomes',
     source: 'portfolio/static/img/writing/agent-feedback-loop-header.svg',
     layout: 'artifact',
   },
