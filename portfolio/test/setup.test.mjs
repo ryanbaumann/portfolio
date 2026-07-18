@@ -20,6 +20,10 @@ test('setup writes separate browser, server, and contact configuration', () => {
     WRITER_PUBLIC_ORIGIN: 'https://dashboard.example.com',
     GITHUB_CONTENT_TOKEN: 'github-token',
     GITHUB_REVIEW_TOKEN: 'review-token',
+    BUFFER_API_KEY: 'buffer-key',
+    BUFFER_ORGANIZATION_ID: 'buffer-org',
+    BUFFER_LINKEDIN_CHANNEL_ID: 'buffer-linkedin',
+    BUFFER_X_CHANNEL_ID: 'buffer-x',
     ANALYTICS_MEASUREMENT_ID: 'G-TEST123',
   });
   assert.match(generated, /^VITE_GMP_API_KEY=shared-browser-key$/m);
@@ -35,5 +39,9 @@ test('setup writes separate browser, server, and contact configuration', () => {
   assert.match(generated, /^WRITER_PUBLIC_ORIGIN=https:\/\/dashboard\.example\.com$/m);
   assert.match(generated, /^GITHUB_CONTENT_TOKEN=github-token$/m);
   assert.match(generated, /^GITHUB_REVIEW_TOKEN=review-token$/m);
+  assert.match(generated, /^BUFFER_API_KEY=buffer-key$/m);
+  assert.match(generated, /^BUFFER_ORGANIZATION_ID=buffer-org$/m);
+  assert.match(generated, /^BUFFER_LINKEDIN_CHANNEL_ID=buffer-linkedin$/m);
+  assert.match(generated, /^BUFFER_X_CHANNEL_ID=buffer-x$/m);
   assert.match(generated, /^ANALYTICS_MEASUREMENT_ID=G-TEST123$/m);
 });

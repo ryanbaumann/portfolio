@@ -13,6 +13,8 @@ shareImageAlt: A literal description of the social preview image
 tags: ["developer experience"]
 draft: true
 noindex: true
+# Set false to keep this new draft out of the merge-time Buffer staging workflow.
+# stageSocial: false
 # For scheduling, set draft/noindex false and add a UTC timestamp:
 # publishAt: 2099-07-14T16:00:00Z
 ---

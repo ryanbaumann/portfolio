@@ -102,6 +102,10 @@ test('writer publishing requires the private writer session and same-origin form
     const cookieResponse = { setHeader(_name, value) { this.value = value; } };
     setAuthCookie(cookieResponse, 'portfolio-writer', 'writer-secret');
     const cookie = cookieResponse.value[0].split(';', 1)[0];
+    assert.equal((await postForm(port, '/api/writer/social', { sourceSlug: 'draft', channel: 'x', text: 'Draft' }, {
+      Cookie: cookie,
+      Origin: `http://localhost:${port}`,
+    })).res.statusCode, 401);
     assert.equal((await postForm(port, '/api/writer/publish', form, { Cookie: cookie })).res.statusCode, 403);
     const result = await postForm(port, '/api/writer/publish', form, {
       Cookie: cookie,

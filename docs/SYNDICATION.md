@@ -24,9 +24,9 @@ canonical post on this site.
 Use one approval queue for social distribution. Buffer is the first choice
 because it supports LinkedIn profiles and Pages, X, and additional networks
 from one calendar. Its API can create posts as drafts when a channel requires
-approval, so generation and publishing remain separate decisions. Start in the
-Buffer dashboard. Add an API integration only after the manual loop proves
-that copying reviewed kits is the bottleneck.
+approval, so generation and publishing remain separate decisions. The private
+Writer dashboard now stages editable drafts, and a merge workflow handles the
+first pass for newly added Field Notes.
 
 Keep Substack outside that queue. Substack documents archive imports from RSS
 and manual copy-and-paste, but not an ongoing post-creation API. Publish its
@@ -54,51 +54,32 @@ LinkedIn post and X post together, then approve or revise each one in Buffer.
 Record the published URLs beside the Field Note. Buffer is the operational
 queue, not the content archive or analytics source of truth.
 
-If the dashboard becomes repetitive, add a server-side Buffer integration to
-the private `/writer/` app:
+The server-side Buffer integration follows this loop:
 
 1. Generate a reviewed syndication kit from the published Field Note.
 2. Show the exact LinkedIn and X copy before it leaves the site.
 3. On explicit approval, create Buffer drafts for selected channels.
 4. Review timing, previews, mentions, and image crops in Buffer.
-5. Publish from Buffer and save the resulting channel URLs in the writer
-   record.
+5. Publish from Buffer. Record the resulting channel URL with the Field Note
+   when comparing attribution.
 
 The integration must use a server-side credential stored in Secret Manager.
 It must never place a Buffer, LinkedIn, or X token in Markdown, client-side
-JavaScript, a `VITE_` variable, logs, or a pull request. Sending a draft is an
-external side effect and always requires an explicit browser action. Retrying
-must use a stable idempotency record so one click cannot create duplicate
-drafts.
-
-Use a small record per Field Note rather than adding publication state to the
-public post front matter:
-
-```json
-{
-  "slug": "loop-engineering-coding-agent",
-  "campaign": "fn_loop_engineering_202607",
-  "channels": {
-    "substack": { "status": "manual", "url": null },
-    "linkedin": { "status": "draft", "variant": "post_hook_a", "url": null },
-    "x": { "status": "draft", "variant": "thread_hook_a", "url": null }
-  }
-}
-```
-
-Store this private operational state outside the public repository if it may
-contain unpublished copy. The repository is public, and the private writer
-route does not make committed source confidential.
+JavaScript, a `VITE_` variable, logs, or a pull request. Writer staging always
+requires an explicit browser confirmation. Merge-time staging is limited to
+the first workflow attempt. A rerun makes no Buffer calls; use Writer to stage
+any channel that failed during the first attempt. Exact-copy lookup is only a
+convenience because editing a Buffer draft changes the value being compared.
 
 ## Rollout decision
 
-1. **Now:** use the existing syndication kit, publish Substack manually, and
-   manage LinkedIn and X in Buffer's dashboard.
+1. **Now:** merge a new Field Note draft to stage editable LinkedIn and X
+   drafts in Buffer. Publish Substack manually.
 2. **After three to five Field Notes:** compare the time spent copying posts,
    correction rate, and channel-attributed subscriptions. Add channels only
    when they earn ongoing effort.
-3. **If copying is the bottleneck:** add draft creation from `/writer/` to
-   Buffer. Do not add direct LinkedIn or X integrations.
+3. **If copying is still the bottleneck:** extend the reviewed metadata used
+   by the merge workflow. Do not add direct LinkedIn or X integrations.
 4. **If approval is the bottleneck:** keep the dashboard workflow. More API
    code will not solve an editorial decision.
 
@@ -178,6 +159,6 @@ and honest channel attribution.
 
 ## Later automation
 
-After the workflow is proven, add a private `/writer/` syndication panel that
-generates the reviewed kit, creates approval-required Buffer drafts, and stores
-publication URLs. Keep Substack manual until it offers an official write API.
+The merge workflow stages approval-required Buffer drafts for newly added Field
+Notes. The private `/writer/` panel can regenerate either channel explicitly.
+Keep Substack manual until it offers an official write API.

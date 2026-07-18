@@ -89,9 +89,10 @@ test('writer direct edits update only the selected Markdown file', async () => {
     calls.push({ url, options });
     return options.method ? { ok: true } : { ok: true, json: async () => ({ sha: 'abc123' }) };
   };
-  await saveWritingDraft({ collection: 'writing', sourceSlug: 'draft', markdown: ESSAY, env: { GITHUB_CONTENT_TOKEN: 'token', GITHUB_CONTENT_REPOSITORY: 'owner/repo' }, fetchImpl });
+  const result = await saveWritingDraft({ collection: 'writing', sourceSlug: 'draft', markdown: ESSAY, env: { GITHUB_CONTENT_TOKEN: 'token', GITHUB_CONTENT_REPOSITORY: 'owner/repo', GITHUB_CONTENT_BRANCH: 'writer' }, fetchImpl });
   assert.match(calls[0].url, /contents\/portfolio\/content\/writing\/draft\.md/);
   assert.equal(JSON.parse(calls[1].options.body).sha, 'abc123');
+  assert.equal(result.mergeUrl, 'https://github.com/owner/repo/compare/main...writer?expand=1');
 });
 
 test('agent review request carries the saved file, author note, and required review lanes', async () => {

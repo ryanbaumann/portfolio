@@ -45,6 +45,10 @@ async function main() {
   const WRITER_PUBLIC_ORIGIN = await ask('   Dashboard HTTPS origin');
   const GITHUB_CONTENT_TOKEN = await ask('   Fine-grained GitHub Contents token');
   const GITHUB_REVIEW_TOKEN = await ask('   Fine-grained GitHub Issues token');
+  const BUFFER_API_KEY = await ask('   Buffer API key');
+  const BUFFER_ORGANIZATION_ID = await ask('   Buffer organization ID');
+  const BUFFER_LINKEDIN_CHANNEL_ID = await ask('   Buffer LinkedIn channel ID');
+  const BUFFER_X_CHANNEL_ID = await ask('   Buffer X channel ID');
 
   console.log('\n5. Analytics (optional; public configuration)');
   const ANALYTICS_MEASUREMENT_ID = await ask('   GA4 Measurement ID (G-...)');
@@ -71,6 +75,10 @@ async function main() {
     WRITER_PUBLIC_ORIGIN,
     GITHUB_CONTENT_TOKEN,
     GITHUB_REVIEW_TOKEN,
+    BUFFER_API_KEY,
+    BUFFER_ORGANIZATION_ID,
+    BUFFER_LINKEDIN_CHANNEL_ID,
+    BUFFER_X_CHANNEL_ID,
     ANALYTICS_MEASUREMENT_ID,
     GEMINI_API_KEY,
   });
@@ -107,6 +115,10 @@ GOOGLE_OAUTH_ALLOWED_EMAIL=rsbaumann@gmail.com
 WRITER_PUBLIC_ORIGIN=${values.WRITER_PUBLIC_ORIGIN || ''}
 GITHUB_CONTENT_TOKEN=${values.GITHUB_CONTENT_TOKEN || ''}
 GITHUB_REVIEW_TOKEN=${values.GITHUB_REVIEW_TOKEN || ''}
+BUFFER_API_KEY=${values.BUFFER_API_KEY || ''}
+BUFFER_ORGANIZATION_ID=${values.BUFFER_ORGANIZATION_ID || ''}
+BUFFER_LINKEDIN_CHANNEL_ID=${values.BUFFER_LINKEDIN_CHANNEL_ID || ''}
+BUFFER_X_CHANNEL_ID=${values.BUFFER_X_CHANNEL_ID || ''}
 
 # Analytics (public Measurement ID)
 ANALYTICS_MEASUREMENT_ID=${values.ANALYTICS_MEASUREMENT_ID || ''}

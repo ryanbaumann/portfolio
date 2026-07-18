@@ -16,6 +16,7 @@
     "labs:scan": "node scripts/scan-lab-artifacts.mjs",
     "labs:smoke-private": "node scripts/smoke-private-artifacts.mjs",
     "test:labs": "node --test scripts/test/*.test.mjs",
+    "test:social": "node --test scripts/test/social-drafts.test.mjs",
     "new:demo": "node scripts/new-demo.mjs",
     "new:post": "node scripts/new-post.mjs",
     "previews": "node scripts/previews.mjs"

@@ -94,8 +94,18 @@ test('writer build previews drafts and future writing with a noindex dashboard',
   assert.match(dashboard, /Scheduled essay/);
   assert.match(dashboard, /name="publishAt"/);
   assert.match(dashboard, /name="sourceSlug" value="draft"/);
+  assert.match(dashboard, /action="\/api\/writer\/social"/);
+  assert.match(dashboard, /Stage LinkedIn draft/);
+  assert.match(dashboard, /Stage X draft/);
+  assert.match(dashboard, /utm_source=linkedin/);
+  assert.match(dashboard, /utm_source=x/);
+  assert.match(dashboard, /maxlength="280"/);
+  assert.match(dashboard, /data-writer-pagination/);
+  assert.match(dashboard, /aria-label="Field Notes pages"/);
+  assert.match(dashboard, /Math\.ceil\(items\.length\/5\)/);
   assert.ok(dashboard.indexOf('value="draft"') < dashboard.indexOf('value="publish-now"'));
   assert.match(dashboard, /window\.confirm\('Publish this essay now\?/);
+  assert.match(dashboard, /unpublished Buffer draft\?/);
   assert.match(draft, /<meta name="robots" content="noindex, nofollow"/);
 });
 

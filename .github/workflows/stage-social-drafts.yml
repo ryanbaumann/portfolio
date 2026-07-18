@@ -1,0 +1,47 @@
+name: Stage Field Note social drafts
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'portfolio/content/writing/*.md'
+
+jobs:
+  stage:
+    name: Stage LinkedIn and X drafts in Buffer
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    concurrency:
+      group: stage-social-drafts
+      cancel-in-progress: false
+    env:
+      BUFFER_API_KEY: ${{ secrets.BUFFER_API_KEY }}
+      BUFFER_ORGANIZATION_ID: ${{ vars.BUFFER_ORGANIZATION_ID }}
+      BUFFER_LINKEDIN_CHANNEL_ID: ${{ vars.BUFFER_LINKEDIN_CHANNEL_ID }}
+      BUFFER_X_CHANNEL_ID: ${{ vars.BUFFER_X_CHANNEL_ID }}
+    steps:
+      - name: Check Buffer configuration
+        id: config
+        run: |
+          if [ -z "$BUFFER_API_KEY" ] || [ -z "$BUFFER_ORGANIZATION_ID" ] || [ -z "$BUFFER_LINKEDIN_CHANNEL_ID" ] || [ -z "$BUFFER_X_CHANNEL_ID" ]; then
+            echo "::notice::Buffer staging is not configured; see docs/WRITER_WORKFLOW.md."
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Check out the merged revision
+        if: steps.config.outputs.configured == 'true' && github.run_attempt == 1
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Stage editable social drafts
+        if: steps.config.outputs.configured == 'true' && github.run_attempt == 1
+        run: node scripts/stage-social-drafts.mjs --before "${{ github.event.before }}" --after "${{ github.sha }}"
+
+      - name: Keep workflow reruns side-effect free
+        if: steps.config.outputs.configured == 'true' && github.run_attempt != 1
+        run: echo "::notice::Automatic Buffer staging runs only on the first attempt. Stage any missing channel from /writer/."

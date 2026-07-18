@@ -8,7 +8,7 @@ name: Deploy to Cloud Run
 #
 # Runtime secrets (STRAVA_CLIENT_SECRET, GMP_SERVER_API_KEY, RESEND_API_KEY, GEMINI_API_KEY,
 # CONTACT_TO_EMAIL, GOOGLE_OAUTH_CLIENT_SECRET, GOOGLE_OAUTH_SESSION_SECRET,
-# GITHUB_CONTENT_TOKEN, GITHUB_REVIEW_TOKEN) and public
+# GITHUB_CONTENT_TOKEN, GITHUB_REVIEW_TOKEN, BUFFER_API_KEY) and public
 # config (STRAVA_CLIENT_ID) are set once on the Cloud Run
 # service, not passed through this workflow on every deploy — see the
 # comment above the `gcloud run deploy` step for the one-time setup
@@ -95,6 +95,7 @@ jobs:
             echo "- GOOGLE_OAUTH_SESSION_SECRET (required for /writer/)"
             echo "- GITHUB_CONTENT_TOKEN (required for writer publishing)"
             echo "- GITHUB_REVIEW_TOKEN (required for writer agent reviews)"
+            echo "- BUFFER_API_KEY (optional, writer social drafts)"
             exit 1
           fi
 
@@ -153,7 +154,8 @@ jobs:
           #     --update-secrets=GOOGLE_OAUTH_SESSION_SECRET=google-oauth-session-secret:latest \
           #     --update-secrets=GITHUB_CONTENT_TOKEN=github-content-token:latest \
           #     --update-secrets=GITHUB_REVIEW_TOKEN=github-review-token:latest \
-          #     --set-env-vars=STRAVA_CLIENT_ID=<your Strava app's client id>,CONTACT_FROM_EMAIL=<verified sender>,GOOGLE_OAUTH_CLIENT_ID=<oauth-client-id>,WRITER_PUBLIC_ORIGIN=https://ryanbaumann-dashboardfolio.admin.com
+          #     --update-secrets=BUFFER_API_KEY=buffer-api-key:latest \
+          #     --set-env-vars=STRAVA_CLIENT_ID=<your Strava app's client id>,CONTACT_FROM_EMAIL=<verified sender>,GOOGLE_OAUTH_CLIENT_ID=<oauth-client-id>,WRITER_PUBLIC_ORIGIN=https://ryanbaumann-dashboardfolio.admin.com,BUFFER_ORGANIZATION_ID=<buffer-org-id>,BUFFER_LINKEDIN_CHANNEL_ID=<buffer-linkedin-id>,BUFFER_X_CHANNEL_ID=<buffer-x-id>
           #
           # STRAVA_CLIENT_ID isn't secret on its own (it's public in the
           # OAuth authorize URL), so plain --set-env-vars is fine for it.

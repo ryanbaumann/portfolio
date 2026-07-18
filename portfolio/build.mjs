@@ -1082,12 +1082,51 @@ function writerDashboard(entries) {
   const rows = [];
   for (const col of ['writing', 'work', 'talks', 'scripts', 'pages']) {
     if (!grouped[col] || grouped[col].length === 0) continue;
-    rows.push(`<h2>${escapeHtml(col.charAt(0).toUpperCase() + col.slice(1))}</h2>`);
+    rows.push(`<section class="writer-group" data-writer-group="${escapeHtml(col)}">
+  <h2>${escapeHtml(col.charAt(0).toUpperCase() + col.slice(1))}</h2>`);
     rows.push(grouped[col].map((entry) => {
       const isPub = isPublished(entry);
       const status = entry.meta.draft === true ? 'Draft' : (isPub ? 'Published' : `Scheduled ${entry.meta.publishAt}`);
       const previewUrl = entry.collection === 'pages' ? `${BASE}${entry.slug}/` : `${BASE}${entry.collection}/${entry.slug}/`;
-      return `<article class="writer-entry">
+      const canonical = entry.meta.canonical || absoluteUrl(`/writing/${entry.slug}/`);
+      const campaign = `fn_${entry.slug.replaceAll('-', '_')}_${BUILD_TIME.toISOString().slice(0, 7).replace('-', '')}`;
+      const tracked = (source) => {
+        const url = new URL(canonical);
+        url.searchParams.set('utm_source', source);
+        url.searchParams.set('utm_medium', 'organic_social');
+        url.searchParams.set('utm_campaign', campaign);
+        url.searchParams.set('utm_content', 'post_hook_a');
+        return url.toString();
+      };
+      const socialTitle = String(entry.meta.shareTitle || entry.meta.title || '').trim();
+      const socialSummary = String(entry.meta.shareSummary || entry.meta.summary || '').trim();
+      const linkedInCopy = `${socialTitle}\n\n${socialSummary}\n\n${tracked('linkedin')}`;
+      const xUrl = tracked('x');
+      const xSuffix = `\n\n${xUrl}`;
+      const xCopy = `${socialTitle}${xSuffix}`.length <= 280
+        ? `${socialTitle}${xSuffix}`
+        : `${socialTitle.slice(0, 279 - xSuffix.length).trimEnd()}…${xSuffix}`;
+      const socialControls = entry.collection === 'writing' && !entry.meta.external ? `<details class="writer-social">
+    <summary>Social drafts</summary>
+    <p class="field-note">Edit the starter copy, then stage one unpublished Buffer draft. Finish editing, scheduling, and publishing in Buffer.</p>
+    <form class="writer-form" method="post" action="/api/writer/social" data-social-form>
+      <input type="hidden" name="sourceSlug" value="${escapeHtml(entry.sourceSlug)}" />
+      <input type="hidden" name="channel" value="linkedin" />
+      <label>LinkedIn copy
+        <textarea name="text" rows="7" maxlength="3000" required>${escapeHtml(linkedInCopy)}</textarea>
+      </label>
+      <button class="button" type="submit">Stage LinkedIn draft</button>
+    </form>
+    <form class="writer-form writer-social-channel" method="post" action="/api/writer/social" data-social-form>
+      <input type="hidden" name="sourceSlug" value="${escapeHtml(entry.sourceSlug)}" />
+      <input type="hidden" name="channel" value="x" />
+      <label>X copy
+        <textarea name="text" rows="5" maxlength="280" required>${escapeHtml(xCopy)}</textarea>
+      </label>
+      <button class="button" type="submit">Stage X draft</button>
+    </form>
+  </details>` : '';
+      return `<article class="writer-entry" data-writer-item>
   <div>
     <p class="eyebrow">${escapeHtml(status)}</p>
     <h2><a href="${previewUrl}">${escapeHtml(entry.meta.title)}</a></h2>
@@ -1114,6 +1153,7 @@ function writerDashboard(entries) {
       <button class="button" type="submit">Request agent review</button>
     </form>
   </details>
+  ${socialControls}
   <details class="writer-publish">
     <summary>Publishing controls</summary>
     <form class="writer-form" method="post" action="/api/writer/publish" data-writer-form>
@@ -1132,16 +1172,24 @@ function writerDashboard(entries) {
   </details>
 </article>`;
     }).join('\n'));
+    if (col === 'writing') {
+      rows.push(`<nav class="writer-pagination" aria-label="Field Notes pages" data-writer-pagination hidden>
+  <button class="button" type="button" data-page-previous>Previous</button>
+  <span data-page-status aria-live="polite"></span>
+  <button class="button" type="button" data-page-next>Next</button>
+</nav>`);
+    }
+    rows.push('</section>');
   }
 
   const content = `<section class="writer-dashboard">
   <p class="eyebrow">Private publishing</p>
   <h1>Release dashboard</h1>
-  <p class="lede">Edit a draft, save it, ask an agent for a structured review, then publish only when the preview is ready. Every save creates a focused commit on <code>main</code>; the next deploy shows the iteration here.</p>
+  <p class="lede">Edit a draft, save it, ask an agent for a structured review, then publish only when the preview is ready. Every save creates one focused commit on the configured publishing branch. Direct updates need no pull request; protected workflows return a merge link.</p>
   <p class="writer-status" hidden role="status"></p>
   ${rows.length > 0 ? rows.join('\n') : '<p class="empty-state">No content found.</p>'}
 </section>
-<script>(()=>{const params=new URLSearchParams(location.search);const changed=params.get('updated')||params.get('saved');const status=document.querySelector('.writer-status');if(changed&&status){status.textContent='Saved '+changed+'. GitHub is starting the next deploy.';status.hidden=false}const review=params.get('review');const issue=params.get('issue');if(review&&status){status.replaceChildren('Review requested for '+review+'. ');if(issue){const link=document.createElement('a');link.href=issue;link.textContent='Open review request';link.rel='noopener';status.append(link)}status.hidden=false}const localValue=(iso)=>{if(!iso)return'';const d=new Date(iso);const part=(value)=>String(value).padStart(2,'0');return d.getFullYear()+'-'+part(d.getMonth()+1)+'-'+part(d.getDate())+'T'+part(d.getHours())+':'+part(d.getMinutes())};document.querySelectorAll('[data-writer-form]').forEach((form)=>{const field=form.elements.publishAtLocal;field.value=localValue(field.dataset.publishAt);form.addEventListener('submit',(event)=>{const action=event.submitter?.value;if(action==='publish-now'&&!window.confirm('Publish this essay now? This commits directly to the publishing branch.')){event.preventDefault();return}if(action!=='schedule')return;const local=field.value;if(!local){event.preventDefault();field.focus();return}const scheduled=new Date(local);if(Number.isNaN(scheduled.valueOf())||scheduled.valueOf()<=Date.now()){event.preventDefault();field.setCustomValidity('Choose a future publish time.');field.reportValidity();return}field.setCustomValidity('');form.elements.publishAt.value=scheduled.toISOString()})})})();</script>`;
+<script>(()=>{const params=new URLSearchParams(location.search);const status=document.querySelector('.writer-status');const addLink=(href,label)=>{const link=document.createElement('a');link.href=href;link.textContent=label;link.rel='noopener';link.target='_blank';status.append(link)};const error=params.get('error');if(error&&status){status.textContent=error;status.hidden=false}const changed=params.get('updated')||params.get('saved');if(changed&&status){status.replaceChildren('Saved '+changed+'. GitHub is starting the next deploy. ');const merge=params.get('merge');if(merge)addLink(merge,'Open merge request');status.hidden=false}const review=params.get('review');const issue=params.get('issue');if(review&&status){status.replaceChildren('Review requested for '+review+'. ');if(issue)addLink(issue,'Open review request');status.hidden=false}const social=params.get('social');const channel=params.get('channel');if(social&&channel&&status){status.replaceChildren((params.get('duplicate')==='1'?'Reused the existing ':'Staged an editable ')+channel+' draft for '+social+'. ');addLink('https://publish.buffer.com/all-channels','Open Buffer');status.hidden=false}const writing=document.querySelector('[data-writer-group="writing"]');if(writing){const items=[...writing.querySelectorAll('[data-writer-item]')];const pagination=writing.querySelector('[data-writer-pagination]');const total=Math.max(1,Math.ceil(items.length/5));let page=Math.min(total,Math.max(1,Number.parseInt(params.get('writingPage')||'1',10)||1));const render=()=>{items.forEach((item,index)=>item.hidden=index<(page-1)*5||index>=page*5);pagination.hidden=total<=1;pagination.querySelector('[data-page-status]').textContent='Page '+page+' of '+total;pagination.querySelector('[data-page-previous]').disabled=page===1;pagination.querySelector('[data-page-next]').disabled=page===total;const nextUrl=new URL(location.href);if(page===1)nextUrl.searchParams.delete('writingPage');else nextUrl.searchParams.set('writingPage',String(page));history.replaceState(null,'',nextUrl)};pagination.querySelector('[data-page-previous]').addEventListener('click',()=>{if(page>1){page-=1;render();writing.scrollIntoView({block:'start'})}});pagination.querySelector('[data-page-next]').addEventListener('click',()=>{if(page<total){page+=1;render();writing.scrollIntoView({block:'start'})}});render()}const localValue=(iso)=>{if(!iso)return'';const d=new Date(iso);const part=(value)=>String(value).padStart(2,'0');return d.getFullYear()+'-'+part(d.getMonth()+1)+'-'+part(d.getDate())+'T'+part(d.getHours())+':'+part(d.getMinutes())};document.querySelectorAll('[data-social-form]').forEach((form)=>form.addEventListener('submit',(event)=>{const channel=form.elements.channel.value;if(!window.confirm('Stage this '+channel+' copy as an unpublished Buffer draft?'))event.preventDefault()}));document.querySelectorAll('[data-writer-form]').forEach((form)=>{const field=form.elements.publishAtLocal;field.value=localValue(field.dataset.publishAt);form.addEventListener('submit',(event)=>{const action=event.submitter?.value;if(action==='publish-now'&&!window.confirm('Publish this essay now? This commits directly to the publishing branch.')){event.preventDefault();return}if(action!=='schedule')return;const local=field.value;if(!local){event.preventDefault();field.focus();return}const scheduled=new Date(local);if(Number.isNaN(scheduled.valueOf())||scheduled.valueOf()<=Date.now()){event.preventDefault();field.setCustomValidity('Choose a future publish time.');field.reportValidity();return}field.setCustomValidity('');form.elements.publishAt.value=scheduled.toISOString()})})})();</script>`;
 
   writePage('index.html', layout({
     title: `Writer dashboard - ${site.name}`,

@@ -22,6 +22,7 @@ import {
 import { handleStravaApi } from './lib/strava.js';
 import { handleIsochronesApi } from './lib/isochrones.js';
 import { publishWritingUpdate, requestWritingReview, saveWritingDraft } from './lib/writer.js';
+import { stageWriterSocialDraft } from './lib/buffer.js';
 import { beginGoogleLogin, finishGoogleLogin, googleLoginPage, hasGoogleSession } from './lib/googleAuth.js';
 import { classifyContactSubmission } from './lib/contactSpam.js';
 import { errorPageHtml } from './lib/errorPage.js';
@@ -345,7 +346,7 @@ async function handleContactRequest(request, response) {
   response.end();
 }
 
-// Shared plumbing for the three writer form endpoints (publish/save/review):
+// Shared plumbing for the writer form endpoints (publish/save/review/social):
 // POST-only, authenticated writer session, same-origin form, urlencoded body,
 // then a 303 redirect back to /writer/ with the action's query string.
 // `allowPasswordCookie` exists because publish predates the Google login and
@@ -371,7 +372,9 @@ async function handleWriterFormRequest(request, response, { allowPasswordCookie 
     response.writeHead(303, { Location: `/writer/?${query}`, 'Cache-Control': 'no-store' });
     response.end();
   } catch (error) {
-    sendJson(request, response, error.statusCode || 502, { error: error.message });
+    applySecurityHeaders(response);
+    response.writeHead(303, { Location: `/writer/?error=${encodeURIComponent(error.message)}`, 'Cache-Control': 'no-store' });
+    response.end();
   }
 }
 
@@ -382,7 +385,7 @@ const handleWriterPublishRequest = (request, response) => handleWriterFormReques
     action: String(params.get('action') || ''),
     publishAt: String(params.get('publishAt') || ''),
   });
-  return `updated=${encodeURIComponent(result.sourceSlug)}`;
+  return `updated=${encodeURIComponent(result.sourceSlug)}${result.mergeUrl ? `&merge=${encodeURIComponent(result.mergeUrl)}` : ''}`;
 });
 
 const handleWriterSaveRequest = (request, response) => handleWriterFormRequest(request, response, {}, async (params) => {
@@ -391,7 +394,7 @@ const handleWriterSaveRequest = (request, response) => handleWriterFormRequest(r
     sourceSlug: String(params.get('sourceSlug') || ''),
     markdown: String(params.get('markdown') || ''),
   });
-  return `saved=${encodeURIComponent(result.sourceSlug)}`;
+  return `saved=${encodeURIComponent(result.sourceSlug)}${result.mergeUrl ? `&merge=${encodeURIComponent(result.mergeUrl)}` : ''}`;
 });
 
 const handleWriterReviewRequest = (request, response) => handleWriterFormRequest(request, response, {}, async (params) => {
@@ -401,6 +404,16 @@ const handleWriterReviewRequest = (request, response) => handleWriterFormRequest
     comment: String(params.get('comment') || ''),
   });
   return `review=${encodeURIComponent(result.sourceSlug)}&issue=${encodeURIComponent(result.issueUrl)}`;
+});
+
+const handleWriterSocialRequest = (request, response) => handleWriterFormRequest(request, response, {}, async (params) => {
+  const sourceSlug = String(params.get('sourceSlug') || '');
+  if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(sourceSlug)) throw Object.assign(new Error('Invalid slug.'), { statusCode: 400 });
+  const result = await stageWriterSocialDraft({
+    channel: String(params.get('channel') || ''),
+    text: String(params.get('text') || ''),
+  });
+  return `social=${encodeURIComponent(sourceSlug)}&channel=${encodeURIComponent(result.channel)}&draft=${encodeURIComponent(result.id)}&duplicate=${result.duplicate ? '1' : '0'}`;
 });
 
 function readJsonBody(request) {
@@ -496,6 +509,10 @@ async function handleApi(request, response, pathname, searchParams) {
   }
   if (pathname === '/api/writer/review') {
     await handleWriterReviewRequest(request, response);
+    return;
+  }
+  if (pathname === '/api/writer/social') {
+    await handleWriterSocialRequest(request, response);
     return;
   }
 

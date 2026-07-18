@@ -32,7 +32,7 @@ secrets belong in browser bundles.
   secrets via Cloud Run env / Secret Manager:
   STRAVA_CLIENT_SECRET, GMP_SERVER_API_KEY, RESEND_API_KEY,
   GOOGLE_OAUTH_CLIENT_SECRET, GOOGLE_OAUTH_SESSION_SECRET,
-  GITHUB_CONTENT_TOKEN, GITHUB_REVIEW_TOKEN
+  GITHUB_CONTENT_TOKEN, GITHUB_REVIEW_TOKEN, BUFFER_API_KEY
 ```
 
 Routing and builds are manifest-driven: `apps.json` lists each app's mount
@@ -127,7 +127,7 @@ deploys to Cloud Run on pushes to `main`. Required repo configuration:
 Runtime secrets (`STRAVA_CLIENT_SECRET`, `GMP_SERVER_API_KEY`,
 `RESEND_API_KEY`, `RESEND_SEGMENT_ID`, `RESEND_TOPIC_ID`, `CONTACT_TO_EMAIL`,
 `GEMINI_API_KEY`, `GOOGLE_OAUTH_CLIENT_SECRET`, `GOOGLE_OAUTH_SESSION_SECRET`,
-`GITHUB_CONTENT_TOKEN`, and `GITHUB_REVIEW_TOKEN`) are set on the Cloud Run service
+`GITHUB_CONTENT_TOKEN`, `GITHUB_REVIEW_TOKEN`, and `BUFFER_API_KEY`) are set on the Cloud Run service
 as Secret Manager references, never in the image or repo. `CONTACT_FROM_EMAIL`
 is optional non-secret sender configuration and must use a sender accepted by
 the mail provider. `GEMINI_API_KEY` is optional when contact classification is
