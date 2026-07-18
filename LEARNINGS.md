@@ -2,6 +2,13 @@
 
 This log captures durable lessons discovered while building and maintaining the portfolio and demo lab, keeping the root instructions lean.
 
+## 2026-07-18 - Primary content belongs in primary navigation
+
+Context: Field Notes appeared as a special header button beside Contact while the rest of the site destinations lived in the primary navigation. On mobile, that split forced the navigation onto a second full-height row and obscured the intended content hierarchy.
+Learning: Put the site’s main reader destination first in the semantic primary navigation. Reserve header actions for utilities, and keep mobile navigation in one horizontally scrollable row so 44-pixel targets do not require a second tier. When links overflow, retain a visible native scroll affordance.
+Evidence: The rendered header now leads with Field Notes in the primary nav, removes the duplicate Field Notes action, and keeps branding, visibly scrollable navigation, Contact, and the theme control on one mobile row. A build regression test asserts the nav order.
+Use next time: Start hierarchy changes from the semantic link order, then let the mobile layout preserve that order without duplicating destinations as calls to action.
+
 ## 2026-07-17 - Navigation and card affordances need structural regression tests
 
 Context: A homepage hierarchy pass removed Resume from the primary header and left Talks out, while collection rows made only the title clickable even though their image and summary looked like one interactive result.

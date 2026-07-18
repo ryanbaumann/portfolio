@@ -21,8 +21,8 @@ const CARDS = [
   {
     file: 'home.png',
     eyebrow: 'RYAN BAUMANN',
-    title: 'I build platforms that get developers and agents to working code.',
-    summary: 'Builder platforms · Developer tools · AI coding agents',
+    title: 'Builder platforms for humans + agents.',
+    summary: 'Tools · Evals · Reference apps',
     source: 'portfolio/static/previews/portfolio.jpg',
     layout: 'screenshot',
   },

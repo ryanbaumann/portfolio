@@ -163,12 +163,13 @@ test('build lists public demos without disclosing private demos', () => {
   assert.doesNotMatch(demos, /Private demo/);
 });
 
-test('shared primary navigation includes work, talks, and resume', () => {
+test('shared primary navigation leads with Field Notes and keeps core destinations', () => {
   const paths = fixture();
   const result = build(paths);
   assert.equal(result.status, 0, result.stderr);
   const home = readFileSync(join(paths.dist, 'index.html'), 'utf8');
   const primaryNav = home.match(/<nav class="site-nav" aria-label="Primary">([\s\S]*?)<\/nav>/)?.[1] || '';
+  assert.match(primaryNav, /^\s*<a href="\/writing\/"[^>]*>Field Notes<\/a>/);
   assert.match(primaryNav, /href="\/work\/"[^>]*>Work<\/a>/);
   assert.match(primaryNav, /href="\/talks\/"[^>]*>Talks<\/a>/);
   assert.match(primaryNav, /href="\/resume\/"[^>]*>Resume<\/a>/);

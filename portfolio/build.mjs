@@ -462,6 +462,7 @@ const CSS = readFileSync(join(ROOT, 'style.css'), 'utf8');
 
 function layout({ title, description, content, active = '', canonical, ogImage, ogImageAlt, shareTitle, shareSummary, ogType, articleDate, articleUpdated, robots, jsonLd, contactDelivery }) {
   const navItems = [
+    { href: `${BASE}writing/`, label: 'Field Notes', key: 'writing' },
     { href: `${BASE}work/`, label: 'Work', key: 'work' },
     { href: `${BASE}talks/`, label: 'Talks', key: 'talks' },
     ...(demos.length ? [{ href: `${BASE}demos/`, label: 'Ryan\u2019s Lab', key: 'demos' }] : []),
@@ -550,13 +551,15 @@ ${analyticsMarkup()}
 ${WRITER_MODE ? '<div class="writer-banner" role="status">Private writer preview. Nothing here is indexed.</div>' : ''}
 <header class="site-header">
   <div class="site-branding">
-  <a class="site-name" href="${BASE}">${escapeHtml(site.name)}</a>
+  <a class="site-name" href="${BASE}" aria-label="${escapeHtml(site.name)} home"><span class="site-name-full">${escapeHtml(site.name)}</span><span class="site-name-short" aria-hidden="true">RB</span></a>
   </div>
-  <nav class="site-nav" aria-label="Primary">
-  ${nav}
-  </nav>
+  <div class="site-nav-frame">
+    <nav class="site-nav" aria-label="Primary">
+    ${nav}
+    </nav>
+    <button class="nav-overflow-cue" type="button" aria-label="Show more navigation links" hidden>More →</button>
+  </div>
   <div class="header-actions">
-    <a class="header-cta${active === 'writing' ? ' is-active' : ''}" href="${BASE}writing/"${active === 'writing' ? ' aria-current="page"' : ''}>Field Notes</a>
     <a class="header-contact${active === 'contact' ? ' is-active' : ''}" href="${BASE}contact/"${active === 'contact' ? ' aria-current="page"' : ''}>Contact</a>
     <button class="theme-toggle" type="button" aria-label="Color theme: system. Activate to use light."><span aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="13" rx="2"></rect><path d="M8 21h8M12 17v4"></path></svg></span></button>
   </div>
@@ -579,6 +582,7 @@ ${content}
   </p>
 </footer>
 <script>(()=>{const b=document.querySelector('.theme-toggle');if(!b)return;const states=['system','light','dark'];const icons={system:'<svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="13" rx="2"></rect><path d="M8 21h8M12 17v4"></path></svg>',light:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.93 4.93l1.42 1.42M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.42-1.42M17.66 6.34l1.41-1.41"></path></svg>',dark:'<svg viewBox="0 0 24 24"><path d="M20.5 14.1A8.5 8.5 0 0 1 9.9 3.5a8.5 8.5 0 1 0 10.6 10.6Z"></path></svg>'};const sync=()=>{const current=document.documentElement.dataset.theme||'system';const next=states[(states.indexOf(current)+1)%states.length];b.querySelector('span').innerHTML=icons[current];b.setAttribute('aria-label','Color theme: '+current+'. Activate to use '+next+'.')};b.addEventListener('click',()=>{const current=document.documentElement.dataset.theme||'system';const next=states[(states.indexOf(current)+1)%states.length];if(next==='system'){delete document.documentElement.dataset.theme;localStorage.removeItem('theme')}else{document.documentElement.dataset.theme=next;localStorage.setItem('theme',next)}sync()});sync()})();</script>
+<script>(()=>{const n=document.querySelector('.site-nav'),b=document.querySelector('.nav-overflow-cue'),f=document.querySelector('.site-nav-frame');if(!n||!b||!f)return;const atEnd=()=>n.scrollLeft+n.clientWidth>=n.scrollWidth-1;const syncLabel=()=>{if(b.hidden)return;const end=atEnd();b.textContent=end?'← Back':'More →';b.setAttribute('aria-label',end?'Show first navigation links':'Show more navigation links')};const syncOverflow=()=>{f.classList.remove('has-nav-overflow');const overflow=n.scrollWidth>n.clientWidth+1;f.classList.toggle('has-nav-overflow',overflow);b.hidden=!overflow;syncLabel()};b.addEventListener('click',()=>n.scrollTo({left:atEnd()?0:n.scrollWidth,behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'}));n.addEventListener('scroll',syncLabel,{passive:true});addEventListener('resize',syncOverflow,{passive:true});syncOverflow()})();</script>
 </body>
 </html>
 `;
@@ -1195,18 +1199,18 @@ function buildHome(collections) {
   <p class="lede">${escapeHtml(site.intro)}</p>
   <p class="hero-actions">
     <a class="button button-primary" href="${BASE}writing/">Read Field Notes</a>
-    <a class="button button-secondary" href="${BASE}contact/">Start a conversation</a>
-    <a class="text-link" href="${BASE}work/">See selected work →</a>
+    <a class="text-link" href="${BASE}work/">Selected work</a>
+    <a class="text-link" href="${BASE}contact/">Contact</a>
   </p>
   ${stats}
 </section>
 
-${demosSection}
 <section>
   ${sectionHeader('Field Notes', 'Learnings from users', `${BASE}writing/`, 'All field notes')}
   ${fieldNotesBody}
 </section>
 
+${demosSection}
 <section>
   ${sectionHeader('Selected work', '', `${BASE}work/`, 'All work')}
   <div class="grid home-work-grid">${selectedWork.map((entry) => gridCard('work', entry)).join('\n')}</div>
