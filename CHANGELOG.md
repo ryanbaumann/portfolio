@@ -5,9 +5,12 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Added OAuth-admin staging of editable, unpublished LinkedIn and X drafts beside each Field Note, plus first-attempt merge staging for newly added drafts, with tracked starter copy, opt-out metadata, side-effect-free workflow reruns, and secret-safe configuration.
+- Completed the Writer edit flow with focused direct-branch saves, in-dashboard errors, and a GitHub merge link when a protected workflow uses a separate publishing branch.
+- Paginated the Writer dashboard's Field Notes section to five entries at a time with accessible previous, next, and page-status controls.
 - Added the private Field Note “Builder Platforms Grow by Owning the Agent Loop,” with four original diagrams explaining the DevX growth loop, training stack, and eval design.
 - Added a production domain-migration runbook for mapping `ryanbaumann.dev`, preserving deep-link redirects from the old domain, and updating dependent services.
-- Added a site-first Field Notes syndication runbook covering Substack, LinkedIn, and X workflows, consent-safe list migration, UTM attribution, and practical channel experiments.
+- Added a site-first Field Notes syndication runbook covering manual Substack excerpts, Buffer-managed LinkedIn, X, and future channel drafts, consent-safe list migration, UTM attribution, practical channel experiments, and a phased path to private writer integration.
 - Added permanent `/lab/` and `/labs/` redirects to the canonical `/demos/` route.
 - Added an `apple-touch-icon.png` and explicit `thumbnail` meta tag to the site `<head>` for better crawler visual citation and brand previews.
 - Enhanced the `sitemap.xml` generator to output `<image:image>` and `<image:loc>` nodes for pages with cover images to optimize visual search indexing.

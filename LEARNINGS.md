@@ -2,6 +2,20 @@
 
 This log captures durable lessons discovered while building and maintaining the portfolio and demo lab, keeping the root instructions lean.
 
+## 2026-07-18 - Social automation should stop at an editable draft
+
+Context: A new Field Note needed to create useful LinkedIn and X starting points without granting a merge workflow authority to publish externally.
+Learning: Trigger only for newly added draft files, create one Buffer draft per explicitly configured channel, and leave editing, timing, and publication in Buffer. Do not repeat external staging on a workflow rerun. Once someone edits a Buffer draft, exact-copy matching is no longer an idempotency key.
+Evidence: Buffer's GraphQL API supports `saveToDraft: true`, returns the created post ID, and documents that the post remains unpublished until explicitly scheduled. The workflow now limits merge-time staging to its first attempt; a partial failure is recovered by explicitly staging the missing channel from Writer.
+Use next time: Separate generation from publication, scope automation to added content, provide a front-matter opt-out, use exact destination IDs, and keep automatic retries side-effect free unless the external API supports a durable idempotency key.
+
+## 2026-07-18 - Separate content ownership, social orchestration, and publishing approval
+
+Context: Field Notes needed a manageable path from one canonical post to Substack, LinkedIn, X, and possible future social channels.
+Learning: Keep the portfolio as the canonical archive, use Buffer as the multi-network approval queue, and keep Substack manual until it offers a supported ongoing publishing API. Generate channel-specific drafts, but require an explicit approval action before any external post is created. Direct per-network integrations add credential, API-review, versioning, and retry complexity before the publishing cadence proves that work is necessary.
+Evidence: Substack documents RSS archive import and manual copy-and-paste, not an ongoing post-creation API. LinkedIn's Posts API requires OAuth permissions and versioned requests. X charges for API writes. Buffer supports LinkedIn, X, and other networks through one API and can retain API-created posts as drafts awaiting approval.
+Use next time: Start new social channels in the shared approval calendar. Keep credentials out of the public repository and browser, require explicit confirmation for Writer actions, and suppress automatic external effects on workflow reruns.
+
 ## 2026-07-18 - Primary content belongs in primary navigation
 
 Context: Field Notes appeared as a special header button beside Contact while the rest of the site destinations lived in the primary navigation. On mobile, that split forced the navigation onto a second full-height row and obscured the intended content hierarchy.

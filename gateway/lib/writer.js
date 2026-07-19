@@ -2,6 +2,10 @@ const SOURCE_SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const ACTIONS = new Set(['publish-now', 'schedule', 'draft']);
 const ALLOWED_COLLECTIONS = new Set(['writing', 'work', 'talks', 'scripts', 'pages']);
 
+function mergeUrl(repository, branch) {
+  return branch === 'main' ? '' : `https://github.com/${repository}/compare/main...${encodeURIComponent(branch)}?expand=1`;
+}
+
 function validPublishAt(value, now) {
   const match = value.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2})(?:\.(\d{1,3}))?)?Z$/);
   if (!match) return false;
@@ -101,7 +105,7 @@ export async function publishWritingUpdate({ collection, sourceSlug, action, pub
         : 'GitHub did not accept the publishing update.';
     throw Object.assign(new Error(message), { statusCode });
   }
-  return { action, sourceSlug, publishAt: action === 'schedule' ? publishAt : null };
+  return { action, sourceSlug, publishAt: action === 'schedule' ? publishAt : null, mergeUrl: mergeUrl(repository, branch) };
 }
 
 export async function saveWritingDraft({ collection, sourceSlug, markdown, env = process.env, fetchImpl = fetch }) {
@@ -120,7 +124,7 @@ export async function saveWritingDraft({ collection, sourceSlug, markdown, env =
   const file = await current.json();
   const saved = await fetchImpl(url, { method: 'PUT', headers: { ...headers, 'Content-Type': 'application/json' }, body: JSON.stringify({ message: `Edit ${collection}/${sourceSlug}`, content: Buffer.from(markdown).toString('base64'), sha: file.sha, branch }), signal: AbortSignal.timeout(10_000) });
   if (!saved.ok) throw Object.assign(new Error(saved.status === 409 ? 'The content changed in GitHub. Reload and try again.' : 'GitHub did not accept the edit.'), { statusCode: saved.status === 409 ? 409 : 502 });
-  return { sourceSlug };
+  return { sourceSlug, mergeUrl: mergeUrl(repository, branch) };
 }
 
 export async function requestWritingReview({ collection, sourceSlug, comment, env = process.env, fetchImpl = fetch }) {
