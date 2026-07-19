@@ -32,3 +32,4 @@ gha-creds-*.json
 # Ignore large source images
 demos/strava-explorer/strava-explorer.png
 .playwright-mcp/
+.gemini/
