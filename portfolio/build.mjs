@@ -1569,7 +1569,7 @@ function robotsTxt() {
 
 function permanentRedirects(collections) {
   if (WRITER_MODE) return {};
-  const redirects = demos.length ? { '/lab/': '/demos/', '/labs/': '/demos/', '/atlas/': 'https://atlas-demo-561209038703.us-central1.run.app/' } : {};
+  const redirects = demos.length ? { '/lab/': '/demos/', '/labs/': '/demos/', '/atlas/': 'https://atlas-demo-561209038703.us-central1.run.app/', '/labs/atlas/': 'https://atlas-demo-561209038703.us-central1.run.app/', '/demos/atlas/': 'https://atlas-demo-561209038703.us-central1.run.app/' } : {};
   const canonicalPaths = new Set(['/', '/demos/', ...COLLECTIONS.filter((item) => item.listPage).map((item) => `/${item.name}/`)]);
   for (const collection of COLLECTIONS) {
     for (const entry of collections[collection.name]) {

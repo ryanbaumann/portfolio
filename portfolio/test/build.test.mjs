@@ -127,6 +127,8 @@ test('build emits published aliases and omits redirects from writer previews', (
     '/lab/': '/demos/',
     '/labs/': '/demos/',
     '/atlas/': 'https://atlas-demo-561209038703.us-central1.run.app/',
+    '/labs/atlas/': 'https://atlas-demo-561209038703.us-central1.run.app/',
+    '/demos/atlas/': 'https://atlas-demo-561209038703.us-central1.run.app/',
     '/writing/previous/': '/writing/current/',
   });
 
