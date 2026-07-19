@@ -1210,7 +1210,7 @@ function buildHome(collections) {
   const demosSection = homeDemos.length
     ? `
 <section>
-  ${sectionHeader('Labs', '', `${BASE}demos/`, 'Explore Labs')}
+  ${sectionHeader('', 'Ryan’s Lab', `${BASE}demos/`, 'Explore Labs')}
   <p class="section-note">${escapeHtml(site.sectionIntros?.demos || '')}</p>
   <div class="grid demo-grid">
     ${homeDemos.map(demoCard).join('\n')}
@@ -1254,13 +1254,14 @@ function buildHome(collections) {
 </section>
 
 <section>
-  ${sectionHeader('Field Notes', 'Learnings from users', `${BASE}writing/`, 'All field notes')}
+  ${sectionHeader('', 'Field Notes', `${BASE}writing/`, 'All field notes')}
+  <p class="section-note">Learnings from users</p>
   ${fieldNotesBody}
 </section>
 
 ${demosSection}
 <section>
-  ${sectionHeader('Selected work', '', `${BASE}work/`, 'All work')}
+  ${sectionHeader('', 'Selected work', `${BASE}work/`, 'All work')}
   <div class="grid home-work-grid">${selectedWork.map((entry) => gridCard('work', entry)).join('\n')}</div>
 </section>
 
