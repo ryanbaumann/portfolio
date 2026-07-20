@@ -1206,7 +1206,7 @@ function buildHome(collections) {
   const bySlug = (collection, slug) => collections[collection].find((entry) => entry.slug === slug);
   const selectedWork = ['code-assist', 'agent-skills', 'agentic-growth']
     .map((slug) => bySlug('work', slug)).filter(Boolean);
-  const writingEntries = collections.writing.slice(0, 3);
+  const writingEntries = collections.writing.slice(0, 4);
   const homeDemos = demos.filter(d => !d.hideOnHome).slice(0, 3);
   const demosSection = homeDemos.length
     ? `
