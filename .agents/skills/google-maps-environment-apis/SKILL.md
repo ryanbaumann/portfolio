@@ -51,6 +51,7 @@ Google Maps Platform groups these as Environment APIs:
 - Use **forecast** for “next 24–96 hours” experiences, planning, and outdoor-activity recommendations.
 - Use **history** for charts and retrospective comparisons; check endpoint limits before requesting long time ranges.
 - Use **heatmap tiles** for map-wide raster AQI/pollutant visualization instead of trying to interpolate sparse points client-side when Google coverage meets the product need.
+- Send only the documented tile path and API key query parameter. The production endpoint rejects an extra `solution_id` query parameter with `INVALID_ARGUMENT`, leaving the overlay empty.
 - Use a clear index selector. Google supports many local AQ indexes; choose a default that matches product geography and label it explicitly.
 - Include pollutant details and health recommendations as explanatory panels, not just colors.
 - For PurpleAir migrations, decide whether Google Air Quality replaces, supplements, or calibrates the sensor network. PurpleAir point sensors and Google modeled AQ data have different coverage, latency, resolution, and semantics.

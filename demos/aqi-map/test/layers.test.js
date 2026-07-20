@@ -18,8 +18,8 @@ test('every selectable layer uses a supported Air Quality heatmap type', () => {
 
 test('PM2.5 tile URLs use the supported pollutant map type', () => {
   assert.equal(
-    heatmapTileUrl('PM25_INDIGO_PERSIAN', { x: 1, y: 2 }, 3, 'test-key', 'test-solution'),
-    'https://airquality.googleapis.com/v1/mapTypes/PM25_INDIGO_PERSIAN/heatmapTiles/3/1/2?key=test-key&solution_id=test-solution',
+    heatmapTileUrl('PM25_INDIGO_PERSIAN', { x: 1, y: 2 }, 3, 'test-key'),
+    'https://airquality.googleapis.com/v1/mapTypes/PM25_INDIGO_PERSIAN/heatmapTiles/3/1/2?key=test-key',
   );
-  assert.equal(heatmapTileUrl('PM25_INDEX', { x: 1, y: 2 }, 3, 'test-key', 'test-solution'), null);
+  assert.equal(heatmapTileUrl('PM25_INDEX', { x: 1, y: 2 }, 3, 'test-key'), null);
 });

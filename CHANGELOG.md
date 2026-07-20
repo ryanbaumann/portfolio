@@ -16,6 +16,7 @@ All notable changes to this project will be documented in this file.
 - Enhanced the `sitemap.xml` generator to output `<image:image>` and `<image:loc>` nodes for pages with cover images to optimize visual search indexing.
 
 ### Changed
+- Restored visible Air Quality heatmap tiles, added large Places UI Kit details above selected Isochrones results, and renamed the DevX Field Note to “DevX Is a Growth Function.”
 - Fixed the Air Quality demo's PM2.5 selector so it requests the supported pollutant heatmap tiles and renders them over the map, and restored the Isochrones demo's Places autocomplete with a dedicated referrer-restricted browser key.
 - Fixed CI workflow secret scanning by running the open-source Gitleaks Docker image directly instead of using the proprietary Gitleaks Action wrapper that requires a commercial license.
 - Fixed tar command compatibility in archive verification and test suite to support both GNU and BSD tar output formats, ensuring tests pass locally on macOS as well as in CI.

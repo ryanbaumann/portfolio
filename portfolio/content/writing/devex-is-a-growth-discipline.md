@@ -1,5 +1,5 @@
 ---
-title: DevX Is Not a Docs Team
+title: DevX Is a Growth Function
 slug: devx-is-a-growth-discipline
 summary: The growth loop starts when DevX owns repeated developer friction, ships the fix, distributes the better path, and measures whether behavior changed.
 date: 2026-07-14
@@ -8,9 +8,9 @@ canonical: https://ryanbaumann.dev/writing/devx-is-a-growth-discipline/
 image: /assets/devx-growth-header.png
 imageAlt: A four-stage DevX loop moves from observed friction to a shipped fix, distribution in builder workflows, and rising measured outcomes.
 socialImage: /social/devx-growth-discipline.jpg
-shareTitle: DevX Is Not a Docs Team
+shareTitle: DevX Is a Growth Function
 shareSummary: More docs rarely fix a broken journey. Own the friction, ship the fix, distribute the path, and measure the outcome.
-shareImageAlt: Social preview reading DevX Is Not a Docs Team beside the friction, ship, distribute, and measure loop.
+shareImageAlt: Social preview reading DevX Is a Growth Discipline beside a product, distribution, and measurement loop.
 tags: ["developer experience", "growth", "distribution", "ai"]
 order: 2
 ---

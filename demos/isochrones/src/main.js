@@ -1,6 +1,7 @@
 import { setOptions, importLibrary } from '@googlemaps/js-api-loader';
 import { installAnalytics } from '../../shared/analytics.mjs';
 import { containsLocation, midpoint, nearbySearchRadius } from './geo.js';
+import { createPlaceDetailsContent } from './place-details.js';
 import './styles.css';
 
 installAnalytics(import.meta.env.VITE_ANALYTICS_MEASUREMENT_ID);
@@ -20,6 +21,7 @@ const state = {
   markerClass: null,
   placeClass: null,
   searchRankPreference: null,
+  infoWindow: null,
   origins: { a: null, b: null },
   originNames: { a: '', b: '' },
   originMarkers: { a: null, b: null },
@@ -76,6 +78,7 @@ function clearPolygons() {
 }
 
 function clearPlaceMarkers() {
+  state.infoWindow?.close();
   state.placeMarkers.forEach((marker) => { marker.map = null; });
   state.placeMarkers = [];
 }
@@ -220,6 +223,11 @@ function placeLocation(place) {
   return { lat: place.location.lat(), lng: place.location.lng() };
 }
 
+function openPlaceDetails(place, marker, shouldFocus = false) {
+  state.infoWindow.setContent(createPlaceDetailsContent(place));
+  state.infoWindow.open({ map: state.map, anchor: marker, shouldFocus });
+}
+
 function showPlace(place, index) {
   const location = placeLocation(place);
   if (!location) return;
@@ -232,6 +240,7 @@ function showPlace(place, index) {
   addMarkerContent(marker, markerContent(String(index + 1), 'place-map-marker'));
   marker.addListener('click', () => {
     state.map.panTo(location);
+    openPlaceDetails(place, marker);
     document.querySelector(`[data-result-index="${index}"]`)?.focus();
   });
   state.placeMarkers.push(marker);
@@ -246,6 +255,7 @@ function showPlace(place, index) {
     state.map.panTo(location);
     state.map.setZoom(Math.max(state.map.getZoom() || 12, 14));
     setPanelExpanded(false);
+    openPlaceDetails(place, marker, true);
   });
 
   const number = document.createElement('span');
@@ -286,7 +296,7 @@ function renderPlaces(places) {
 async function searchSharedPlaces(firstGeoJson, secondGeoJson) {
   const center = midpoint(state.origins.a, state.origins.b);
   const request = {
-    fields: ['displayName', 'formattedAddress', 'location', 'googleMapsURI', 'primaryTypeDisplayName'],
+    fields: ['id', 'displayName', 'formattedAddress', 'location', 'googleMapsURI', 'primaryTypeDisplayName'],
     locationRestriction: {
       center,
       radius: nearbySearchRadius(state.origins.a, state.origins.b),
@@ -417,7 +427,7 @@ async function initMap() {
 
   setOptions({ key: API_KEY, v: 'weekly', authReferrerPolicy: 'origin' });
   try {
-    const [{ Map }, { AdvancedMarkerElement }, placesLibrary] = await Promise.all([
+    const [{ Map, InfoWindow }, { AdvancedMarkerElement }, placesLibrary] = await Promise.all([
       importLibrary('maps'),
       importLibrary('marker'),
       importLibrary('places'),
@@ -425,6 +435,7 @@ async function initMap() {
     state.markerClass = AdvancedMarkerElement;
     state.placeClass = placesLibrary.Place;
     state.searchRankPreference = placesLibrary.SearchNearbyRankPreference;
+    state.infoWindow = new InfoWindow();
     state.map = new Map(elements.map, {
       center: DEFAULT_CENTER,
       zoom: 10,

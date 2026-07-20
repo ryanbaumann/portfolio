@@ -77,7 +77,7 @@ function applyHeatmap() {
   state.map.overlayMapTypes.clear();
   state.heatmapLayer = new google.maps.ImageMapType({
     getTileUrl: (coordinate, zoom) => {
-      return heatmapTileUrl(state.activeLayer, coordinate, zoom, API_KEY, SOLUTION_ID);
+      return heatmapTileUrl(state.activeLayer, coordinate, zoom, API_KEY);
     },
     tileSize: new google.maps.Size(256, 256),
     maxZoom: 16,

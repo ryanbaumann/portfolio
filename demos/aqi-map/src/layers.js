@@ -21,9 +21,9 @@ export const LAYERS = {
   },
 };
 
-export function heatmapTileUrl(mapType, coordinate, zoom, apiKey, solutionId) {
+export function heatmapTileUrl(mapType, coordinate, zoom, apiKey) {
   const limit = 2 ** zoom;
   if (!LAYERS[mapType] || zoom < 0 || zoom > 16 || coordinate.y < 0 || coordinate.y >= limit) return null;
   const x = ((coordinate.x % limit) + limit) % limit;
-  return `${AIR_QUALITY_HOST}/mapTypes/${mapType}/heatmapTiles/${zoom}/${x}/${coordinate.y}?key=${apiKey}&solution_id=${solutionId}`;
+  return `${AIR_QUALITY_HOST}/mapTypes/${mapType}/heatmapTiles/${zoom}/${x}/${coordinate.y}?key=${apiKey}`;
 }

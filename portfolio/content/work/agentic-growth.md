@@ -27,4 +27,4 @@ We treated open source, agent context, product integrations, and measurement as 
 
 ## What I learned
 
-Distribution, product integration, and open source work best as one measured system. Keep the metrics separate, credit the team, and do not confuse presence in a workflow with proof of adoption. That is the core of [DevX Is Not a Docs Team](/writing/devx-is-a-growth-discipline/).
+Distribution, product integration, and open source work best as one measured system. Keep the metrics separate, credit the team, and do not confuse presence in a workflow with proof of adoption. That is the core of [DevX Is a Growth Function](/writing/devx-is-a-growth-discipline/).

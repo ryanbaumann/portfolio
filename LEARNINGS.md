@@ -176,3 +176,10 @@ Context: The Isochrones demo's map loaded, but Places autocomplete returned 403 
 Learning: Keep the browser and server credential boundaries explicit. The browser key can use HTTP referrer restrictions and should allow only Maps JavaScript API and Places API (New). The Isochrones REST key cannot rely on browser referrers, so it stays server-side and is restricted independently.
 Evidence: Places API (New) is enabled on `geojson-bq-blog`, and the deployment uses a dedicated `VITE_ISOCHRONES_GMP_API_KEY` for browser Maps and Places calls while `/api/isochrones` continues to use `GMP_SERVER_API_KEY` in the gateway.
 Use next time: When one demo combines browser SDKs with server REST APIs, document and validate each key's runtime, application restriction, API allowlist, and enabled service separately.
+
+## 2026-07-20 - A generated tile URL is not proof that the tile loaded
+
+Context: The Air Quality demo generated the corrected PM2.5 map type, but every production tile still returned HTTP 400 because the endpoint rejected the extra `solution_id` query parameter.
+Learning: Validate raster overlays at the HTTP and rendered-image boundaries. A correct map type and an invoked `getTileUrl` callback do not prove that the server returned a PNG or that the map drew it.
+Evidence: A production-origin browser check reproduced `INVALID_ARGUMENT` for `solution_id`; the tile URL now sends only the documented API key query parameter, and the regression test pins that exact URL.
+Use next time: For tile overlays, assert a 200 image response and inspect a rendered desktop/mobile capture before calling the layer visible.
