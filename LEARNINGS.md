@@ -162,3 +162,17 @@ Context: The homepage Labs section rendered several cards, but its “Explore La
 Learning: A collection-level call to action should resolve to the collection’s canonical route. Individual external destinations belong on their own cards.
 Evidence: The homepage builder now targets `/labs/`, which follows the existing permanent redirect to the canonical `/demos/` collection, while Atlas keeps its external URL in `apps.json`.
 Use next time: Derive section-level destinations from the collection route and cover the rendered `href` with a build test when a featured item can be external.
+
+## 2026-07-20 - Heatmap selectors must use API map type identifiers
+
+Context: The Air Quality demo labeled a layer as PM2.5 but requested `PM25_INDEX`, which is not a supported Air Quality API heatmap map type. The failed tile requests left the map overlay visually empty.
+Learning: Keep user-facing labels separate from API identifiers, and validate every configured tile layer against the documented map type values.
+Evidence: The PM2.5 option now requests `PM25_INDIGO_PERSIAN`, and a focused test verifies the complete tile URL while rejecting the former identifier.
+Use next time: Put external API identifiers in one shared configuration and cover every selectable layer with a request-contract test.
+
+## 2026-07-20 - Browser and server Maps calls need separate restricted keys
+
+Context: The Isochrones demo's map loaded, but Places autocomplete returned 403 because the browser build did not have a key authorized for Places API (New).
+Learning: Keep the browser and server credential boundaries explicit. The browser key can use HTTP referrer restrictions and should allow only Maps JavaScript API and Places API (New). The Isochrones REST key cannot rely on browser referrers, so it stays server-side and is restricted independently.
+Evidence: Places API (New) is enabled on `geojson-bq-blog`, and the deployment uses a dedicated `VITE_ISOCHRONES_GMP_API_KEY` for browser Maps and Places calls while `/api/isochrones` continues to use `GMP_SERVER_API_KEY` in the gateway.
+Use next time: When one demo combines browser SDKs with server REST APIs, document and validate each key's runtime, application restriction, API allowlist, and enabled service separately.
