@@ -2,6 +2,13 @@
 
 This log captures durable lessons discovered while building and maintaining the portfolio and demo lab, keeping the root instructions lean.
 
+## 2026-07-20 - Cloud Run domain mapping replacement can interrupt TLS
+
+Context: Cloud Run rejected the documented `create --force-override` command for an existing same-project mapping, so moving `ryanbaumann.dev` required deleting and recreating the exact DomainMapping resource.
+Learning: Treat a Cloud Run domain mapping replacement as a certificate migration, not an atomic route edit. Move the canonical domain first, preserve the old service, wait for both resource readiness and edge propagation, and defer redirect-only mappings until the apex is stable.
+Evidence: The replacement mapping became DomainRoutable immediately, took about 12 minutes to report CertificateProvisioned, and then needed several more minutes before all four published IPv4 edges completed TLS; the strict production smoke passed once propagation converged.
+Use next time: Test same-project override behavior before the maintenance window, communicate the possible HTTPS interruption, validate each published edge, and never replace multiple mappings simultaneously.
+
 ## 2026-07-20 - Parallel-service deploy checks need an explicit compatibility boundary
 
 Context: The new `fieldwork` Cloud Run revision deployed and passed its direct production smoke, but the deploy job then compared the still-legacy public origin's `portfolio` root manifest name against the renamed checkout and failed.
