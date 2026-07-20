@@ -39,7 +39,8 @@ description: How Ryan designs. Use before changing style.css, page layouts in bu
 ## Accessibility
 
 - Semantic landmarks (`header`, `main`, `footer`, `nav` with `aria-label`).
-- Keep primary navigation to reader destinations. Resume belongs under About, not in the header. On mobile, put Notes, Work, Talks, Labs, and About in a full-width second row so every destination remains visible without horizontal scrolling.
+- Keep primary navigation to reader destinations. Resume belongs under About, not in the header. On mobile, keep Fieldwork, Notes, Work, Talks, Labs, About, and the theme control on one non-scrolling line; Contact remains available in the page and footer.
+- Treat a section title and its explanatory subhead as one unit: keep their gap compact, then use the larger spacing before cards or the next section.
 - `aria-current="page"` on active nav.
 - Visible `:focus-visible` ring on everything interactive.
 - `prefers-reduced-motion` kills all transitions.

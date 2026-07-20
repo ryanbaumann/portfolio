@@ -62,9 +62,8 @@ commands also use `--account rsbaumann@gmail.com`.
 
 ### Domain mapping cutover
 
-Cloud Run's domain-mapping command has no separate update operation, but
-`create --force-override` safely remaps a domain that already belongs to another
-service. First record and verify the current owner:
+Cloud Run's domain-mapping command has no separate update operation. First
+record and verify the current owner:
 
 ```bash
 gcloud beta run domain-mappings list \
@@ -75,11 +74,18 @@ gcloud beta run domain-mappings list \
 ```
 
 Do not start the cutover unless the direct `fieldwork` service smoke is green.
-For each of `ryanbaumann.dev`, `www.ryanbaumann.dev`,
-`ryanbaumann-portfolio.com`, and `www.ryanbaumann-portfolio.com`, override the
-existing mapping against `fieldwork` without deleting it first:
+Start with `ryanbaumann.dev`. Although the CLI documents `--force-override`, it
+can reject a same-project mapping as already existing. The verified fallback is
+an exact delete followed immediately by a recreate:
 
 ```bash
+gcloud beta run domain-mappings delete \
+  --account rsbaumann@gmail.com \
+  --project geojson-bq-blog \
+  --region us-west1 \
+  --domain=DOMAIN \
+  --quiet
+
 gcloud beta run domain-mappings create \
   --account rsbaumann@gmail.com \
   --project geojson-bq-blog \
@@ -89,9 +95,11 @@ gcloud beta run domain-mappings create \
   --force-override
 ```
 
-This changes live routing and requires explicit approval at execution time.
-Reuse the existing DNS records. After each override, wait for the mapping's
-Ready condition and certificate provisioning before moving to the next domain:
+This changes live routing, can interrupt HTTPS while a replacement certificate
+is provisioned and propagated, and requires explicit approval at execution
+time. Reuse the existing DNS records. Wait for the mapping's Ready and
+CertificateProvisioned conditions, then verify every published edge before
+moving another domain:
 
 ```bash
 gcloud beta run domain-mappings describe \
@@ -103,15 +111,16 @@ gcloud beta run domain-mappings describe \
 ```
 
 Then verify HTTPS, redirects, and the complete production smoke suite. If a
-mapping or application check fails, rollback that domain with the same
-`create --force-override` command using `--service trails-ninja`. The legacy
-service remains ready for this purpose.
+mapping or application check fails, rollback that exact domain with the same
+delete-and-recreate sequence using `--service trails-ninja`. The legacy service
+remains ready for this purpose.
 
-After all four mappings serve `fieldwork` and the public production smoke is
-green, remove `ROOT_APP_COMPAT_NAME: portfolio` from the deploy workflow. That
-override applies only to the still-legacy public-origin manifest check; the
-direct post-deploy smoke for the new `fieldwork` service remains strict
-throughout the migration.
+Once `ryanbaumann.dev` serves `fieldwork` and the strict public production smoke
+is green, remove `ROOT_APP_COMPAT_NAME: portfolio` from the deploy workflow.
+The three redirect-only mappings may remain on `trails-ninja` during the
+observation window as long as their direct-to-canonical redirects pass. Move
+them one at a time later rather than accepting three simultaneous certificate
+outages.
 
 ## Route compatibility
 

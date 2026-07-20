@@ -207,9 +207,7 @@ jobs:
             --format='value(status.url)')"
           BASE_URL="$SERVICE_URL" node scripts/smoke-production.mjs
 
-      - name: Verify the current public origin during service migration
+      - name: Verify the current public origin
         env:
           BASE_URL: https://ryanbaumann.dev
-          # Remove after the domain mappings move from trails-ninja to fieldwork.
-          ROOT_APP_COMPAT_NAME: portfolio
         run: node scripts/smoke-production.mjs
