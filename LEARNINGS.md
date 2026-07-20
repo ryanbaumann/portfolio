@@ -26,9 +26,9 @@ Use next time: Inventory page paths, redirects, metadata, images, repository lin
 ## 2026-07-20 - Mobile navigation should prioritize instead of overflow
 
 Context: The header exposed every desktop destination on narrow screens, requiring horizontal scrolling and an extra JavaScript overflow control.
-Learning: When every primary destination matters, a full-width second navigation row preserves completeness and legible tap targets better than squeezing links beside the brand.
-Evidence: At 320 and 360 pixels, the rendered header shows Notes, Work, Talks, Labs, and About with 44-pixel targets, its scroll width equals its client width, and Resume remains available from About and the footer.
-Use next time: Define desktop and mobile destination priority explicitly, retain 44-pixel targets, and verify both route completeness and rendered overflow at the narrowest supported viewport.
+Learning: When every primary destination matters, reduce horizontal chrome before hiding links or adding overflow. Compact type and spacing can preserve the complete information architecture while retaining 44-pixel target height.
+Evidence: At 320 and 360 pixels, the rendered header keeps Fieldwork, Notes, Work, Talks, Labs, About, and the theme control on one line; every navigation target is 44 pixels tall and the header scroll width equals its client width.
+Use next time: Define mobile destination priority explicitly, retain 44-pixel target height, move nonessential utilities into the page or footer, and verify route completeness, wrapping, and overflow at the narrowest supported viewport.
 
 ## 2026-07-19 - Gitleaks Action v3 licensing breaks CI/CD workflows
 

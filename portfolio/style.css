@@ -245,11 +245,12 @@ main > section { margin-bottom: clamp(2rem, 5vw, 3.5rem); }
 
 .section-header {
   display: flex;
-  align-items: end;
+  align-items: baseline;
   justify-content: space-between;
   gap: 1rem;
   margin-bottom: 1.25rem;
 }
+.section-header:has(+ .section-note) { margin-bottom: 0.4rem; }
 .section-header .eyebrow { margin-bottom: 0.25rem; }
 .section-header h2 { margin: 0; }
 .more { font-size: 0.92rem; color: var(--muted); text-decoration: none; white-space: nowrap; }
@@ -730,6 +731,7 @@ main > section.hero { margin-bottom: clamp(0.75rem, 2vw, 1.5rem); }
   font-size: clamp(2.25rem, 5vw, 3.5rem);
   line-height: 1.05;
   letter-spacing: -0.04em;
+  margin-bottom: clamp(0.75rem, 1.5vw, 1rem);
 }
 .hero .lede { max-width: 100%; }
 .hero-actions {
@@ -888,15 +890,15 @@ main > section.hero { margin-bottom: clamp(0.75rem, 2vw, 1.5rem); }
   .site-header {
     grid-template-columns: auto minmax(0, 1fr) auto;
     flex-wrap: nowrap;
-    padding: 0.4rem 0.8rem;
-    gap: 0.4rem;
+    padding: 0.4rem 0.5rem;
+    gap: 0.2rem;
   }
-  .site-name { min-width: 44px; justify-content: flex-start; }
+  .site-name { min-width: 0; justify-content: flex-start; font-size: clamp(0.78rem, 3.6vw, 0.95rem); }
   .site-name-full { display: none; }
   .site-name-short { display: inline; }
   .site-nav-frame {
-    grid-column: 1 / -1;
-    grid-row: 2;
+    grid-column: auto;
+    grid-row: auto;
     width: 100%;
   }
   .site-header nav {
@@ -905,20 +907,16 @@ main > section.hero { margin-bottom: clamp(0.75rem, 2vw, 1.5rem); }
     width: 100%;
     gap: 0;
   }
-  .site-header nav a { min-height: 44px; font-size: 0.78rem; padding-inline: 0.25rem; }
+  .site-header nav a { min-height: 44px; font-size: clamp(0.66rem, 2.5vw, 0.78rem); padding-inline: 0; }
   .site-header nav a { min-width: 0; justify-content: center; }
   .header-actions { justify-self: end; gap: 0.35rem; }
   .theme-toggle { min-height: 44px; font-size: 1.1rem; padding: 0; }
-  .header-contact { font-size: 0.75rem; padding-inline: 0.25rem; }
+  .header-contact { display: none; }
   main { padding-top: 0.75rem; }
   main > section { margin-bottom: 2rem; }
   .hero h1 { font-size: clamp(1.6rem, 8vw, 2.8rem); line-height: 1.08; letter-spacing: -0.03em; }
   .hero .lede { font-size: 1.04rem; line-height: 1.5; }
   .hero { margin-bottom: 1rem; }
-}
-
-@media (max-width: 480px) {
-  .header-contact { display: none; }
 }
 
 @media (max-width: 480px) {
