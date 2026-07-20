@@ -2,6 +2,13 @@
 
 This log captures durable lessons discovered while building and maintaining the portfolio and demo lab, keeping the root instructions lean.
 
+## 2026-07-20 - local skills clean up: keep google-maps-platform, frontend-responsive-design, infographic-agent, and portfolio-* skills
+
+Context: The repository had many local skills in `.agents/skills/` that were either globally available or redundant (such as specialized google maps subset skills).
+Learning: Keep the repository's `.agents/skills/` directory focused. Keep only the primary Google Maps Platform skill (`google-maps-platform`), `frontend-responsive-design`, `infographic-agent`, and the repository-specific `portfolio-*` skills. Other generic or subset maps skills are handled globally.
+Evidence: Removed 9 redundant skills (`geocoding-api-web-api`, `google-maps-environment-apis`, `google-maps-js-2d`, `google-maps-js-3d`, `maps-javascript-api-javascript`, `places-api-web-api`, `pollen-api-web-api`, `setup-local-environment`, `weather-api-web-api`) from `.agents/skills/` and updated `AGENTS.md` to reflect the change.
+Use next time: Do not add or retain redundant, non-portfolio maps/api skills locally; rely on the global system-wide skills for general development tasks.
+
 ## 2026-07-20 - Field Note copy and image taste: cut AI tells, draft three, make art per-post
 
 Context: A Field Note draft read as competent but generated. Ryan's specific corrections: too many "it's not X, it's Y" antithesis flips; the self-credit line "I lead the strategy and review the traces" is trite and inauthentic (he does not want it, in this or any post); openings should lead with the reader's stakes, not a personal scene; punchier and shorter beats thorough. Separately, the generated diagrams all looked identical because every post reuses the same numbered box-and-arrow flow template, with too much text.

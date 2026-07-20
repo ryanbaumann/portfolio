@@ -175,11 +175,13 @@ runbook rather than duplicating the steps here.
 Use these repo-local skills when the task matches their scope:
 
 - `.agents/skills/google-maps-platform/SKILL.md` for broad Google Maps Platform, key-security, quota, Places, Routes, and general Maps JavaScript API work.
-- `.agents/skills/google-maps-js-3d/SKILL.md` for focused Maps JavaScript API 3D Maps work: `Map3DElement`, `maps3d`, 3D markers, popovers, altitude, drawing, and camera behavior.
-- `.agents/skills/google-maps-js-2d/SKILL.md` for focused Maps JavaScript API 2D Maps work: loader/imports, vector maps, Advanced Markers, overlays, deck.gl, WebGLOverlayView, Places widgets, and Mapbox-to-Google migration work.
-- `.agents/skills/google-maps-environment-apis/SKILL.md` for Google Maps Platform Environment APIs: Air Quality, Pollen, Solar, Weather, environmental heatmap tiles, quota, caching, source labeling, and environmental-data migrations.
 - `.agents/skills/frontend-responsive-design/SKILL.md` for responsive layout, accessibility, CSS architecture, Tailwind utility usage, and visual QA work.
+- `.agents/skills/infographic-agent/SKILL.md` for generating professional infographics, visual summaries, charts, and data visualizations using Gemini.
+- `.agents/skills/portfolio-content/SKILL.md` for adding or updating content on this site (work entries, blog posts, talks, pages, static assets).
+- `.agents/skills/portfolio-design/SKILL.md` for design principles, page layouts, styling tokens, component styling, and visual review constraints.
+- `.agents/skills/portfolio-presenting/SKILL.md` for drafting talk abstracts, deck outlines, speaker notes, and presenting formats.
 - `.agents/skills/portfolio-review/SKILL.md` for the mandatory pre-publication audit of copy, claims, links, canonicals, redirects, images, metadata, accessibility, and rendered desktop/mobile output.
+- `.agents/skills/portfolio-writing/SKILL.md` for writing style, voice guide, metrics guardrails, social copy packaging, and structural patterns.
 
 ## The agentic loop
 
