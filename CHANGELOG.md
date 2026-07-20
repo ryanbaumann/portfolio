@@ -17,7 +17,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 - Renamed the site and repository identity to Fieldwork, aligned package, CI, GitHub, Artifact Registry, and Cloud Run names, refreshed the favicon and social/home previews, and documented a backward-compatible service and repository migration.
-- Removed Resume from the primary header, kept it linked from About and the footer, and reduced the mobile header to Notes, Work, and About in a single non-scrolling row.
+- Removed Resume from the primary header, kept it linked from About and the footer, and arranged Notes, Work, Talks, Labs, and About in a complete non-scrolling mobile navigation row.
 - Encoded a conversational prose-to-code rhythm and outcome-based deterministic review loop in the portfolio writing, design, and review skills.
 - Restored visible Air Quality heatmap tiles, added large Places UI Kit details above selected Isochrones results, and renamed the DevX Field Note to “DevX Is a Growth Function.”
 - Fixed the Air Quality demo's PM2.5 selector so it requests the supported pollutant heatmap tiles and renders them over the map, and restored the Isochrones demo's Places autocomplete with a dedicated referrer-restricted browser key.

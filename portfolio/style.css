@@ -894,16 +894,19 @@ main > section.hero { margin-bottom: clamp(0.75rem, 2vw, 1.5rem); }
   .site-name { min-width: 44px; justify-content: flex-start; }
   .site-name-full { display: none; }
   .site-name-short { display: inline; }
-  .site-header nav {
-    justify-content: start;
+  .site-nav-frame {
+    grid-column: 1 / -1;
+    grid-row: 2;
     width: 100%;
-    gap: 0.25rem;
-    flex-wrap: nowrap;
   }
-  .site-header .nav-talks,
-  .site-header .nav-demos { display: none; }
+  .site-header nav {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    width: 100%;
+    gap: 0;
+  }
   .site-header nav a { min-height: 44px; font-size: 0.78rem; padding-inline: 0.25rem; }
-  .site-header nav a { min-width: 44px; justify-content: center; }
+  .site-header nav a { min-width: 0; justify-content: center; }
   .header-actions { justify-self: end; gap: 0.35rem; }
   .theme-toggle { min-height: 44px; font-size: 1.1rem; padding: 0; }
   .header-contact { font-size: 0.75rem; padding-inline: 0.25rem; }
