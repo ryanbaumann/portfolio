@@ -2,6 +2,13 @@
 
 This log captures durable lessons discovered while building and maintaining the portfolio and demo lab, keeping the root instructions lean.
 
+## 2026-07-22 - Theme-aware SVGs in `<img>` tags require explicit `color-scheme`
+
+Context: The site uses SVGs that internally specify `@media (prefers-color-scheme: dark)` to handle light/dark modes. The HTML site has a manual toggle using `data-theme="light"` or `data-theme="dark"`. However, SVGs loaded via `<img>` tags were not respecting the manual `data-theme` toggle, remaining stuck on the OS-level system color scheme.
+Learning: An SVG loaded via an `<img>` tag executes its internal media queries based on the host HTML element's explicit `color-scheme`. Injecting `color-scheme: light;` or `color-scheme: dark;` into the `html[data-theme]` CSS block automatically propagates the theme down to the embedded SVGs, bypassing the system theme and allowing them to respect the manual toggle without needing duplicate SVG files.
+Evidence: Modified `html[data-theme="light"]` to include `color-scheme: light;` and `html[data-theme="dark"]` to include `color-scheme: dark;` in `portfolio/style.css`.
+Use next time: Use explicit `color-scheme` properties on theme blocks to control internal `prefers-color-scheme` media queries of embedded SVG images.
+
 ## 2026-07-20 - local skills clean up: keep google-maps-platform, frontend-responsive-design, infographic-agent, and portfolio-* skills
 
 Context: The repository had many local skills in `.agents/skills/` that were either globally available or redundant (such as specialized google maps subset skills).

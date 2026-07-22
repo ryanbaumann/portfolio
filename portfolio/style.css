@@ -167,7 +167,7 @@ img { max-width: 100%; height: auto; border-radius: 0.6rem; }
 .header-contact.is-active { color: var(--accent-ink); }
 
 main { padding-block: clamp(0.5rem, 2vw, 1.5rem) 2rem; }
-main > section { margin-bottom: clamp(2rem, 5vw, 3.5rem); }
+main > section { margin-bottom: clamp(3rem, 6vw, 5.5rem); }
 
 .site-footer {
   display: flex;
@@ -222,7 +222,7 @@ main > section { margin-bottom: clamp(2rem, 5vw, 3.5rem); }
   color: var(--accent-ink);
   margin: 0 0 0.75rem;
 }
-.lede { font-size: 1.2rem; line-height: 1.55; max-width: var(--prose); color: var(--ink); }
+.lede { font-size: clamp(1.1rem, 2.5vw, 1.3rem); line-height: 1.6; max-width: var(--prose); color: var(--ink); }
 .hero { padding-block: clamp(0.5rem, 3vw, 1.5rem); }
 .hero h1 {
   max-width: 100%;
@@ -248,7 +248,7 @@ main > section { margin-bottom: clamp(2rem, 5vw, 3.5rem); }
   align-items: baseline;
   justify-content: space-between;
   gap: 1rem;
-  margin-bottom: 1.25rem;
+  margin-bottom: 2rem;
 }
 .section-header:has(+ .section-note) { margin-bottom: 0.4rem; }
 .section-header .eyebrow { margin-bottom: 0.25rem; }
@@ -265,7 +265,7 @@ main > section { margin-bottom: clamp(2rem, 5vw, 3.5rem); }
   grid-template-columns: 1fr;
   gap: 1rem;
 }
-@media (min-width: 640px) { .grid { grid-template-columns: repeat(2, 1fr); } }
+@media (min-width: 640px) { .grid { grid-template-columns: repeat(2, 1fr); gap: 1.5rem; } }
 
 .card {
   display: flex;
@@ -275,14 +275,14 @@ main > section { margin-bottom: clamp(2rem, 5vw, 3.5rem); }
   border-radius: 1rem;
   padding: 1.25rem 1.35rem;
   text-decoration: none;
-  transition: border-color 0.2s ease, transform 0.2s ease;
+  transition: border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
 }
 .card:hover {
   border-color: transparent;
-  transform: translateY(-2px);
+  transform: translateY(-4px);
   color: inherit;
-  box-shadow: 0 0 0 2px var(--accent), 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 0 0 2px var(--accent), 0 12px 20px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
 }
 .card h3 { margin-bottom: 0.4rem; }
 .card p { margin: 0; color: var(--muted); font-size: 0.95rem; }
@@ -510,6 +510,7 @@ main > section { margin-bottom: clamp(2rem, 5vw, 3.5rem); }
 
 /* ---- compact header, explicit theme toggle ---- */
 html[data-theme="light"] {
+  color-scheme: light;
   --bg: #faf9f6;
   --surface: #ffffff;
   --ink: #111827;
@@ -521,6 +522,7 @@ html[data-theme="light"] {
   --on-accent: #ffffff;
 }
 html[data-theme="dark"] {
+  color-scheme: dark;
   --bg: #030712;
   --surface: #111827;
   --ink: #f9fafb;
@@ -725,7 +727,7 @@ html[data-theme="dark"] {
   padding-top: 0;
   padding-bottom: clamp(0.25rem, 2vw, 1rem);
 }
-main > section.hero { margin-bottom: clamp(0.75rem, 2vw, 1.5rem); }
+main > section.hero { margin-bottom: clamp(2.5rem, 6vw, 4.5rem); }
 .hero h1 {
   max-width: 100%;
   font-size: clamp(2.25rem, 5vw, 3.5rem);
@@ -750,6 +752,8 @@ main > section.hero { margin-bottom: clamp(0.75rem, 2vw, 1.5rem); }
   background: var(--ink);
   border-color: var(--ink);
   color: var(--bg);
+  padding: 0.65rem 1.25rem;
+  font-size: 0.9rem;
 }
 .button-primary:hover { background: var(--accent-ink); border-color: var(--accent-ink); color: var(--bg); }
 .button-secondary { background: transparent; border-color: var(--line); color: var(--ink); }
@@ -788,7 +792,7 @@ main > section.hero { margin-bottom: clamp(0.75rem, 2vw, 1.5rem); }
   font-weight: 600;
   color: var(--faint);
 }
-.hero-stats dd { margin: 0; font-size: clamp(1.1rem, 3vw, 1.5rem); font-weight: 650; letter-spacing: -0.02em; }
+.hero-stats dd { margin: 0; font-size: clamp(1.1rem, 4vw, 1.75rem); font-weight: 650; letter-spacing: -0.02em; }
 
 /* ---- featured field note (large card, image + text) ---- */
 .featured-note {

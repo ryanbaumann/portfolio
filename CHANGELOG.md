@@ -5,6 +5,9 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Changed
+- Applied UI/UX layout enhancements: increased macro whitespace around hero and main sections, implemented responsive typography scaling for headers and stats, and added an elevated interaction state to cards.
+- Updated SSG sorting logic for Field Notes to always use chronological order by default, decoupling the pinned homepage card (`order` metadata) from global sorting.
+- Fixed theme-aware SVGs failing to respond to explicit light/dark toggles by injecting `color-scheme` into the host `html[data-theme]` block, bypassing system-level media queries on `<img>` tags.
 - Updated `infographic-agent` skill, documentation, CLI wrapper, and prompt metadata to use `gemini-3.6-flash` for the research orchestrator (standardizing Flash on 3.6 while Flash-Lite uses 3.5).
 - Updated `AGENTS.md` to document the primary `google-maps-platform` skill, `frontend-responsive-design`, `infographic-agent`, and repository-specific `portfolio-*` skills under Local Skills.
 - Rewrote the "The Model That Picks Your Platform Doesn't Write the Code" Field Note to open on the cheap-execution stakes (GLM 5.2, Kimi K3) and the moat question, cut AI-tell phrasing, and replaced its two templated flow diagrams with bespoke per-post art (a one-decides-many-build asymmetry header and a descending-tier staircase). Recorded the copy-and-image taste rules in the portfolio-writing skill and LEARNINGS.
